@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="CFLTest" default="analyze">
+
+  <dirname property="this.dir" file="${ant.file}"/>
+  <property name="target.loc" location="${target}"/>
+
+  <target name="analyze" depends="jar">
+	<java classname="edu.utexas.cg.Harness"
+          maxmemory="4g"
+          fork="true"
+          failonerror="true">
+      <classpath>
+		<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
+		<pathelement location="${this.dir}/lib/soot-nightly.jar"/>
+		<pathelement location="${this.dir}/lib/heros-nightly.jar"/>
+      </classpath>
+      <arg value="${target.loc}"/>
+	</java>
+  </target>
+
+
+  <target name="init">
+    <mkdir dir="build"/>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <javac srcdir="src" destdir="build" debug="true">
+	  <classpath>
+		<pathelement location="lib/heros-nightly.jar"/>
+		<pathelement location="lib/soot-nightly.jar"/>
+	  </classpath>
+	</javac>
+  </target>
+
+  <target name="jar" depends="compile"
+        description="generate the distribution" >
+    <jar jarfile="edu.utexas.cfl.jar" basedir="build"/>
+  </target>
+
+  <target name="clean"
+		  description="clean up" >
+    <delete dir="build"/>
+    <delete file="edu.utexas.cfl.jar"/>
+  </target>
+</project>
