@@ -6,7 +6,7 @@
 
   <target name="analyze" depends="jar">
 	<java classname="edu.utexas.cg.Harness"
-          maxmemory="4g"
+          maxmemory="32g"
           fork="true"
           failonerror="true">
       <classpath>
