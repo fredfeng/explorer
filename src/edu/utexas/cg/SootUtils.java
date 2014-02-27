@@ -6,6 +6,8 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 
+import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.HashSet;
@@ -18,28 +20,15 @@ import java.util.Iterator;
 **/
 public class SootUtils
 {   
-    private static HashMap<SootClass,List<SootClass>> classToSubtypes = new HashMap();
+    private static HashMap<SootClass,Set<SootClass>> classToSubtypes = new HashMap();
 
-    public static List<SootMethod> overridingMethodsFor(SootMethod originalMethod)
+    public static Set<SootClass> subTypesOf(SootClass cl)
     {
-        List<SootClass> subTypes = subTypesOf(originalMethod.getDeclaringClass());
-        List<SootMethod> overridingMeths = new ArrayList();
-        NumberedString subsig = originalMethod.getNumberedSubSignature();
-        for(SootClass st : subTypes){
-            if(st.declaresMethod(subsig)){
-                overridingMeths.add(st.getMethod(subsig));
-            }
-        }
-        return overridingMeths;
-    }
-
-    public static List<SootClass> subTypesOf(SootClass cl)
-    {
-        List<SootClass> subTypes = classToSubtypes.get(cl);
+        Set<SootClass> subTypes = classToSubtypes.get(cl);
         if(subTypes != null) 
             return subTypes;
         
-        classToSubtypes.put(cl, subTypes = new ArrayList());
+        classToSubtypes.put(cl, subTypes = new HashSet());
 
         subTypes.add(cl);
 

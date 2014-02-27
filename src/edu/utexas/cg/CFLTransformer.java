@@ -47,8 +47,12 @@ protected void internalTransform(String phaseName,
 
     int totalAllocs = 0;
     int totalivks = 0;
+    int totaloptZero = 0;
     int totalopt = 0;
     int totalclz = 0;
+    int totalType1 = 0;
+    int totalType2 = 0;
+    int totalType3 = 0;
     long nanoBeforeCFG = System.nanoTime();
     InterproceduralCFG<Unit, SootMethod> icfg = new JimpleBasedInterproceduralCFG();
     JimpleBasedInterproceduralCFG myig = (JimpleBasedInterproceduralCFG) icfg;
@@ -78,7 +82,8 @@ protected void internalTransform(String phaseName,
             for(SootMethod m : clazz.getMethods()) {
                 if(!m.isConcrete()) continue;
                 Body body = m.retrieveActiveBody();
-
+                //running intra-proc reaching defs.
+                ReachingDefsAnalysis.runReachingDef(body);
                 UnitGraph g = new ExceptionalUnitGraph(body);
                 Chain<Unit> units = body.getUnits();
                 Iterator<Unit> uit = units.snapshotIterator();
@@ -97,25 +102,50 @@ protected void internalTransform(String phaseName,
                             if(stmt.getInvokeExpr().getUseBoxes().get(0).getValue().getType() instanceof RefType){
                                 RefType callsiteType = (RefType)stmt.getInvokeExpr().getUseBoxes().get(0).getValue().getType();
                                 HashSet<String> hs = new HashSet();
+                                Set<SootClass> subClazz = SootUtils.subTypesOf(callsiteType.getSootClass());
                                 for (Pair<Value,Set<DefinitionStmt>> key : solver.resultsAt(stmt).keySet()) {
                                     for(DefinitionStmt dfs : key.getO2()){
                                         //need to filter out incompatible alloc here.
                                         if(dfs.getRightOp().getType() instanceof RefType) {
                                             RefType allocType = (RefType)dfs.getRightOp().getType();
-                                            if(SootUtils.subTypesOf(callsiteType.getSootClass()).contains(allocType.getSootClass())) {
-                                                hs.add(dfs.getRightOp().getType().toString());
+                                            if(subClazz.contains(allocType.getSootClass())) {
+                                                //alloc becomes useful when it overrides the method.`
+                                                if(allocType.getSootClass().declaresMethodByName(ie.getMethod().getName()))
+                                                    hs.add(dfs.getRightOp().getType().toString());
                                             }
+                                            //System.out.println( callsiteType + " subtypes::::" + SootUtils.subTypesOf(callsiteType.getSootClass()));
                                         }
                                     }
 
                                 }
-                                if(hs.size() > 1 || (!hs.contains(callsiteType.toString()) && hs.size()>0)) {
+                                if(subClazz.size() == 1) {
+                                    //not interesting.
+                                    totalType1++;
+                                    assert(subClazz.contains(callsiteType.getSootClass()));
+                                } else {
+                                    if(hs.size() == 0) {
+                                        totaloptZero++;
+                                    } ele if(hs.size() == 1){
+                                        //benefit from isil's assumption.
+                                        totalType2++;
+                                    } else {
+                                        totalType3++;
+                                        System.out.println("Callees: " + stmt);
+                                        System.out.print(callsiteType);
+                                        System.out.println(" Alloc:" + hs);
+                                        System.out.println(" ReachingDefs:" + stmt.getTags());
+                                        System.out.println("\n");
+
+                                    }
+                                }
+                                /*if(hs.size() > 1 || (!hs.contains(callsiteType.toString()) && hs.size()>0)) {
                                     totalopt++;
                                     System.out.println("Callees: " + stmt);
                                     System.out.print(callsiteType);
                                     System.out.println(" Alloc:" + hs);
+                                    System.out.println(" ReachingDefs:" + stmt.getTags());
                                     System.out.println("\n");
-                                }
+                                }*/
                             }
                         }
                     }
@@ -128,6 +158,10 @@ protected void internalTransform(String phaseName,
     System.out.println("Number of Classes: " + totalclz);
     System.out.println("Number of Allocation sites: " + totalAllocs);
     System.out.println("Number of Virtual invocations: " + totalivks);
+    System.out.println("Number of Type 1: " + totalType1);
+    System.out.println("Number of Type 2: " + totalType2);
+    System.out.println("Number of Type 3: " + totalType3);
+    System.out.println("Number of OPT Zero invocations: " + totaloptZero);
     System.out.println("Number of OPT Virtual invocations: " + totalopt);
     System.out.println("All allocs that are compatible: " + 2);
     System.out.println("All allocs that are compatible: " + 2);
