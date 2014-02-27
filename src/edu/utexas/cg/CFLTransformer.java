@@ -98,6 +98,8 @@ protected void internalTransform(String phaseName,
                         if((ie instanceof VirtualInvokeExpr) || (ie instanceof InterfaceInvokeExpr)) {
                             virtIvkSet.add(stmt);
                             totalivks++;
+                            //System.out.println("Callees***: " + stmt);
+                            //System.out.println("Result ***** " + solver.resultsAt(stmt));
 
                             if(stmt.getInvokeExpr().getUseBoxes().get(0).getValue().getType() instanceof RefType){
                                 RefType callsiteType = (RefType)stmt.getInvokeExpr().getUseBoxes().get(0).getValue().getType();
@@ -125,7 +127,7 @@ protected void internalTransform(String phaseName,
                                 } else {
                                     if(hs.size() == 0) {
                                         totaloptZero++;
-                                    } ele if(hs.size() == 1){
+                                    } else if(hs.size() == 1){
                                         //benefit from isil's assumption.
                                         totalType2++;
                                     } else {

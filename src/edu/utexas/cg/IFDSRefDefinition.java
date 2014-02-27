@@ -66,7 +66,7 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<V
 										return Collections.singleton(source);
 									}
 								}
-								return Collections.emptySet();
+								return Collections.singleton(source);
 
 							} else {
 								LinkedHashSet<Pair<Value, Set<DefinitionStmt>>> res = new LinkedHashSet<Pair<Value, Set<DefinitionStmt>>>();
@@ -135,8 +135,7 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<V
 								}
 							}
 
-						return Collections.emptySet();
-						
+						return Collections.singleton(source);
 					}
 				};
 			}
@@ -144,32 +143,15 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<V
 			@Override
 			public FlowFunction<Pair<Value, Set<DefinitionStmt>>> getReturnFlowFunction(final Unit callSite,
 					SootMethod calleeMethod, final Unit exitStmt, Unit returnSite) {
-				if (!(callSite instanceof DefinitionStmt))
-					return KillAll.v();
-
 
 				if (exitStmt instanceof ReturnVoidStmt)
-					return KillAll.v();
+					return Identity.v();
 
 				return new FlowFunction<Pair<Value, Set<DefinitionStmt>>>() {
 
 					@Override
 					public Set<Pair<Value, Set<DefinitionStmt>>> computeTargets(Pair<Value, Set<DefinitionStmt>> source) {
-						if(exitStmt instanceof ReturnStmt) {
-							ReturnStmt returnStmt = (ReturnStmt) exitStmt;
-							for(DefinitionStmt dfs : source.getO2()) {
-
-								if (dfs.getRightOp() instanceof AnyNewExpr) {
-									DefinitionStmt DefinitionStmt = (DefinitionStmt) callSite;
-									Pair<Value, Set<DefinitionStmt>> pair = new Pair<Value, Set<DefinitionStmt>>(
-										DefinitionStmt.getLeftOp(), source.getO2());
-
-									return Collections.singleton(pair);
-								}
-							}
-						}
-						return Collections.emptySet();
-						
+						return Collections.singleton(source);
 					}
 				};
 			}
@@ -191,7 +173,7 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<V
 							}
 						}
 
-						return Collections.emptySet();
+						return Collections.singleton(source);
 					}
 				};
 			}
