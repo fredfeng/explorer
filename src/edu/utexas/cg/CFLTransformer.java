@@ -58,11 +58,11 @@ protected void internalTransform(String phaseName,
     JimpleBasedInterproceduralCFG myig = (JimpleBasedInterproceduralCFG) icfg;
     System.out.println("ICFG created in " + (System.nanoTime() - nanoBeforeCFG) / 1E9 + " seconds.");
 
-    IFDSTabulationProblem<Unit, Pair<Value, Set<DefinitionStmt>>, 
+    IFDSTabulationProblem<Unit, Set<DefinitionStmt>, 
     SootMethod, InterproceduralCFG<Unit, SootMethod>> problem = new IFDSRefDefinition(icfg);
-    IFDSSolver<Unit, Pair<Value, Set<DefinitionStmt>>, SootMethod, 
+    IFDSSolver<Unit, Set<DefinitionStmt>, SootMethod, 
     InterproceduralCFG<Unit, SootMethod>> solver = 
-    new IFDSSolver<Unit, Pair<Value, Set<DefinitionStmt>>, 
+    new IFDSSolver<Unit, Set<DefinitionStmt>, 
         SootMethod, InterproceduralCFG<Unit, SootMethod>>(problem);
 
     long beforeSolver = System.nanoTime();
@@ -105,8 +105,8 @@ protected void internalTransform(String phaseName,
                                 RefType callsiteType = (RefType)stmt.getInvokeExpr().getUseBoxes().get(0).getValue().getType();
                                 HashSet<String> hs = new HashSet();
                                 Set<SootClass> subClazz = SootUtils.subTypesOf(callsiteType.getSootClass());
-                                for (Pair<Value,Set<DefinitionStmt>> key : solver.resultsAt(stmt).keySet()) {
-                                    for(DefinitionStmt dfs : key.getO2()){
+                                for (Set<DefinitionStmt> key : solver.resultsAt(stmt).keySet()) {
+                                    for(DefinitionStmt dfs : key){
                                         //need to filter out incompatible alloc here.
                                         if(dfs.getRightOp().getType() instanceof RefType) {
                                             RefType allocType = (RefType)dfs.getRightOp().getType();

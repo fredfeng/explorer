@@ -17,11 +17,12 @@ import java.util.Set;
 import soot.EquivalentValue;
 import soot.Local;
 import soot.NullType;
+import soot.RefType;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
-import soot.jimple.AnyNewExpr;
+import soot.jimple.NewExpr;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Jimple;
@@ -40,39 +41,40 @@ import soot.toolkits.scalar.Pair;
  *
  */
 
-public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<Value, Set<DefinitionStmt>>,InterproceduralCFG<Unit, SootMethod>> {
+public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<DefinitionStmt>,InterproceduralCFG<Unit, SootMethod>> {
 	public IFDSRefDefinition(InterproceduralCFG<Unit, SootMethod> icfg) {
 		super(icfg);
 	}
 	
 	@Override
-	public FlowFunctions<Unit, Pair<Value, Set<DefinitionStmt>>, SootMethod> createFlowFunctionsFactory() {
-		return new FlowFunctions<Unit, Pair<Value, Set<DefinitionStmt>>, SootMethod>() {
+	public FlowFunctions<Unit, Set<DefinitionStmt>, SootMethod> createFlowFunctionsFactory() {
+		return new FlowFunctions<Unit, Set<DefinitionStmt>, SootMethod>() {
 
 			@Override
-			public FlowFunction<Pair<Value, Set<DefinitionStmt>>> getNormalFlowFunction(final Unit curr, Unit succ) {
+			public FlowFunction<Set<DefinitionStmt>> getNormalFlowFunction(final Unit curr, Unit succ) {
 				if (curr instanceof DefinitionStmt) {
 					final DefinitionStmt assignment = (DefinitionStmt) curr;
 					//only care about the def stmt with contains heap alloc.
 					//for now, let's ignore reflection.
 
-					return new FlowFunction<Pair<Value, Set<DefinitionStmt>>>() {
+					return new FlowFunction<Set<DefinitionStmt>>() {
 						@Override
-						public Set<Pair<Value, Set<DefinitionStmt>>> computeTargets(Pair<Value, Set<DefinitionStmt>> source) {
+						public Set<Set<DefinitionStmt>> computeTargets(Set<DefinitionStmt> source) {
 							if (source != zeroValue()) {
-								for(DefinitionStmt dfs : source.getO2()) {
+								for(DefinitionStmt dfs : source) {
 
-									if (dfs.getRightOp() instanceof AnyNewExpr) {
-										return Collections.singleton(source);
+									if (dfs.getRightOp() instanceof NewExpr) {
+                                        if (!((RefType)dfs.getRightOp().getType()).getClassName().startsWith("java."))
+										    return Collections.singleton(source);
 									}
 								}
 								return Collections.singleton(source);
 
 							} else {
-								LinkedHashSet<Pair<Value, Set<DefinitionStmt>>> res = new LinkedHashSet<Pair<Value, Set<DefinitionStmt>>>();
-								if(assignment.getRightOp() instanceof AnyNewExpr)
-									res.add(new Pair<Value, Set<DefinitionStmt>>(assignment.getLeftOp(),
-												Collections.<DefinitionStmt> singleton(assignment)));
+								LinkedHashSet<Set<DefinitionStmt>> res = new LinkedHashSet<Set<DefinitionStmt>>();
+								if(assignment.getRightOp() instanceof NewExpr)
+									res.add(
+												Collections.<DefinitionStmt> singleton(assignment));
 
 								return res;
 							}
@@ -85,7 +87,7 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<V
 			}
 
 			@Override
-			public FlowFunction<Pair<Value, Set<DefinitionStmt>>> getCallFlowFunction(Unit callStmt,
+			public FlowFunction<Set<DefinitionStmt>> getCallFlowFunction(Unit callStmt,
 					final SootMethod destinationMethod) {
 				Stmt stmt = (Stmt) callStmt;
 				InvokeExpr invokeExpr = stmt.getInvokeExpr();
@@ -99,94 +101,82 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Pair<V
 						localArguments.add(null);
 				}
 
-				return new FlowFunction<Pair<Value, Set<DefinitionStmt>>>() {
+				return new FlowFunction<Set<DefinitionStmt>>() {
 
 					@Override
-					public Set<Pair<Value, Set<DefinitionStmt>>> computeTargets(Pair<Value, Set<DefinitionStmt>> source) {
+					public Set<Set<DefinitionStmt>> computeTargets(Set<DefinitionStmt> source) {
 
-						//if (!destinationMethod.getName().equals("<clinit>"))
+                        if (destinationMethod.getName().equals("<clinit>"))
+                            return Collections.emptySet();
 
-							/*if(localArguments.contains(source.getO1())) {
-								int paramIndex = args.indexOf(source.getO1());
-								Pair<Value, Set<DefinitionStmt>> pair = new Pair<Value, Set<DefinitionStmt>>(
-										new EquivalentValue(Jimple.v().newParameterRef(destinationMethod.getParameterType(paramIndex), paramIndex)),
-										source.getO2());
-								return Collections.singleton(pair);
-							}*/
-							
-						    if (destinationMethod.getName().equals("<clinit>"))
-							    return Collections.emptySet();
+                        if(localArguments.size() == 0) return Collections.emptySet();
 
-							if(localArguments.size() == 0) return Collections.emptySet();
+                        assert(source.size() < 2);
+                        for(DefinitionStmt dfs : source) {
 
-							for(DefinitionStmt dfs : source.getO2()) {
+                            if (dfs.getRightOp() instanceof NewExpr) {
 
-								if (dfs.getRightOp() instanceof AnyNewExpr) {
+                                if (((RefType)dfs.getRightOp().getType()).getClassName().startsWith("java."))
+                                    return Collections.emptySet();
+                            }
+                        }
 
-									//int paramIndex = args.indexOf(source.getO1());
-									//FIXME: use 0 argument to propagate alloc.
-									int paramIndex = 0;
-									
-									Pair<Value, Set<DefinitionStmt>> pair = new Pair<Value, Set<DefinitionStmt>>(
-											new EquivalentValue(Jimple.v().newParameterRef(destinationMethod.getParameterType(paramIndex), paramIndex)),
-											source.getO2());
-
-									return Collections.singleton(pair);
-								}
-							}
+                        //System.out.println("solving ....." + source);
 
 						return Collections.singleton(source);
+                        //return Collections.emptySet();
 					}
 				};
 			}
 
 			@Override
-			public FlowFunction<Pair<Value, Set<DefinitionStmt>>> getReturnFlowFunction(final Unit callSite,
+			public FlowFunction<Set<DefinitionStmt>> getReturnFlowFunction(final Unit callSite,
 					SootMethod calleeMethod, final Unit exitStmt, Unit returnSite) {
 
 				if (exitStmt instanceof ReturnVoidStmt)
 					return Identity.v();
 
-				return new FlowFunction<Pair<Value, Set<DefinitionStmt>>>() {
+				return new FlowFunction<Set<DefinitionStmt>>() {
 
 					@Override
-					public Set<Pair<Value, Set<DefinitionStmt>>> computeTargets(Pair<Value, Set<DefinitionStmt>> source) {
+					public Set<Set<DefinitionStmt>> computeTargets(Set<DefinitionStmt> source) {
 						return Collections.singleton(source);
 					}
 				};
 			}
 
 			@Override
-			public FlowFunction<Pair<Value, Set<DefinitionStmt>>> getCallToReturnFlowFunction(Unit callSite, Unit returnSite) {
+			public FlowFunction<Set<DefinitionStmt>> getCallToReturnFlowFunction(Unit callSite, Unit returnSite) {
 				if (!(callSite instanceof DefinitionStmt))
 					return Identity.v();
 				
 				final DefinitionStmt DefinitionStmt = (DefinitionStmt) callSite;
-				return new FlowFunction<Pair<Value, Set<DefinitionStmt>>>() {
+				return new FlowFunction<Set<DefinitionStmt>>() {
 
 					@Override
-					public Set<Pair<Value, Set<DefinitionStmt>>> computeTargets(Pair<Value, Set<DefinitionStmt>> source) {
-						for(DefinitionStmt dfs : source.getO2()) {
-							if (dfs.getRightOp() instanceof AnyNewExpr) {
+					public Set<Set<DefinitionStmt>> computeTargets(Set<DefinitionStmt> source) {
+						for(DefinitionStmt dfs : source) {
+							if (dfs.getRightOp() instanceof NewExpr) {
 
 								return Collections.singleton(source);
 							}
 						}
 
 						return Collections.singleton(source);
+                        //return Collections.emptySet();
 					}
 				};
 			}
 		};
 	}
 
-	public Map<Unit, Set<Pair<Value, Set<DefinitionStmt>>>> initialSeeds() {
+	public Map<Unit, Set<Set<DefinitionStmt>>> initialSeeds() {
 		return DefaultSeeds.make(Collections.singleton(Scene.v().getMainMethod().getActiveBody().getUnits().getFirst()), zeroValue());
 	}
 
 
-	public Pair<Value, Set<DefinitionStmt>> createZeroValue() {
-		return new Pair<Value, Set<DefinitionStmt>>(new JimpleLocal("<<zero>>", NullType.v()), Collections.<DefinitionStmt> emptySet());
+	public Set<DefinitionStmt> createZeroValue() {
+		return new LinkedHashSet<DefinitionStmt>(Collections.<DefinitionStmt> emptySet());
 	}
 
 }
