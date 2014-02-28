@@ -52,17 +52,18 @@ protected void internalTransform(String phaseName,
     int totalclz = 0;
     int totalType1 = 0;
     int totalType2 = 0;
-    int totalType3 = 0;
+    int totalType3_1 = 0;
+    int totalType3_2 = 0;
     long nanoBeforeCFG = System.nanoTime();
     InterproceduralCFG<Unit, SootMethod> icfg = new JimpleBasedInterproceduralCFG();
     JimpleBasedInterproceduralCFG myig = (JimpleBasedInterproceduralCFG) icfg;
     System.out.println("ICFG created in " + (System.nanoTime() - nanoBeforeCFG) / 1E9 + " seconds.");
 
-    IFDSTabulationProblem<Unit, Set<DefinitionStmt>, 
+    IFDSTabulationProblem<Unit, Set<RefType>, 
     SootMethod, InterproceduralCFG<Unit, SootMethod>> problem = new IFDSRefDefinition(icfg);
-    IFDSSolver<Unit, Set<DefinitionStmt>, SootMethod, 
+    IFDSSolver<Unit, Set<RefType>, SootMethod, 
     InterproceduralCFG<Unit, SootMethod>> solver = 
-    new IFDSSolver<Unit, Set<DefinitionStmt>, 
+    new IFDSSolver<Unit, Set<RefType>, 
         SootMethod, InterproceduralCFG<Unit, SootMethod>>(problem);
 
     long beforeSolver = System.nanoTime();
@@ -105,18 +106,17 @@ protected void internalTransform(String phaseName,
                                 RefType callsiteType = (RefType)stmt.getInvokeExpr().getUseBoxes().get(0).getValue().getType();
                                 HashSet<String> hs = new HashSet();
                                 Set<SootClass> subClazz = SootUtils.subTypesOf(callsiteType.getSootClass());
-                                for (Set<DefinitionStmt> key : solver.resultsAt(stmt).keySet()) {
-                                    for(DefinitionStmt dfs : key){
+                                for (Set<RefType> key : solver.resultsAt(stmt).keySet()) {
+                                    for(RefType dfs : key){
                                         //need to filter out incompatible alloc here.
-                                        if(dfs.getRightOp().getType() instanceof RefType) {
-                                            RefType allocType = (RefType)dfs.getRightOp().getType();
+                                            RefType allocType = dfs;
                                             if(subClazz.contains(allocType.getSootClass())) {
                                                 //alloc becomes useful when it overrides the method.`
                                                 if(allocType.getSootClass().declaresMethodByName(ie.getMethod().getName()))
-                                                    hs.add(dfs.getRightOp().getType().toString());
+                                                    //hs.add(dfs.getRightOp().getType().toString());
+                                                    hs.add(dfs.toString());
                                             }
                                             //System.out.println( callsiteType + " subtypes::::" + SootUtils.subTypesOf(callsiteType.getSootClass()));
-                                        }
                                     }
 
                                 }
@@ -131,7 +131,10 @@ protected void internalTransform(String phaseName,
                                         //benefit from isil's assumption.
                                         totalType2++;
                                     } else {
-                                        totalType3++;
+                                        //totalType3++;
+                                        if(callsiteType.getClassName().startsWith("java.")) totalType3_1++;
+                                        else totalType3_2++;
+
                                         System.out.println("Callees: " + stmt);
                                         System.out.print(callsiteType);
                                         System.out.println(" Alloc:" + hs);
@@ -162,7 +165,8 @@ protected void internalTransform(String phaseName,
     System.out.println("Number of Virtual invocations: " + totalivks);
     System.out.println("Number of Type 1: " + totalType1);
     System.out.println("Number of Type 2: " + totalType2);
-    System.out.println("Number of Type 3: " + totalType3);
+    System.out.println("Number of Type 3_1(client overrides java library): " + totalType3_1);
+    System.out.println("Number of Type 3_2(pure app): " + totalType3_2);
     System.out.println("Number of OPT Zero invocations: " + totaloptZero);
     System.out.println("Number of OPT Virtual invocations: " + totalopt);
     System.out.println("All allocs that are compatible: " + 2);
