@@ -1,4 +1,4 @@
-package edu.utexas.cg;
+package edu.utexas.UltraCG;
 
 import soot.FastHierarchy;
 import soot.util.NumberedString;

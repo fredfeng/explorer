@@ -1,4 +1,4 @@
-package edu.utexas.cg;
+package edu.utexas.UltraCG;
 
 import heros.DefaultSeeds;
 import heros.FlowFunction;
@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import soot.EquivalentValue;
+import soot.Body;
 import soot.Local;
 import soot.NullType;
 import soot.RefType;
@@ -32,6 +33,8 @@ import soot.jimple.Stmt;
 import soot.jimple.internal.JimpleLocal;
 import soot.jimple.toolkits.ide.DefaultJimpleIFDSTabulationProblem;
 import soot.toolkits.scalar.Pair;
+import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.toolkits.graph.UnitGraph;
 
 /**
  * TO-DO list, the original skeleton comes from Soot.
@@ -41,38 +44,41 @@ import soot.toolkits.scalar.Pair;
  *
  */
 
-public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<RefType>,InterproceduralCFG<Unit, SootMethod>> {
+public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<Stmt>,InterproceduralCFG<Unit, SootMethod>> {
 	public IFDSRefDefinition(InterproceduralCFG<Unit, SootMethod> icfg) {
 		super(icfg);
 	}
 	
 	@Override
-	public FlowFunctions<Unit, Set<RefType>, SootMethod> createFlowFunctionsFactory() {
-		return new FlowFunctions<Unit, Set<RefType>, SootMethod>() {
+	public FlowFunctions<Unit, Set<Stmt>, SootMethod> createFlowFunctionsFactory() {
+		return new FlowFunctions<Unit, Set<Stmt>, SootMethod>() {
 
 			@Override
-			public FlowFunction<Set<RefType>> getNormalFlowFunction(final Unit curr, Unit succ) {
+			public FlowFunction<Set<Stmt>> getNormalFlowFunction(final Unit curr, Unit succ) {
 				if (curr instanceof DefinitionStmt) {
 					final DefinitionStmt assignment = (DefinitionStmt) curr;
 					//only care about the def stmt with contains heap alloc.
 					//for now, let's ignore reflection.
 
-					return new FlowFunction<Set<RefType>>() {
+					return new FlowFunction<Set<Stmt>>() {
 						@Override
-						public Set<Set<RefType>> computeTargets(Set<RefType> source) {
+						public Set<Set<Stmt>> computeTargets(Set<Stmt> source) {
 							if (source != zeroValue()) {
-								for(RefType dfs : source) {
+								for(Stmt fs : source) {
                                     //FIXME: We don't need java lib flows along the path.
-                                    if (dfs.getClassName().startsWith("java."))
+					                String dfs = ((DefinitionStmt)fs).getRightOp().getType().toString();
+
+                                    if (dfs.startsWith("java")) {
                                         return Collections.emptySet();
+                                    }
 								}
 								return Collections.singleton(source);
 
 							} else {
-								LinkedHashSet<Set<RefType>> res = new LinkedHashSet<Set<RefType>>();
+								LinkedHashSet<Set<Stmt>> res = new LinkedHashSet<Set<Stmt>>();
 								if(assignment.getRightOp() instanceof NewExpr)
 									res.add(
-											Collections.<RefType> singleton((RefType)assignment.getRightOp().getType()));
+											Collections.<Stmt> singleton((Stmt)assignment));
 
 								return res;
 							}
@@ -85,7 +91,7 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<Re
 			}
 
 			@Override
-			public FlowFunction<Set<RefType>> getCallFlowFunction(Unit callStmt,
+			public FlowFunction<Set<Stmt>> getCallFlowFunction(Unit callStmt,
 					final SootMethod destinationMethod) {
 				Stmt stmt = (Stmt) callStmt;
 				InvokeExpr invokeExpr = stmt.getInvokeExpr();
@@ -99,10 +105,10 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<Re
 						localArguments.add(null);
 				}
 
-				return new FlowFunction<Set<RefType>>() {
+				return new FlowFunction<Set<Stmt>>() {
 
 					@Override
-					public Set<Set<RefType>> computeTargets(Set<RefType> source) {
+					public Set<Set<Stmt>> computeTargets(Set<Stmt> source) {
 
                         //if (destinationMethod.getName().equals("<clinit>"))
                          //   return Collections.emptySet();
@@ -110,9 +116,10 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<Re
                         //if(localArguments.size() == 0) return Collections.emptySet();
 
                         assert(source.size() < 2);
-                        for(RefType dfs : source) {
+                        for(Stmt fs : source) {
                             //FIXME.ignore java libs
-                            if (dfs.getClassName().startsWith("java."))
+					        String dfs = ((DefinitionStmt)fs).getRightOp().getType().toString();
+                            if (dfs.startsWith("java"))
                                 return Collections.emptySet();
                         }
 
@@ -124,35 +131,41 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<Re
 			}
 
 			@Override
-			public FlowFunction<Set<RefType>> getReturnFlowFunction(final Unit callSite,
+			public FlowFunction<Set<Stmt>> getReturnFlowFunction(final Unit callSite,
 					SootMethod calleeMethod, final Unit exitStmt, Unit returnSite) {
 
-				if (exitStmt instanceof ReturnVoidStmt)
-					return Identity.v();
+				/*if (exitStmt instanceof ReturnVoidStmt)
+					return Identity.v();*/
 
-				return new FlowFunction<Set<RefType>>() {
+                final Body body = calleeMethod.getActiveBody();
+                UnitGraph g = new ExceptionalUnitGraph(body);
+                new LocalMustNotAliasAnalysis(g);
 
+				return new FlowFunction<Set<Stmt>>() {
 					@Override
-					public Set<Set<RefType>> computeTargets(Set<RefType> source) {
-						return Collections.singleton(source);
-					}
+					public Set<Set<Stmt>> computeTargets(Set<Stmt> source) {
+                        if(source.size() == 0) return Collections.emptySet();
+                        Stmt stmt = source.iterator().next();
+    
+                        if(stmt.getTags().size() > 0) {
+                            return Collections.emptySet();
+                        } else {
+                            return Collections.singleton(source);
+                        }
+                    }
 				};
 			}
 
 			@Override
-			public FlowFunction<Set<RefType>> getCallToReturnFlowFunction(Unit callSite, Unit returnSite) {
-				if (!(callSite instanceof DefinitionStmt))
+			public FlowFunction<Set<Stmt>> getCallToReturnFlowFunction(Unit callSite, Unit returnSite) {
+				/*if (!(callSite instanceof DefinitionStmt))
 					return Identity.v();
 				
-				final DefinitionStmt DefinitionStmt = (DefinitionStmt) callSite;
-				return new FlowFunction<Set<RefType>>() {
-
+				final DefinitionStmt DefinitionStmt = (DefinitionStmt) callSite;*/
+				return new FlowFunction<Set<Stmt>>() {
 					@Override
-					public Set<Set<RefType>> computeTargets(Set<RefType> source) {
-						for(RefType dfs : source) {
-							return Collections.singleton(source);
-						}
-
+					public Set<Set<Stmt>> computeTargets(Set<Stmt> source) {
+                        if(source.size() == 0) return Collections.emptySet();
 						return Collections.singleton(source);
 					}
 				};
@@ -160,13 +173,13 @@ public class IFDSRefDefinition extends DefaultJimpleIFDSTabulationProblem<Set<Re
 		};
 	}
 
-	public Map<Unit, Set<Set<RefType>>> initialSeeds() {
+	public Map<Unit, Set<Set<Stmt>>> initialSeeds() {
 		return DefaultSeeds.make(Collections.singleton(Scene.v().getMainMethod().getActiveBody().getUnits().getFirst()), zeroValue());
 	}
 
 
-	public Set<RefType> createZeroValue() {
-		return new LinkedHashSet<RefType>(Collections.<RefType> emptySet());
+	public Set<Stmt> createZeroValue() {
+		return new LinkedHashSet<Stmt>(Collections.<Stmt> emptySet());
 	}
 
 }

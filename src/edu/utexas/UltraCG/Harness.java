@@ -1,4 +1,4 @@
-package edu.utexas.cg;
+package edu.utexas.UltraCG;
 
 import heros.IFDSTabulationProblem;
 import heros.InterproceduralCFG;
@@ -65,8 +65,8 @@ public class Harness {
 					"-exclude", "javax",
 					"-output-format", "none",
 					"-p", "jb", "use-original-names:true",
-					"-p", "cg.cha", "on",
-					//"-p", "cg.spark", "on",
+					//"-p", "cg.cha", "on",
+					"-p", "cg.spark", "on",
 					"-debug"} );
 
 		} catch (CompilationDeathException e) {
