@@ -5,7 +5,7 @@
   <property name="target.loc" location="${target}"/>
 
   <target name="analyze" depends="jar">
-	<java classname="edu.utexas.UltraCG.Harness"
+	<java classname="edu.utexas.Harness"
           maxmemory="32g"
           fork="true"
           failonerror="true">

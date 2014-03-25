@@ -10,3 +10,10 @@ RegularPT:
 Sridharan, Manu, et al. "Demand-driven points-to analysis for Java." ACM SIGPLAN Notices. Vol. 40. No. 10. ACM, 2005.
 
 UltraCG: Our algorithm for call graph construction.
+
+
+How to run?
+Make sure you have ant and java installed.
+
+To analyze CFLexample, run:
+ant -Dtarget=benchmarks/CFLexamples/bin/
