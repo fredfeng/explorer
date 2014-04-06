@@ -12,4 +12,9 @@ public abstract class Id {
 	
 	@Override
 	public int hashCode() { return id.hashCode(); }
+	
+	@Override
+	public String toString() {
+		return String.valueOf(id);
+	}
 }

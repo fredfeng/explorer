@@ -80,6 +80,9 @@ public class State {
 	public Set<Object> outgoingStates() { return outgoingStates.keySet(); }
 	public Set<Object> outgoingStatesInv() { return outgoingStatesInv.keySet(); }
 	
+	public Map getOutgoingStates() { return outgoingStates; }
+	public Map getOutgoingStatesInv() { return outgoingStatesInv; }
+	
 	public Set<Object> outgoingStatesLookup(State key) 
 	{ return lookup(outgoingStates, key); }
 	public Set<Object> outgoingStatesInvLookup(Edge key)
