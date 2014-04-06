@@ -12,4 +12,13 @@ public class Edge {
 	public Edge(Id id) {
 		this.id = id;
 	}
+	
+	public boolean isDot() {
+		return false;
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof Edge && id.equals( ((Edge)other).id ) ? true : false;
+	}
 }

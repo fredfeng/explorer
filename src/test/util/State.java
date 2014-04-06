@@ -28,6 +28,11 @@ public class State {
 	public void setFinalState() { this.isFinalState = true; }
 	public void resetFinalState() { this.isFinalState = false; }
 	
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof State && id.equals( ((State)other).id ) ? true : false;
+	}
+	
 	public void setIncomingEdge(Edge incomingEdge) {
 		this.incomingEdge = incomingEdge;
 	}
