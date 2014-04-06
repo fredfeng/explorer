@@ -9,4 +9,7 @@ public abstract class Id {
 	public boolean equals(Object other) {
 		return other instanceof Id && id.equals( ((Id)other).getId() ) ? true : false;
 	}
+	
+	@Override
+	public int hashCode() { return id.hashCode(); }
 }

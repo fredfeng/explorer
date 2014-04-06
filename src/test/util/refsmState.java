@@ -10,7 +10,6 @@ public class refsmState extends State {
 
 	public refsmState(Id id, boolean isInitState, boolean isFinalState) {
 		super(id, isInitState, isFinalState);
-		
 	}
 
 	public boolean addIncomingStates(Object state, Object edge) {
@@ -30,4 +29,9 @@ public class refsmState extends State {
 	
 	public Set<Object> incomingStates() { return incomingStates.keySet(); }
 	public Set<Object> incomingStatesInv() { return incomingStatesInv.keySet(); }
+	
+	public Set<Object> incomingStatesLookup(State key) 
+	{ return lookup(incomingStates, key); }
+	public Set<Object> incomingStatesInvLookup(Edge key)
+	{ return lookup(incomingStatesInv, key); }
 }

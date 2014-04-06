@@ -23,4 +23,7 @@ public class Edge {
 	public boolean equals(Object other) {
 		return other instanceof Edge && id.equals( ((Edge)other).getId() ) ? true : false;
 	}
+	
+	@Override 
+	public int hashCode() { return id.hashCode(); }
 }

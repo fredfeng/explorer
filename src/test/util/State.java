@@ -1,6 +1,7 @@
 package test.util;
 
 import java.util.*;
+
 import soot.SootMethod;
 
 // for cgfsm, each state corresponds to a single method which is the Id
@@ -40,6 +41,9 @@ public class State {
 		return other instanceof State && id.equals( ((State)other).id ) ? true : false;
 	}
 	
+	@Override
+	public int hashCode() { return id.hashCode(); }
+	
 	/*
 	public void setIncomingEdge(Edge incomingEdge) {
 		this.incomingEdge = incomingEdge;
@@ -76,12 +80,30 @@ public class State {
 	public Set<Object> outgoingStates() { return outgoingStates.keySet(); }
 	public Set<Object> outgoingStatesInv() { return outgoingStatesInv.keySet(); }
 	
+	public Set<Object> outgoingStatesLookup(State key) 
+	{ return lookup(outgoingStates, key); }
+	public Set<Object> outgoingStatesInvLookup(Edge key)
+	{ return lookup(outgoingStatesInv, key); }
+	
+	
 	/** protected methods */ 
+	@SuppressWarnings("unchecked")
+	public Set<Object> lookup(Map<Object, Object>m , Object key) {
+		Object valueList = m.get(key);
+		if (valueList == null) {
+			return null;
+		} else if (valueList instanceof Set) {
+			return (Set<Object>)valueList;
+		}
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
 	protected boolean addToMap(Map<Object, Object> m, Object key, Object value) {
 		Object valueList = m.get(key);
 		
 		if (valueList == null) {
-			m.put(key, valueList = new HashSet(1));
+			m.put(key, valueList = new HashSet<Object>(1));
 		} else if ( !(valueList instanceof Set) ) {
 			Object[] ar = (Object[]) valueList;
 			HashSet<Object> vl = new HashSet<Object>(ar.length + 1);

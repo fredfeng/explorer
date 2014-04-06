@@ -7,16 +7,21 @@ public class StatePair {
 	protected State slaveState;
 	protected boolean isInitState = false;
 	protected boolean isFinalState = false;
-	protected Map<Object, Object> outgoingStatePairs = new HashMap<Object, Object>(); // Map<StatePair, Edge>
-	protected Map<Object, Object> outgoingStatePairsInv = new HashMap<Object, Object>(); // Map<Edge, StatePair>
-	protected Set<Object> incomingStatePairs = new HashSet<Object>();
-	protected Edge incomingEdge;
+	protected Map<Object, Object> outgoingStatePairs = new HashMap<Object, Object>(); // Map<StatePair, Set<Edge>>
+	protected Map<Object, Object> outgoingStatePairsInv = new HashMap<Object, Object>(); // Map<Edge, Set<StatePair>>
+	protected Map<Object, Object> incomingStatePairs = new HashMap<Object, Object>(); // Map<StatePair, Set<Edge>>
+	protected Map<Object, Object> incomingStatePairsInv = new HashMap<Object, Object>(); // Map<Edge, Set<StatePair>>
 	
 	public StatePair(State masterState, State slaveState, boolean isInitState, boolean isFinalState) {
 		this.masterState = masterState;
 		this.slaveState = slaveState;
 		this.isInitState = isInitState;
 		this.isFinalState = isFinalState;
+	}
+	
+	public StatePair(State masterState, State slaveState) {
+		this.masterState = masterState;
+		this.slaveState = slaveState;
 	}
 	
 	public void setInitState() { isInitState = true; }	
@@ -37,16 +42,22 @@ public class StatePair {
 				   ) ? true : false;
 	}
 	
-	public void setIncomingEdge(Edge incomingEdge) {
-		this.incomingEdge = incomingEdge;
-	}
+	@Override
+	public int hashCode() 
+	{ return 37 * masterState.hashCode() + slaveState.hashCode(); }
 	
-	public boolean addIncomingStates(Object statePair) {
-		return incomingStatePairs.add(statePair);
+	public boolean hasMasterState(State other) { return masterState.equals(other); }
+	public boolean hasSlaveState(State other) { return slaveState.equals(other); }
+	public boolean hasMasterandSlaveState(State master, State slave) {
+		return hasMasterState(master) && hasSlaveState(slave);
 	}
 	
 	public boolean addOutgoingStatePairs(Object statePair, Object edge) {
 		return addToMap(outgoingStatePairs, statePair, edge) | addToMap(outgoingStatePairsInv, edge, statePair);
+	}
+	
+	public boolean addIncomingStatePairs(Object statePair, Object edge) {
+		return addToMap(incomingStatePairs, statePair, edge) | addToMap(incomingStatePairsInv, edge, statePair);
 	}
 	
 	/** map copy */
@@ -63,18 +74,43 @@ public class StatePair {
 	public Set<Object> outgoingStates() { return outgoingStatePairs.keySet(); }
 	public Set<Object> outgoingStatesInv() { return outgoingStatePairs.keySet(); }
 	
+	public Set<Object> outgoingStatePairsLookup(StatePair key) 
+	{ return lookup(outgoingStatePairs, key); }
+	public Set<Object> outgoingStatePairsInvLookup(Edge key)
+	{ return lookup(outgoingStatePairsInv, key); }
+	public Set<Object> incomingStatePairsLookup(StatePair key)
+	{ return lookup(incomingStatePairs, key); }
+	public Set<Object> incomingStatePairsInvLookup(Edge key) 
+	{ return lookup(incomingStatePairsInv, key); }
+	
 	/** protected methods */ 
+	@SuppressWarnings("unchecked")
+	public Set<Object> lookup(Map<Object, Object>m , Object key) {
+		Object valueList = m.get(key);
+		if (valueList == null) {
+			return null;
+		} else if (valueList instanceof Set) {
+			return (Set<Object>)valueList;
+		}
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
 	protected boolean addToMap(Map<Object, Object> m, Object key, Object value) {
-		Object val = m.get(key);
+		Object valueList = m.get(key);
 		
-		if (val == null) {
-			m.put(key, value);
-		} else if (value != val) {
-			m.put(key, value);
-			return false;
+		if (valueList == null) {
+			m.put(key, valueList = new HashSet<Object>(1));
+		} else if ( !(valueList instanceof Set) ) {
+			Object[] ar = (Object[]) valueList;
+			HashSet<Object> vl = new HashSet<Object>(ar.length + 1);
+			m.put(key, vl);
+			for (Object obj : ar)
+				vl.add(obj);
+			return vl.add(value);
 		}
 		
-		return true;
+		return ( (Set<Object>)valueList ).add(value) ;
 	}
 	
 	
