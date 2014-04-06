@@ -3,6 +3,6 @@ package test.util;
 import java.util.*;
 
 public abstract class fsm {
-	Set<Object> initState;
-	Set<Object> finalState;
+	protected Set<Object> initState;
+	protected Set<Object> finalState;
 }

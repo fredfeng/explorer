@@ -17,8 +17,10 @@ public class Edge {
 		return false;
 	}
 	
+	public Id getId() { return id; }
+	
 	@Override
 	public boolean equals(Object other) {
-		return other instanceof Edge && id.equals( ((Edge)other).id ) ? true : false;
+		return other instanceof Edge && id.equals( ((Edge)other).getId() ) ? true : false;
 	}
 }

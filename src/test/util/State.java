@@ -3,43 +3,54 @@ package test.util;
 import java.util.*;
 import soot.SootMethod;
 
+// for cgfsm, each state corresponds to a single method which is the Id
+// for refsm, the Id of a state is meaningless, a state does not necessarily
+// correspond to a single method, which depends on the specific regular expr
+
 public class State {
 	// Id corresponds to the soot method in the call graph
 	// initial and final states' Id are null
-	private Id id; 
-	private boolean isInitState = false; 
-	private boolean isFinalState = false;
-	protected Map<Object, Object> outgoingStates; // Map<State, Edge>
-	protected Map<Object, Object> outgoingStatesInv; // Map<Edge, State>
+	protected Id id; 
+	protected boolean isInitState = false; 
+	protected boolean isFinalState = false;
+	protected Map<Object, Object> outgoingStates = new HashMap<Object, Object>();; // Map<State, Set<Edge>>
+	protected Map<Object, Object> outgoingStatesInv = new HashMap<Object, Object>(); // Map<Edge, Set<State>>
 	// the incoming edges correspond to the same method, i.e., this.Id
 	// so we do not use map, instead, we just use set
-	protected Set<Object> incomingStates; // Set<State>
-	protected Edge incomingEdge; 
+	// protected Set<Object> incomingStates = new HashSet<Object>(); // Set<State>
+	// protected Edge incomingEdge; 
 	
 	public State(Id id, boolean isInitState, boolean isFinalState) {
 		this.id = id;
 		this.isInitState = isInitState;
 		this.isFinalState = isFinalState;
-		this.incomingEdge = new Edge(id);
+		//this.incomingEdge = new Edge(id);
+		//this.incomingEdge = incomingEdge;
 	}
 	
-	public void setInitState() { this.isInitState = true; }	
-	public void resetInitState() { this.isInitState = false; }
-	public void setFinalState() { this.isFinalState = true; }
-	public void resetFinalState() { this.isFinalState = false; }
+	public void setInitState() { isInitState = true; }	
+	public void resetInitState() { isInitState = false; }
+	public boolean isInitState() { return isInitState; }
+	public void setFinalState() { isFinalState = true; }
+	public void resetFinalState() { isFinalState = false; }
+	public boolean isFinalState() { return isFinalState; }
 	
 	@Override
 	public boolean equals(Object other) {
 		return other instanceof State && id.equals( ((State)other).id ) ? true : false;
 	}
 	
+	/*
 	public void setIncomingEdge(Edge incomingEdge) {
 		this.incomingEdge = incomingEdge;
 	}
 	
+	public Edge getIncomingEdge() { return incomingEdge; }
+	
 	public boolean addIncomingStates(Object state) {
 		return incomingStates.add(state);
 	}
+	*/
 	
 	// when setting this outgoingStates
 	// first the method M of this state in the original call graph
@@ -62,25 +73,25 @@ public class State {
 	public Iterator<Object> outgoingStatesIterator() { return outgoingStates.keySet().iterator(); }
 	public Iterator<Object> outgoingStatesInvIterator() { return outgoingStatesInv.keySet().iterator(); }
 	
-	public Set<Object> outgoingStatesSources() { return outgoingStates.keySet(); }
-	public Set<Object> outgoingStatesInvSources() { return outgoingStates.keySet(); }
+	public Set<Object> outgoingStates() { return outgoingStates.keySet(); }
+	public Set<Object> outgoingStatesInv() { return outgoingStatesInv.keySet(); }
 	
 	/** protected methods */ 
 	protected boolean addToMap(Map<Object, Object> m, Object key, Object value) {
-		Object val = m.get(key);
+		Object valueList = m.get(key);
 		
-		if (val == null) {
-			m.put(key, value);
-		} else if (value != val) {
-			m.put(key, value);
-			return false;
+		if (valueList == null) {
+			m.put(key, valueList = new HashSet(1));
+		} else if ( !(valueList instanceof Set) ) {
+			Object[] ar = (Object[]) valueList;
+			HashSet<Object> vl = new HashSet<Object>(ar.length + 1);
+			m.put(key, vl);
+			for (Object obj : ar)
+				vl.add(obj);
+			return vl.add(value);
 		}
 		
-		return true;
+		return ( (Set<Object>)valueList ).add(value) ;
 	}
-	
-	
-	
-	
-	
+		
 }
