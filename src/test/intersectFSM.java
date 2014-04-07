@@ -33,7 +33,8 @@ public class intersectFSM extends fsm {
 			while (slaveInitStatesIt.hasNext()) {
 				System.out.println("here");
 				State slaveInitState = (State) slaveInitStatesIt.next();
-				StatePair sp = new StatePair(new intersectFSMId(counter++), masterInitState, slaveInitState);
+				StatePair sp = new StatePair(new intersectFSMId(masterInitState.getId().toString() 
+						+ slaveInitState.getId().toString()), masterInitState, slaveInitState);
 				states.add(sp);
 				initStates.add(sp);
 				sp.setInitState();
@@ -87,7 +88,8 @@ public class intersectFSM extends fsm {
 								// the new statepair is not in the states in this machine
 								// new a statepair and then add an edge between them
 								// and then add the new statepair in this machine
-								sp = new StatePair(new intersectFSMId(counter++), masterNextState, slaveNextState);
+								sp = new StatePair(new intersectFSMId(masterNextState.getId().toString() 
+										+ slaveNextState.getId().toString()), masterNextState, slaveNextState);
 								if (sp.buildAsFinal())
 									sp.setFinalState();
 								buildState.addOutgoingStates(sp, slaveNextEdge);
@@ -110,7 +112,8 @@ public class intersectFSM extends fsm {
 							buildState.addOutgoingStates(sp,masterNextEdge);
 							sp.addIncomingStatePairs(buildState, masterNextEdge);
 						} else {
-							sp = new StatePair(new intersectFSMId(counter++), masterNextState, slaveNextState);
+							sp = new StatePair(new intersectFSMId(masterNextState.getId().toString() 
+									+ slaveNextState.getId().toString()), masterNextState, slaveNextState);
 							if (sp.buildAsFinal()) 
 								sp.setFinalState();
 							buildState.addOutgoingStates(sp, masterNextEdge);

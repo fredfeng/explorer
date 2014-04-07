@@ -29,6 +29,8 @@ public class State {
 		//this.incomingEdge = incomingEdge;
 	}
 	
+	public Id getId() { return id; }
+	
 	public void setInitState() { isInitState = true; }	
 	public void resetInitState() { isInitState = false; }
 	public boolean isInitState() { return isInitState; }
