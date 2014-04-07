@@ -4,8 +4,8 @@ import java.util.*;
 import test.util.*;
 
 public class intersectFSM extends fsm {
-	protected Set<Object> allStates = new HashSet<Object>(); // store all states in this machine 
 	protected Set<Object> allEdges = new HashSet<Object>(); // store all edges in this machine
+	private int counter = 1;
 	public intersectFSM() {
 		
 	}
@@ -14,9 +14,8 @@ public class intersectFSM extends fsm {
 	// return that statepair
 	// otherwise, return null
 	public StatePair containMasterandSlaveState(State master, State slave) {
-		Iterator<Object> it = allStates.iterator();
-		while (it.hasNext()) {
-			StatePair s = (StatePair) it.next();
+		for(State stat : states) {
+			StatePair s = (StatePair) stat;
 			if (s.hasMasterandSlaveState(master, slave)) {
 				return s;
 			}
@@ -32,9 +31,12 @@ public class intersectFSM extends fsm {
 		while (masterInitStatesIt.hasNext()) {
 			State masterInitState = (State) masterInitStatesIt.next();
 			while (slaveInitStatesIt.hasNext()) {
+				System.out.println("here");
 				State slaveInitState = (State) slaveInitStatesIt.next();
-				StatePair sp = new StatePair(masterInitState, slaveInitState);
-				allStates.add(sp);
+				StatePair sp = new StatePair(new intersectFSMId(counter++), masterInitState, slaveInitState);
+				states.add(sp);
+				initStates.add(sp);
+				sp.setInitState();
 				intersect(masterInitState, slaveInitState, sp);
 			}
 		}
@@ -58,7 +60,10 @@ public class intersectFSM extends fsm {
 		Iterator<Object> masterStatesIt = masterState.outgoingStatesIterator();
 		while (masterStatesIt.hasNext()) {
 			refsmState masterNextState = (refsmState) masterStatesIt.next();
-			Iterator<Object> masterNextEdgesIt = masterState.outgoingStatesLookup(masterNextState).iterator();
+			Set<Object> masterNextEdges = masterState.outgoingStatesLookup(masterNextState);
+			if (masterNextEdges == null) 
+				continue;
+			Iterator<Object> masterNextEdgesIt = masterNextEdges.iterator();
 			while (masterNextEdgesIt.hasNext()) {
 				Edge masterNextEdge = (Edge) masterNextEdgesIt.next();
 				if (masterNextEdge.isDot()) {
@@ -66,41 +71,51 @@ public class intersectFSM extends fsm {
 					Iterator<Object> slaveNextStatesIt = slaveState.outgoingStatesIterator();
 					while (slaveNextStatesIt.hasNext()) {
 						cgfsmState slaveNextState = (cgfsmState) slaveNextStatesIt.next();
-						Iterator<Object> slaveNextEdgesIt = slaveState.outgoingStatesLookup(slaveNextState).iterator();
+						Set<Object> slaveNextEdges = slaveState.outgoingStatesLookup(slaveNextState);
+						if (slaveNextEdges == null) 
+							continue;
+						Iterator<Object> slaveNextEdgesIt = slaveNextEdges.iterator();
 						while (slaveNextEdgesIt.hasNext()) {
 							Edge slaveNextEdge = (Edge) slaveNextEdgesIt.next();
 							StatePair sp = containMasterandSlaveState(masterNextState, slaveNextState);
 							if (sp != null) {
 								// the new statepair is in the states in this machine
 								// JUST add an edge between buildState and the new statepair
-								buildState.addOutgoingStatePairs(sp, slaveNextEdge);
+								buildState.addOutgoingStates(sp, slaveNextEdge);
 								sp.addIncomingStatePairs(buildState, slaveNextEdge);
 							} else {
 								// the new statepair is not in the states in this machine
 								// new a statepair and then add an edge between them
 								// and then add the new statepair in this machine
-								sp = new StatePair(masterNextState, slaveNextState);
-								buildState.addOutgoingStatePairs(sp, slaveNextEdge);
+								sp = new StatePair(new intersectFSMId(counter++), masterNextState, slaveNextState);
+								if (sp.buildAsFinal())
+									sp.setFinalState();
+								buildState.addOutgoingStates(sp, slaveNextEdge);
 								sp.addIncomingStatePairs(buildState, slaveNextEdge);
-								allStates.add(sp); // this machine is moved to the new statepair
+								states.add(sp); // this machine is moved to the new statepair
 								intersect(masterNextState, slaveNextState, sp); // recursive call
 							}
 						}
 					}
 				} else {
 					// if this is not a .* edge in regular expr fsm
-					Iterator<Object> slaveNextStatesIt = slaveState.outgoingStatesInvLookup(masterNextEdge).iterator();
+					Set<Object> slaveNextStates = slaveState.outgoingStatesInvLookup(masterNextEdge);
+					if (slaveNextStates == null) 
+						continue;
+					Iterator<Object> slaveNextStatesIt = slaveNextStates.iterator();
 					while (slaveNextStatesIt.hasNext()) {
 						cgfsmState slaveNextState = (cgfsmState) slaveNextStatesIt.next();
 						StatePair sp = containMasterandSlaveState(masterNextState, slaveNextState);
 						if (sp != null) {
-							buildState.addOutgoingStatePairs(sp,masterNextEdge);
+							buildState.addOutgoingStates(sp,masterNextEdge);
 							sp.addIncomingStatePairs(buildState, masterNextEdge);
 						} else {
-							sp = new StatePair(masterNextState, slaveNextState);
-							buildState.addOutgoingStatePairs(sp, masterNextEdge);
+							sp = new StatePair(new intersectFSMId(counter++), masterNextState, slaveNextState);
+							if (sp.buildAsFinal()) 
+								sp.setFinalState();
+							buildState.addOutgoingStates(sp, masterNextEdge);
 							sp.addIncomingStatePairs(buildState, masterNextEdge);
-							allStates.add(sp);
+							states.add(sp);
 							intersect(masterNextState, slaveNextState, sp);
 						}
 					}

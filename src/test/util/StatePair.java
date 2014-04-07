@@ -2,34 +2,26 @@ package test.util;
 
 import java.util.*;
 
-public class StatePair {
+public class StatePair extends State {
 	protected State masterState;
 	protected State slaveState;
-	protected boolean isInitState = false;
-	protected boolean isFinalState = false;
-	protected Map<Object, Object> outgoingStatePairs = new HashMap<Object, Object>(); // Map<StatePair, Set<Edge>>
-	protected Map<Object, Object> outgoingStatePairsInv = new HashMap<Object, Object>(); // Map<Edge, Set<StatePair>>
-	protected Map<Object, Object> incomingStatePairs = new HashMap<Object, Object>(); // Map<StatePair, Set<Edge>>
-	protected Map<Object, Object> incomingStatePairsInv = new HashMap<Object, Object>(); // Map<Edge, Set<StatePair>>
+	protected Map<Object, Object> incomingStates = new HashMap<Object, Object>(); // Map<StatePair, Set<Edge>>
+	protected Map<Object, Object> incomingStatesInv = new HashMap<Object, Object>(); // Map<Edge, Set<StatePair>>
 	
-	public StatePair(State masterState, State slaveState, boolean isInitState, boolean isFinalState) {
-		this.masterState = masterState;
-		this.slaveState = slaveState;
-		this.isInitState = isInitState;
-		this.isFinalState = isFinalState;
-	}
-	
-	public StatePair(State masterState, State slaveState) {
+	public StatePair(Id id, State masterState, State slaveState, boolean isInitState, boolean isFinalState) {
+		super(id, isInitState, isFinalState);
 		this.masterState = masterState;
 		this.slaveState = slaveState;
 	}
 	
-	public void setInitState() { isInitState = true; }	
-	public void resetInitState() { isInitState = false; }
-	public boolean isInitState() { return isInitState; }
-	public void setFinalState() { isFinalState = true; }
-	public void resetFinalState() { isFinalState = false; }
-	public boolean isFinalState() { return isFinalState; }
+	public StatePair(Id id, State masterState, State slaveState) {
+		super(id, false, false);
+		this.masterState = masterState;
+		this.slaveState = slaveState;
+	}
+	
+	public boolean buildAsInitial() { return masterState.isInitState && slaveState.isFinalState; }
+	public boolean buildAsFinal() { return masterState.isFinalState; }
 	
 	public State getMasterState() { return masterState; }
 	public State getSlaveState() { return slaveState; }
@@ -52,36 +44,14 @@ public class StatePair {
 		return hasMasterState(master) && hasSlaveState(slave);
 	}
 	
-	public boolean addOutgoingStatePairs(Object statePair, Object edge) {
-		return addToMap(outgoingStatePairs, statePair, edge) | addToMap(outgoingStatePairsInv, edge, statePair);
-	}
-	
 	public boolean addIncomingStatePairs(Object statePair, Object edge) {
-		return addToMap(incomingStatePairs, statePair, edge) | addToMap(incomingStatePairsInv, edge, statePair);
+		return addToMap(incomingStates, statePair, edge) | addToMap(incomingStatesInv, edge, statePair);
 	}
 	
-	/** map copy */
-	public void setOutgoingStates(Map<Object, Object> outgoingStatePairs) { 
-		this.outgoingStatePairs = outgoingStatePairs;
-	}
-	public void setOutgoingStatesInv(Map<Object, Object> outgoingStatePairsInv) {
-		this.outgoingStatePairsInv = outgoingStatePairsInv;
-	}
-	
-	public Iterator<Object> outgoingStatesIterator() { return outgoingStatePairs.keySet().iterator(); }
-	public Iterator<Object> outgoingStatesInvIterator() { return outgoingStatePairsInv.keySet().iterator(); }
-	
-	public Set<Object> outgoingStates() { return outgoingStatePairs.keySet(); }
-	public Set<Object> outgoingStatesInv() { return outgoingStatePairs.keySet(); }
-	
-	public Set<Object> outgoingStatePairsLookup(StatePair key) 
-	{ return lookup(outgoingStatePairs, key); }
-	public Set<Object> outgoingStatePairsInvLookup(Edge key)
-	{ return lookup(outgoingStatePairsInv, key); }
 	public Set<Object> incomingStatePairsLookup(StatePair key)
-	{ return lookup(incomingStatePairs, key); }
+	{ return lookup(incomingStates, key); }
 	public Set<Object> incomingStatePairsInvLookup(Edge key) 
-	{ return lookup(incomingStatePairsInv, key); }
+	{ return lookup(incomingStatesInv, key); }
 	
 	/** protected methods */ 
 	@SuppressWarnings("unchecked")
@@ -111,7 +81,6 @@ public class StatePair {
 		}
 		
 		return ( (Set<Object>)valueList ).add(value) ;
-	}
-	
+	}	
 	
 }
