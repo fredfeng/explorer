@@ -29,12 +29,19 @@ public abstract class fsm {
 		b.append("  rankdir = LR;\n");
 		for (State s : states) {
 			b.append("  ").append(s.id);
-			if (s.isFinalState)
-				b.append(" [shape=doublecircle,label=\"\"];\n");
-			else
-				b.append(" [shape=circle,label=\"\"];\n");
+			if (s.isFinalState) {
+				b.append(" [shape=doublecircle,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+			}else {
+				b.append(" [shape=circle,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+			}
 			if (s.isInitState) {
-				b.append("  initial [shape=plaintext,label=\"\"];\n");
+				b.append("  initial [shape=plaintext,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
 				b.append("  initial -> ").append(s.id).append("\n");
 			}
 			for (Object t : s.getOutgoingStates().keySet()) {
