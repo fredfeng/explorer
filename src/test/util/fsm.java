@@ -45,11 +45,12 @@ public abstract class fsm {
 				Edge outEdge = (Edge)((Set)s.getOutgoingStates().get(tgt)).iterator().next();
 				b.append("  ").append(s.id);
 				
-				///
 				b.append(" -> ").append(tgt.id).append(" [label=\"");
-				b.append(outEdge.getId());
+				if(outEdge.isDot()) 
+					b.append(".");
+				else
+					b.append(outEdge.getId());
 				b.append("\"]\n");
-				///
 			}
 		}
 		b.append("}\n");
