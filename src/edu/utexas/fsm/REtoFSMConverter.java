@@ -26,8 +26,9 @@ public class REtoFSMConverter implements Serializable{
 	//Regular expression -> JSA FSM -> our RegFSM
 	public void doConvert(String reg) {
 		System.out.println("begin to convert...." + reg);
-		
-		RegExp r = new RegExp(reg);
+		//step 1. Constructing a reg without .*
+		String cleanReg = reg.replace(".*", "");
+		RegExp r = new RegExp(cleanReg);
 		Automaton auto = r.toAutomaton(); 
 		refsm regFsm = new refsm();
 		
@@ -49,8 +50,7 @@ public class REtoFSMConverter implements Serializable{
 		for (State s : states) {
 			test.util.State fsmState = toFSMstate.get(s);
 			Map outgoingStates = new HashMap(); // Map<State, Edge>
-
-			
+		
 			if (s.isAccept()) {
 				fsmState.setFinalState();
 				regFsm.addFinalState(fsmState);
@@ -89,7 +89,7 @@ public class REtoFSMConverter implements Serializable{
 	}
 	
 	public static void main(String[] args) {
-		String reg = "ab(c+d)";
+		String reg = "(c+d)ab";
 		new REtoFSMConverter().doConvert(reg);
 	}
 }
