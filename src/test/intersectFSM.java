@@ -31,7 +31,6 @@ public class intersectFSM extends fsm {
 		while (masterInitStatesIt.hasNext()) {
 			State masterInitState = (State) masterInitStatesIt.next();
 			while (slaveInitStatesIt.hasNext()) {
-				System.out.println("here");
 				State slaveInitState = (State) slaveInitStatesIt.next();
 				StatePair sp = new StatePair(new intersectFSMId(masterInitState.getId().toString() 
 						+ slaveInitState.getId().toString()), masterInitState, slaveInitState);
@@ -55,8 +54,8 @@ public class intersectFSM extends fsm {
 	protected void intersect(State masterState, State slaveState, StatePair buildState) {
 		// if masterState has no outgoingStates, return
 		// this state must be final 
-		if (masterState.outgoingStates().isEmpty()) 
-			return;
+		//if (masterState.outgoingStates().isEmpty()) 
+			//return;
 		
 		Iterator<Object> masterStatesIt = masterState.outgoingStatesIterator();
 		while (masterStatesIt.hasNext()) {
