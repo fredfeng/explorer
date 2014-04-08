@@ -23,6 +23,15 @@ public class intersectFSM extends fsm {
 		return null;
 	}
 	
+	// given a regular expression fsm
+	// find all the states that might be optimized which are mapped
+	// to a set of edges
+	// each key is a state that has a dot edge
+	// if that key cannot be optimized, the set is empty (not null)
+	// if that key can be optimized, the set contains the edges
+	
+	
+	
 	// build the finite state machine which combines 
 	// a call graph state machine and a regular expr state machine
 	public void build(fsm masterFSM, fsm slaveFSM) {
@@ -41,7 +50,13 @@ public class intersectFSM extends fsm {
 			}
 		}
 	}
+	
+	// intersect method with optimization
+	protected void intersectWithOpt(State masterState, State slaveState, StatePair buildState) {
 		
+	}
+	
+	
 	// masterState: the current state of master machine, i.e., regular expr fsm
 	// slaveState: the current state of slave machine, i.e., call graph fsm
 	// buildState: the current state of the building machine

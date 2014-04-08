@@ -7,10 +7,11 @@ public abstract class fsm {
 	protected Set<Object> finalStates = new HashSet<Object>();
 	
 	//all states in current fsm.
-	protected Set<State> states = new HashSet();
+	protected Set<State> states = new HashSet<State>();
 	
 	public Iterator<Object> initStatesIterator() { return initStates.iterator(); }
 	public Iterator<Object> finalStatesIterator() { return finalStates.iterator(); }
+	public Iterator<State> statesIterator() { return states.iterator(); }
 	
 	public boolean addInitState(Object initState) {
 		return initStates.add(initState);
@@ -23,6 +24,7 @@ public abstract class fsm {
 	public void addStates(State s) {
 		states.add(s);
 	}
+	
 	
 	public void dump() {
 		StringBuilder b = new StringBuilder("digraph Automaton {\n");

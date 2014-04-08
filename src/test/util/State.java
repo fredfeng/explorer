@@ -38,6 +38,15 @@ public class State {
 	public void resetFinalState() { isFinalState = false; }
 	public boolean isFinalState() { return isFinalState; }
 	
+	public boolean hasOutgoingDotEdge() {
+		for (Object e: outgoingStatesInv.keySet()) {
+			Edge eg = (Edge) e;
+			if (eg.isDot()) 
+				return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		return other instanceof State && id.equals( ((State)other).id ) ? true : false;
@@ -85,6 +94,28 @@ public class State {
 	public Map getOutgoingStates() { return outgoingStates; }
 	public Map getOutgoingStatesInv() { return outgoingStatesInv; }
 	
+	public boolean hasNoOutgoingState() { return outgoingStates.isEmpty(); }
+	public boolean hasOnlyOneDotOutgoingEdge() {
+		if (outgoingStatesInv.keySet().size() != 1) {
+			return false;
+		}
+		for (Object e : outgoingStatesInv.keySet()) {
+			Edge eg = (Edge) e;
+			if (!eg.isDot()) 
+				return false;
+		}
+		return true;
+	}
+	public boolean hasOnlyOneOutgoingEdge() 
+	{ return outgoingStatesInv.size() == 1; }
+	public Edge getOnlyOneOutgoingEdge() {
+		if (outgoingStatesInv.size() != 1) 
+			return null;
+		for (Object e: outgoingStatesInv.keySet())
+			return (Edge) e;
+		return null;
+	}
+	
 	public Set<Object> outgoingStatesLookup(State key) 
 	{ return lookup(outgoingStates, key); }
 	public Set<Object> outgoingStatesInvLookup(Edge key)
@@ -120,5 +151,8 @@ public class State {
 		
 		return ( (Set<Object>)valueList ).add(value) ;
 	}
+	
+	@Override
+	public String toString() { return id.toString(); }
 		
 }

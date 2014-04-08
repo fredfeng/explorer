@@ -91,5 +91,7 @@ public class TestIntersectFSM {
 		comb.build(expr, call);
 		comb.dump();
 		
+		Map<State, Set<Edge>> opts = expr.find();
+		System.out.println(opts);
 	}
 }
