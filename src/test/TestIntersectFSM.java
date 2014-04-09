@@ -87,11 +87,17 @@ public class TestIntersectFSM {
 		expr.dump();
 		call.dump();
 		
-		intersectFSM comb = new intersectFSM();
-		comb.build(expr, call);
-		comb.dump();
+		intersectFSM comb_without_opt = new intersectFSM();
+		comb_without_opt.buildWithoutOpt(expr, call);
+		comb_without_opt.dump();
 		
 		Map<State, Set<Edge>> opts = expr.find();
 		System.out.println(opts);
+		Map<State, Map<State, Boolean>> annotations = call.annotate(opts);
+		System.out.println(annotations);
+		
+		intersectFSM comb_with_opt = new intersectFSM();
+		comb_with_opt.buildWithOpt(expr, call);
+		comb_with_opt.dump();
 	}
 }
