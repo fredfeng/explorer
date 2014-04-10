@@ -50,20 +50,22 @@ public class cgfsm extends fsm {
 		// this is just a speedup
 		if (opts.containsKey(currSlaveState)) 
 			return opts.get(currSlaveState);
-		// 2. if this slave state has only one cycle edge, return true if it is fine
-		/*
-		if (currSlaveState.hasOnlyOneDotOutgoingEdge()) {
-			if (keyEdges.contains(currSlaveState.getOnlyOneOutgoingEdge())) {
-				opts.put(currSlaveState, true);
-				return true;
-			}
-			return false;
-		} 
-		*/		
+		// 2. if this slave state connects to some other state which will somehow
+		//    directly or indirectly connect to this slave state, we need to use
+		//    some method to handle this connected component case
+		//    lazily, we can set the boolean to be true every time we are trying
+		//    to annotate a state, in which case it is sound and can remove infinite
+		//    loop, but this might not be so accurate
+		//    another better way is to first find the connected components and then
+		//    handle this outside this method
+		
 		// if this slave state has at least one outgoing edge (not cycle)
 		// do the recursive case
-		// we first check edges
-		boolean edge_result = false, state_result = false;
+		// we first check edges		
+		boolean edge_result = false, state_result = false; // might this be not sound? I guess it should be sound
+		/* 
+		 * this way also works but is silly, it is exponential
+		 * so we change to the way following this 
 		for (Object e : currSlaveState.outgoingStatesInv()) {
 			Edge eg = (Edge) e;
 			if (keyEdges.contains(eg)) {
@@ -71,8 +73,21 @@ public class cgfsm extends fsm {
 				break;
 			} 
 		}
+		*/
+		// this has only constant-complexity
+		for (Edge e : keyEdges) {
+			if (currSlaveState.outgoingStatesInv().contains(e)) {
+				edge_result = true;
+				// opts.put(currSlaveState, true);
+				break;
+			}
+		}
+		
 		// if we can in advance annotate this currSlaveState to be true
 		// we annotate it, which will be good if there is a cycle
+		// because when we check the annotations of the neighbors of this state
+		// and it happens that the neighbor's neighbors include this state
+		// then we can mark that neighbor as true
 		// but this does not help if there is a cycle and we cannot annotate true
 		// in which case we still need to handle the graph with connected components
 		// but generally, we do not need this code and it still works
@@ -82,7 +97,7 @@ public class cgfsm extends fsm {
 		for (Object s : currSlaveState.outgoingStates()) {
 			State st = (State) s;
 			if (s.equals(currSlaveState))
-				continue;
+				continue; // eliminate infinite loop
 			state_result = state_result || annotateOneSlaveStateOneMasterState(st, keyEdges, opts);
 		}
 		// synthesize the result and annotate

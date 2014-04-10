@@ -77,6 +77,8 @@ public class intersectFSM extends fsm {
 	// intersect method with optimization
 	protected void intersectWithOpt(State masterState, State slaveState, StatePair buildState, 
 			Map<State, Map<State, Boolean>> annotations) {
+		// most of this method is the same to the unoptimized version intersect
+		// except for the isDotEdge branch
 		Iterator<Object> masterStatesIt = masterState.outgoingStatesIterator();
 		while (masterStatesIt.hasNext()) {
 			refsmState masterNextState = (refsmState) masterStatesIt.next();
@@ -91,9 +93,9 @@ public class intersectFSM extends fsm {
 					// try to optimize
 					// first we try to optimize by checking the status 
 					boolean checkResult = true; // to be sound
-					if (annotations.containsKey(masterState)) {
+					if (annotations.containsKey(masterState)) { // just make sure
 						Map<State, Boolean> annot = annotations.get(masterState);
-						if (annot.containsKey(slaveState)) {
+						if (annot.containsKey(slaveState)) { // just make sure
 							checkResult = annot.get(slaveState);
 							if (!checkResult) 
 								continue;
@@ -158,7 +160,6 @@ public class intersectFSM extends fsm {
 			}
 		}
 	}
-	
 	
 	// masterState: the current state of master machine, i.e., regular expr fsm
 	// slaveState: the current state of slave machine, i.e., call graph fsm
