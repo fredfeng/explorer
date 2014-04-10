@@ -8,7 +8,12 @@ public class cgfsm extends fsm {
 	// the first state in return value is the state in refsm
 	// the second state in return value is the state in cgfsm
 	// i.e., 
-	// ( masterState[first state], slaveState[second state] ) ----> true / false
+	// Map <  State,   Map <   State,        Boolean   >  >
+	//          |                |              |
+	//      masterState      slaveState     true: create
+	// foreach masterState, "annotate" method annotates each slaveState
+	// to be true or false, denoting whether we should create the statePair
+	// in the intersection machine and whether we should go ahead
 	public Map<State, Map<State, Boolean>> annotate(Map<State, Set<Edge>> regExprOpts) {
 		Map<State, Map<State, Boolean>> opts = new HashMap<State, Map<State, Boolean>>();
 		for (State stateInReg : regExprOpts.keySet()) {
@@ -19,11 +24,15 @@ public class cgfsm extends fsm {
 	}
 	
 	// state: each state in cgfsm
-	// boolean: true -- this state is OK, false -- the subgraph of this state does not have the key edge
+	// boolean: true -- this state is OK, and we can create and go ahead
+	// 			false -- the subgraph of this state does not have the key edge
+	// Map <  State,     Boolean  >
+	//          |           |
+	//      slaveState  true: create
 	protected Map<State, Boolean> annotateOneMasterState(Set<Edge> keyEdges) {
 		Map<State, Boolean> opts = new HashMap<State, Boolean>();
 		for (Object s : initStates) {
-			State st = (State) s;
+			State st = (State) s; // foreach slave state
 			annotateOneSlaveStateOneMasterState(st, keyEdges, opts);
 		}
 		return opts;
@@ -38,9 +47,10 @@ public class cgfsm extends fsm {
 			Set<Edge> keyEdges, Map<State, Boolean> opts) {
 		// termination conditions
 		// 1. if this slave state has been visited, return its boolean value
+		// this is just a speedup
 		if (opts.containsKey(currSlaveState)) 
 			return opts.get(currSlaveState);
-		// 2. if this slave state has only one (.*) edge, return true if it is fine
+		// 2. if this slave state has only one cycle edge, return true if it is fine
 		/*
 		if (currSlaveState.hasOnlyOneDotOutgoingEdge()) {
 			if (keyEdges.contains(currSlaveState.getOnlyOneOutgoingEdge())) {
@@ -48,8 +58,8 @@ public class cgfsm extends fsm {
 				return true;
 			}
 			return false;
-		}
-		*/
+		} 
+		*/		
 		// if this slave state has at least one outgoing edge (not cycle)
 		// do the recursive case
 		// we first check edges

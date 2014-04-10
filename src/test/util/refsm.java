@@ -10,12 +10,14 @@ import java.util.Set;
 public class refsm extends fsm {
 	
 	// find() method returns a map that maps each state in refsm with a dot edge
-	// to a set of edges that must be followed to reach the one of the final states in refsm
+	// to a set of edges that must be followed to reach the one of the final state in refsm
 	public Map<State, Set<Edge>> find() {
 		Map<State, Set<Edge>> opts = new HashMap<State, Set<Edge>>();
-		for (State currState : states) {
+		for (State s : states) {
 			// we want to optimize for the states with cycle
 			// so we only care about states that have (.*) edge
+			refsmState currState = (refsmState) s;
+			// we can replace this by hasCycleEdge() if the only possible cycle is dot edge
 			if (currState.hasOutgoingDotEdge()) {
 				// we do not regard final state as a qualified state
 				// and do not create an keyEdges set for the final state

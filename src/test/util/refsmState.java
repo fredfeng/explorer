@@ -34,4 +34,29 @@ public class refsmState extends State {
 	{ return lookup(incomingStates, key); }
 	public Set<Object> incomingStatesInvLookup(Edge key)
 	{ return lookup(incomingStatesInv, key); }
+	
+	public boolean hasOutgoingDotEdge() {
+		for (Object e: outgoingStatesInv.keySet()) {
+			Edge eg = (Edge) e;
+			if (eg.isDot()) 
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean hasOnlyOneDotOutgoingEdge() {
+		if (outgoingStatesInv.keySet().size() != 1) {
+			return false;
+		}
+		for (Object e : outgoingStatesInv.keySet()) {
+			Edge eg = (Edge) e;
+			if (!eg.isDot()) 
+				return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public boolean hasCycleEdge() 
+	{ return incomingStates != null && incomingStates.keySet().contains(this); }
 }

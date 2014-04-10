@@ -38,14 +38,7 @@ public class State {
 	public void resetFinalState() { isFinalState = false; }
 	public boolean isFinalState() { return isFinalState; }
 	
-	public boolean hasOutgoingDotEdge() {
-		for (Object e: outgoingStatesInv.keySet()) {
-			Edge eg = (Edge) e;
-			if (eg.isDot()) 
-				return true;
-		}
-		return false;
-	}
+	
 	
 	@Override
 	public boolean equals(Object other) {
@@ -94,20 +87,18 @@ public class State {
 	public Map getOutgoingStates() { return outgoingStates; }
 	public Map getOutgoingStatesInv() { return outgoingStatesInv; }
 	
-	public boolean hasNoOutgoingState() { return outgoingStates.isEmpty(); }
-	public boolean hasOnlyOneDotOutgoingEdge() {
-		if (outgoingStatesInv.keySet().size() != 1) {
-			return false;
-		}
-		for (Object e : outgoingStatesInv.keySet()) {
-			Edge eg = (Edge) e;
-			if (!eg.isDot()) 
-				return false;
-		}
-		return true;
-	}
+	
+	
+	public Set<Object> outgoingStatesLookup(State key) 
+	{ return lookup(outgoingStates, key); }
+	public Set<Object> outgoingStatesInvLookup(Edge key)
+	{ return lookup(outgoingStatesInv, key); }
+	
 	public boolean hasOnlyOneOutgoingEdge() 
 	{ return outgoingStatesInv.size() == 1; }
+	
+	public boolean hasNoOutgoingState() { return outgoingStates.isEmpty(); }
+	
 	public Edge getOnlyOneOutgoingEdge() {
 		if (outgoingStatesInv.size() != 1) 
 			return null;
@@ -116,11 +107,14 @@ public class State {
 		return null;
 	}
 	
-	public Set<Object> outgoingStatesLookup(State key) 
-	{ return lookup(outgoingStates, key); }
-	public Set<Object> outgoingStatesInvLookup(Edge key)
-	{ return lookup(outgoingStatesInv, key); }
-	
+	public boolean hasCycleEdge() {
+		for (Object s : outgoingStates.keySet()) {
+			State st = (State) s;
+			if (st.equals(this))
+				return true;
+		}
+		return false;
+	}
 	
 	/** protected methods */ 
 	@SuppressWarnings("unchecked")

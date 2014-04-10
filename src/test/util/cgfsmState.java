@@ -22,4 +22,10 @@ public class cgfsmState extends State {
 	public boolean addIncomingStates(Object state) {
 		return incomingStates.add(state);
 	}
+	
+	@Override
+	public boolean hasCycleEdge() {
+		return incomingStates != null && incomingStates.contains(this);
+	}
+	
 }

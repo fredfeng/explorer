@@ -88,7 +88,7 @@ public class intersectFSM extends fsm {
 				Edge masterNextEdge = (Edge) masterNextEdgesIt.next();
 				if (masterNextEdge.isDot()) {
 					// if this is a .* edge in regular expr fsm
-					
+					// try to optimize
 					// first we try to optimize by checking the status 
 					boolean checkResult = true; // to be sound
 					if (annotations.containsKey(masterState)) {
@@ -99,7 +99,7 @@ public class intersectFSM extends fsm {
 								continue;
 						}
 					}
-					// if check result is true, we shold do the expansion
+					// if check result is true, we should do the expansion
 					Iterator<Object> slaveNextStatesIt = slaveState.outgoingStatesIterator();
 					while (slaveNextStatesIt.hasNext()) {
 						cgfsmState slaveNextState = (cgfsmState) slaveNextStatesIt.next();
@@ -132,6 +132,7 @@ public class intersectFSM extends fsm {
 					}
 				} else {
 					// if this is not a .* edge in regular expr fsm
+					// we do not optimize for this case
 					Set<Object> slaveNextStates = slaveState.outgoingStatesInvLookup(masterNextEdge);
 					if (slaveNextStates == null) 
 						continue;
@@ -171,6 +172,7 @@ public class intersectFSM extends fsm {
 	protected void intersectWithoutOpt(State masterState, State slaveState, StatePair buildState) {
 		// if masterState has no outgoingStates, return
 		// this state must be final 
+		// (actually we do not need this code because the following plays the same role)
 		//if (masterState.outgoingStates().isEmpty()) 
 			//return;
 		
