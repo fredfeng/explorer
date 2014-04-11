@@ -26,7 +26,6 @@ public class CgFsmConverter {
 	
 	Map<SootMethod, test.util.Edge> methToEdgeMap = new HashMap<SootMethod, test.util.Edge>();
 
-	
 	cgfsm cgFSM = new cgfsm();
 
 	/**
@@ -127,10 +126,12 @@ public class CgFsmConverter {
 			}
 	
 		}
+		
 	
 		//only add reachable methods.
 		for(cgfsmState rs : reachableState) {
 			cgFSM.addStates(rs);
+			//map reachable states to alphabic number.
 		}
 			
 		cgFSM.dump();
