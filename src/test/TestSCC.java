@@ -7,6 +7,11 @@ import java.util.Map;
 import java.util.Set;
 
 import soot.SootMethod;
+import test.util.Edge;
+import test.util.dotEdge;
+import test.util.refsm;
+import test.util.refsmId;
+import test.util.refsmState;
 import chord.util.graph.IGraph;
 import chord.util.graph.MutableGraph;
 

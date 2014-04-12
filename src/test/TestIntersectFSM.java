@@ -99,5 +99,41 @@ public class TestIntersectFSM {
 		intersectFSM comb_with_opt = new intersectFSM();
 		comb_with_opt.buildWithOpt(expr, call);
 		comb_with_opt.dump();
+		
+		
+		/** test scc doAnalysis */
+		refsm scc = new refsm();
+		Edge scc_edge = new Edge(new refsmId("edge"));
+		Edge scc_back_edge = new Edge(new refsmId("backEdge"));
+		
+		refsmState scc_init = new refsmState(new refsmId(1), true, false);
+		refsmState scc_final = new refsmState(new refsmId(2), false, true);
+		
+		scc.addStates(scc_init);
+		scc.addStates(scc_final);
+		
+		scc.addInitState(scc_init);
+		scc.addFinalState(scc_final);
+		
+		scc_init.addOutgoingStates(scc_final, scc_edge);
+		scc_final.addIncomingStates(scc_init, scc_edge);
+		scc_init.addIncomingStates(scc_init, scc_back_edge);
+		scc_final.addOutgoingStates(scc_init, scc_back_edge);
+		scc.dump();
+				
+		Set<Object> roots = scc.getInitStates();
+		Map<Object, Set<Object>> nodeToPreds = new HashMap<Object, Set<Object>>();
+		Map<Object, Set<Object>> nodeToSuccs = new HashMap<Object, Set<Object>>();
+		Iterator<State> it = scc.statesIterator();
+		while (it.hasNext()) {
+			State s = it.next();
+			nodeToPreds.put(s, s.getIncomingStates());
+			nodeToSuccs.put(s, s.getOutgoingStatesKeySet());
+		}
+		System.out.println(nodeToPreds);
+		System.out.println(nodeToSuccs);
+		
+		List<Set<Object>> sccList = Util.doAnalysis(roots, nodeToPreds, nodeToSuccs);
+		System.out.println(sccList);
 	}
 }

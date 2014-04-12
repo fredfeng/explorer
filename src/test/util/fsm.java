@@ -9,9 +9,12 @@ public abstract class fsm {
 	//all states in current fsm.
 	protected Set<State> states = new HashSet<State>();
 	
+	public Set<Object> getInitStates() { return initStates; }
+	public Set<Object> getFinalStates() { return finalStates; }
 	public Iterator<Object> initStatesIterator() { return initStates.iterator(); }
 	public Iterator<Object> finalStatesIterator() { return finalStates.iterator(); }
 	public Iterator<State> statesIterator() { return states.iterator(); }
+	
 	
 	public boolean addInitState(Object initState) {
 		return initStates.add(initState);

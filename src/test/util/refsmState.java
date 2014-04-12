@@ -27,6 +27,7 @@ public class refsmState extends State {
 	public Iterator<Object> incomingStatesIterator() { return incomingStates.keySet().iterator(); }
 	public Iterator<Object> incomingStatesInvIterator() { return incomingStatesInv.keySet().iterator(); }
 	
+	public Set<Object> getIncomingStates() { return incomingStates.keySet(); }
 	public Set<Object> incomingStates() { return incomingStates.keySet(); }
 	public Set<Object> incomingStatesInv() { return incomingStatesInv.keySet(); }
 	

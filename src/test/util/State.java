@@ -8,7 +8,7 @@ import soot.SootMethod;
 // for refsm, the Id of a state is meaningless, a state does not necessarily
 // correspond to a single method, which depends on the specific regular expr
 
-public class State {
+public abstract class State {
 	// Id corresponds to the soot method in the call graph
 	// initial and final states' Id are null
 	protected Id id; 
@@ -37,7 +37,7 @@ public class State {
 	public void setFinalState() { isFinalState = true; }
 	public void resetFinalState() { isFinalState = false; }
 	public boolean isFinalState() { return isFinalState; }
-	
+	public abstract Set<Object> getIncomingStates();
 	
 	
 	@Override
@@ -86,8 +86,8 @@ public class State {
 	
 	public Map getOutgoingStates() { return outgoingStates; }
 	public Map getOutgoingStatesInv() { return outgoingStatesInv; }
-	
-	
+	public Set<Object> getOutgoingStatesKeySet() { return outgoingStates.keySet(); }
+	public Set<Object> getOutgoingStatesInvKeySet() { return outgoingStates.keySet(); }
 	
 	public Set<Object> outgoingStatesLookup(State key) 
 	{ return lookup(outgoingStates, key); }

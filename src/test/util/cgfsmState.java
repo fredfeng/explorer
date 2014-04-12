@@ -17,6 +17,8 @@ public class cgfsmState extends State {
 		this.incomingEdge = incomingEdge;
 	}
 	
+	public Set<Object> getIncomingStates() { return incomingStates; }
+	
 	public Edge getIncomingEdge() { return incomingEdge; }
 	
 	public boolean addIncomingStates(Object state) {

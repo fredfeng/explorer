@@ -26,6 +26,8 @@ public class StatePair extends State {
 	public State getMasterState() { return masterState; }
 	public State getSlaveState() { return slaveState; }
 	
+	public Set<Object> getIncomingStates() { return incomingStates.keySet(); }
+	
 	@Override
 	public boolean equals(Object other) {
 		return other instanceof StatePair 

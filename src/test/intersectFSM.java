@@ -2,6 +2,8 @@ package test;
 
 import java.util.*;
 
+import chord.util.graph.IGraph;
+import chord.util.graph.MutableGraph;
 import test.util.*;
 
 public class intersectFSM extends fsm {
