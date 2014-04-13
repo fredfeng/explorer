@@ -1,4 +1,4 @@
-package edu.utexas;
+package edu.utexas.cgrex;
 
 import heros.IFDSTabulationProblem;
 import heros.InterproceduralCFG;
@@ -78,6 +78,10 @@ public class Harness {
 				return;
 		}
 
+	}
+	
+	public void run(String s) {
+		
 	}
 
 }
