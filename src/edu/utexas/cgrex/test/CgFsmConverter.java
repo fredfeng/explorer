@@ -1,4 +1,4 @@
-package edu.utexas.fsm;
+package edu.utexas.cgrex.test;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,25 +8,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import dk.brics.automaton.RegExp;
+import dk.brics.automaton.State;
+
 import soot.CompilationDeathException;
+import soot.MethodOrMethodContext;
 import soot.PackManager;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Transform;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
-import test.util.cgfsm;
-import test.util.cgfsmId;
-import test.util.cgfsmState;
 import edu.utexas.RegularPT.RegularPTTransformer;
+import edu.utexas.cgrex.automaton.AutoEdge;
+import edu.utexas.cgrex.automaton.CGAutoState;
+import edu.utexas.cgrex.automaton.CGAutomaton;
+import edu.utexas.cgrex.automaton.RegAutoState;
 
 public class CgFsmConverter {
 
-	Map<SootMethod, cgfsmState> methToStateMap = new HashMap<SootMethod, cgfsmState>();
-	
-	Map<SootMethod, test.util.Edge> methToEdgeMap = new HashMap<SootMethod, test.util.Edge>();
+	CallGraph cg;
 
-	cgfsm cgFSM = new cgfsm();
+	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
+	
+	Map<SootMethod, AutoEdge> methToEdgeMap = new HashMap<SootMethod, AutoEdge>();
+	
+	//map JSA's automaton to our own regstate.
+	Map<State, RegAutoState> jsaToAutostate = new HashMap<State,RegAutoState>();
+
+	//each sootmethod will be represented by the unicode of its number.
+	Map<String, SootMethod> uidToMethMap = new HashMap<String, SootMethod>();
 
 	/**
 	 * @param args
@@ -72,40 +83,44 @@ public class CgFsmConverter {
 	//method's encoding rule will be "m" plus its number, e.g. m10, m11, etc.
 	
 	public void generateFSM() {
+		CGAutomaton cgAuto = new CGAutomaton();	
+
 		CallGraph cg = Scene.v().getCallGraph();
 		
-		Iterator<SootMethod> mIt = Scene.v().getMethodNumberer().iterator();
-		
-		while(mIt.hasNext()) {
-			SootMethod meth = mIt.next();
-			test.util.Edge inEdge = new test.util.Edge(new cgfsmId(meth.getName()));
-			cgfsmState st = new cgfsmState(new cgfsmId("m" + meth.getNumber()), false, true, inEdge);
+		Iterator<MethodOrMethodContext> mIt = Scene.v().getReachableMethods().listener();
 
+		while (mIt.hasNext()) {
+			SootMethod meth = (SootMethod) mIt.next();
+
+			// map each method to a unicode.
+			String uid = "\\u" + String.format("%04d", meth.getNumber());
+			uidToMethMap.put(uid, meth);
+
+			AutoEdge inEdge = new AutoEdge(meth.getName());
+			CGAutoState st = new CGAutoState("m" + meth.getNumber(),false, true, inEdge);
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
-
-			//cgFSM.addStates(st);
 		}
 		
 		//while
 		SootMethod mainMeth = Scene.v().getMainMethod();
 		//init FSM
-		test.util.Edge callEdgeMain = methToEdgeMap.get(mainMeth);
-		cgfsmState initState = new cgfsmState(new cgfsmId(-1), false, true, null);
-		cgfsmState mainState = methToStateMap.get(mainMeth);
+		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
+		CGAutoState initState = new CGAutoState(-1, false, true, null);
+		CGAutoState mainState = methToStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
 
-		cgFSM.addInitState(initState);
-		cgFSM.addStates(initState);
+		cgAuto.addInitState(initState);
+		cgAuto.addStates(initState);
 
 		List<SootMethod> worklist = new LinkedList<SootMethod>();
 		worklist.add(mainMeth);
 		
-		Set<cgfsmState> reachableState = new HashSet<cgfsmState>();
+		Set<CGAutoState> reachableState = new HashSet<CGAutoState>();
 		
 		while(worklist.size() > 0) {
 			SootMethod worker = worklist.remove(0);
-			cgfsmState curState = methToStateMap.get(worker);
+			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
 
 			//worker.
@@ -114,27 +129,32 @@ public class CgFsmConverter {
 				Edge e = eIt.next();
 				//how about SCC? FIXME!!
 				if(e.getTgt().equals(worker)) {//recursive call, add self-loop
-					test.util.Edge outEdge = methToEdgeMap.get(worker);
+					AutoEdge outEdge = methToEdgeMap.get(worker);
 					curState.addOutgoingStates(curState, outEdge);
 				} else {
 					SootMethod tgtMeth = (SootMethod)e.getTgt();
 					worklist.add(tgtMeth);
-					test.util.Edge outEdge = methToEdgeMap.get(tgtMeth);
-					cgfsmState tgtState = methToStateMap.get(e.getTgt());
+					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
+					CGAutoState tgtState = methToStateMap.get(e.getTgt());
 					curState.addOutgoingStates(tgtState, outEdge);
 				}
 			}
 	
 		}
-		
 	
 		//only add reachable methods.
-		for(cgfsmState rs : reachableState) {
-			cgFSM.addStates(rs);
-			//map reachable states to alphabic number.
-		}
-			
-		cgFSM.dump();
+		for(CGAutoState rs : reachableState)
+			cgAuto.addStates(rs);
+		
+		//dump automaton of the call graph.
+		cgAuto.dump();
+		
+		//now i am gonna to write regx based previous mapping.
+		String query = "(\u6106|\u6099).*\u1150";
+		RegExp r = new RegExp(query);
+		System.out.println(r.toAutomaton().toDot());
+		
+		new REtoFSMConverter().doConvert(query, uidToMethMap);
 		
 	}
 	

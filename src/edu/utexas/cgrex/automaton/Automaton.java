@@ -50,6 +50,7 @@ public abstract class Automaton {
 		b.append("  rankdir = LR;\n");
 		for (AutoState s : states) {
 			b.append("  ").append(s.id);
+			
 			if (s.isFinalState) {
 				b.append(" [shape=doublecircle,label=\"");
 				b.append(s.id);
@@ -59,26 +60,26 @@ public abstract class Automaton {
 				b.append(s.id);
 				b.append("\"];\n");
 			}
+			
 			if (s.isInitState) {
 				b.append("  initial [shape=plaintext,label=\"");
 				b.append(s.id);
 				b.append("\"];\n");
 				b.append("  initial -> ").append(s.id).append("\n");
 			}
-			for (Object t : s.getOutgoingStates().keySet()) {
-				assert(t instanceof AutoState);
+			
+			for (AutoState tgt : s.getOutgoingStates().keySet()) {
+				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {					
+					b.append("  ").append(s.id);
+					
+					b.append(" -> ").append(tgt.id).append(" [label=\"");
+					if(outEdge.isDotEdge()) 
+						b.append(".");
+					else
+						b.append(outEdge.getShortName());
+					b.append("\"]\n");
+				}
 
-				AutoState tgt = (AutoState) t;
-				Set edgeSet = (HashSet)s.getOutgoingStates().get(tgt);
-				AutoEdge outEdge = (AutoEdge)((Set)s.getOutgoingStates().get(tgt)).iterator().next();
-				b.append("  ").append(s.id);
-				
-				b.append(" -> ").append(tgt.id).append(" [label=\"");
-				if(outEdge.isDotEdge()) 
-					b.append(".");
-				else
-					b.append(outEdge.getId());
-				b.append("\"]\n");
 			}
 		}
 		b.append("}\n");

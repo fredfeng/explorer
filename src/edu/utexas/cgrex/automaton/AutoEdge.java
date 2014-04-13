@@ -7,6 +7,9 @@ public class AutoEdge {
 	protected Object id;
 
 	protected boolean isDotEdge = false;
+	
+	//name displayed in the graph.
+	protected String shortName = "";
 
 	public AutoEdge(Object id) {
 		this.id = id;
@@ -24,6 +27,14 @@ public class AutoEdge {
 
 	public boolean isDotEdge() {
 		return isDotEdge;
+	}
+	
+	public String getShortName() { 
+		return shortName;
+	}
+	
+	public void setShortName(String name) { 
+		shortName = name; 
 	}
 
 	@Override
