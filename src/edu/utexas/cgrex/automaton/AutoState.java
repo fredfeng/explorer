@@ -147,6 +147,25 @@ public abstract class AutoState {
 			return e;
 		return null;
 	}
+	
+	// get the cycle edge of this state
+	// if existed, return the cycle edge, else return null
+	public AutoEdge getCycleEdge() {
+		for (AutoEdge e : outgoingStatesInv.keySet()) {
+			if (outgoingStatesInvLookup(e).equals(this))
+				return e;
+		}
+		return null;
+	}
+	
+	public Set<AutoEdge> getOutgoingStatesInvKeySetExceptCycleEdge() {
+		Set<AutoEdge> clone = new HashSet<AutoEdge>();
+		clone.addAll(outgoingStatesInv.keySet());
+		AutoEdge cycle = getCycleEdge();
+		if (cycle != null)
+			clone.remove(cycle);
+		return clone;
+	}
 
 	public boolean hasCycleEdge() {
 		for (AutoState s : outgoingStates.keySet()) {

@@ -6,7 +6,7 @@ import chord.util.graph.IGraph;
 import chord.util.graph.MutableGraph;
 
 public class InterAutomaton extends Automaton {
-
+	
 	// if this machine contains a statepair consisting of master and slave
 	// return that statepair
 	// otherwise, return null
@@ -148,8 +148,8 @@ public class InterAutomaton extends Automaton {
 								states.add(sp); // this machine is moved to the
 												// new statepair
 								intersectWithOpt(masterNextState,
-										slaveNextState, sp, annotations); // recursive
-																			// call
+										slaveNextState, sp, annotations);
+								// recursive call
 							}
 						}
 					}

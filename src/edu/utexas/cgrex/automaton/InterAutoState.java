@@ -4,9 +4,15 @@ import java.util.*;
 
 public class InterAutoState extends AutoState {
 	protected AutoState masterState;
+	
 	protected AutoState slaveState;
-	protected Map<AutoState, Set<AutoEdge>> incomingStates = new HashMap<AutoState, Set<AutoEdge>>();
-	protected Map<AutoEdge, Set<AutoState>> incomingStatesInv = new HashMap<AutoEdge, Set<AutoState>>();
+	
+	protected Map<AutoState, Set<AutoEdge>> incomingStates = 
+			new HashMap<AutoState, Set<AutoEdge>>();
+	
+	protected Map<AutoEdge, Set<AutoState>> incomingStatesInv = 
+			new HashMap<AutoEdge, Set<AutoState>>();
+	
 
 	public InterAutoState(Object id, AutoState masterState,
 			AutoState slaveState, boolean isInitState, boolean isFinalState) {
@@ -20,7 +26,7 @@ public class InterAutoState extends AutoState {
 		this.masterState = masterState;
 		this.slaveState = slaveState;
 	}
-	
+
 	@Override
 	public Set<AutoState> getIncomingStatesKeySet() {
 		return incomingStates.keySet();
@@ -30,29 +36,26 @@ public class InterAutoState extends AutoState {
 	public Set<AutoEdge> getIncomingStatesInvKeySet() {
 		return incomingStatesInv.keySet();
 	}
-	
-	//@Override
+
+	// @Override
 	public void setIncomingStates(Map<AutoState, Set<AutoEdge>> incomingStates) {
 		this.incomingStates = incomingStates;
 	}
 
 	/*
-	@Override
-	public void setIncomingStates(Set<AutoState> incomingStates) {
-	}
-	*/
-	
-	//@Override
+	 * @Override public void setIncomingStates(Set<AutoState> incomingStates) {
+	 * }
+	 */
+
+	// @Override
 	public void setIncomingStatesInv(
 			Map<AutoEdge, Set<AutoState>> incomingStatesInv) {
 		this.incomingStatesInv = incomingStatesInv;
 	}
-	
+
 	/*
-	@Override
-	public void setIncomingStatesInv(AutoEdge incomingEdge) {
-	}
-	*/
+	 * @Override public void setIncomingStatesInv(AutoEdge incomingEdge) { }
+	 */
 
 	@Override
 	public Iterator<AutoState> incomingStatesIterator() {
@@ -64,23 +67,20 @@ public class InterAutoState extends AutoState {
 		return incomingStatesInv.keySet().iterator();
 	}
 
-	//@Override
+	// @Override
 	public Map<AutoState, Set<AutoEdge>> getIncomingStates() {
 		return incomingStates;
 	}
-	
-	//@Override
+
+	// @Override
 	public Map<AutoEdge, Set<AutoState>> getIncomingStatesInv() {
 		return incomingStatesInv;
 	}
 
 	/*
-	@Override
-	public AutoEdge getIncomingEdge() {
-		return null;
-	}
-	*/
-	
+	 * @Override public AutoEdge getIncomingEdge() { return null; }
+	 */
+
 	@Override
 	public Set<AutoEdge> incomingStatesLookup(AutoState state) {
 		return incomingStates.get(state);
@@ -96,7 +96,7 @@ public class InterAutoState extends AutoState {
 		return addToMap(incomingStates, state, edge)
 				| addToInvMap(incomingStatesInv, edge, state);
 	}
-	
+
 	public boolean buildAsInitial() {
 		return masterState.isInitState && slaveState.isFinalState;
 	}
@@ -112,7 +112,7 @@ public class InterAutoState extends AutoState {
 	public AutoState getSlaveState() {
 		return slaveState;
 	}
-	
+
 	public boolean hasMasterState(AutoState other) {
 		return masterState.equals(other);
 	}
@@ -124,7 +124,7 @@ public class InterAutoState extends AutoState {
 	public boolean hasMasterandSlaveState(AutoState master, AutoState slave) {
 		return hasMasterState(master) && hasSlaveState(slave);
 	}
-	
+
 	@Override
 	public boolean equals(Object other) {
 		return other instanceof InterAutoState
@@ -137,6 +137,5 @@ public class InterAutoState extends AutoState {
 	public int hashCode() {
 		return 37 * masterState.hashCode() + slaveState.hashCode();
 	}
-
 
 }

@@ -111,34 +111,69 @@ public class TestInterAutomaton {
 		comb_with_opt.dump();
 
 		/** test scc doAnalysis */
-		RegAutomaton scc = new RegAutomaton();
-		AutoEdge scc_edge_1 = new AutoEdge("edge1");
-		AutoEdge scc_edge_2 = new AutoEdge("edge2");
-		AutoEdge scc_edge_3 = new AutoEdge("edge3");
-		AutoEdge scc_edge_4 = new AutoEdge("edge4");
- 
-		RegAutoState scc_init = new RegAutoState(1, true, false);
-		RegAutoState scc_final = new RegAutoState(2, false, true);
-		RegAutoState scc_state_1 = new RegAutoState(3);
+		CGAutomaton scc = new CGAutomaton();
+		AutoEdge scc_edge_main = new AutoEdge("main");
+		AutoEdge scc_edge_foo = new AutoEdge("foo");
+		AutoEdge scc_edge_bar = new AutoEdge("bar");
+		AutoEdge scc_edge_baz = new AutoEdge("baz");
+		AutoEdge scc_edge_goo = new AutoEdge("goo");
+		AutoEdge scc_edge_zoo = new AutoEdge("zoo");
+		AutoEdge scc_edge_bug = new AutoEdge("bug");
+
+		CGAutoState scc_init = new CGAutoState(1, true, false, null);
+		CGAutoState scc_main = new CGAutoState(2, false, true, scc_edge_main);
+		CGAutoState scc_foo = new CGAutoState(3, false, true, scc_edge_foo);
+		CGAutoState scc_bar = new CGAutoState(4, false, true, scc_edge_bar);
+		CGAutoState scc_baz = new CGAutoState(5, false, true, scc_edge_baz);
+		CGAutoState scc_goo = new CGAutoState(6, false, true, scc_edge_goo);
+		CGAutoState scc_zoo = new CGAutoState(7, false, true, scc_edge_zoo);
+		CGAutoState scc_bug = new CGAutoState(8, false, true, scc_edge_bug);
 
 		scc.addStates(scc_init);
-		scc.addStates(scc_final);
-		scc.addStates(scc_state_1);
+		scc.addStates(scc_main);
+		scc.addStates(scc_foo);
+		scc.addStates(scc_bar);
+		scc.addStates(scc_baz);
+		scc.addStates(scc_goo);
+		scc.addStates(scc_zoo);
+		scc.addStates(scc_bug);
 
 		scc.addInitState(scc_init);
-		scc.addFinalState(scc_final);
+		scc.addFinalState(scc_main);
+		scc.addFinalState(scc_foo);
+		scc.addFinalState(scc_bar);
+		scc.addFinalState(scc_baz);
+		scc.addFinalState(scc_goo);
+		scc.addFinalState(scc_zoo);
+		scc.addFinalState(scc_bug);
 
-		scc_init.addOutgoingStates(scc_final, scc_edge_1);
-		scc_init.addIncomingStates(scc_state_1, scc_edge_2);
-		scc_final.addOutgoingStates(scc_state_1, scc_edge_3);
-		scc_final.addIncomingStates(scc_state_1, scc_edge_4);
-		scc_final.addIncomingStates(scc_init, scc_edge_1);
-		scc_state_1.addOutgoingStates(scc_final, scc_edge_4);
-		scc_state_1.addOutgoingStates(scc_init, scc_edge_2);
-		scc_state_1.addIncomingStates(scc_final, scc_edge_3);
+		scc_init.addOutgoingStates(scc_main, scc_edge_main);
+		scc_main.addOutgoingStates(scc_foo, scc_edge_foo);
+		scc_foo.addOutgoingStates(scc_bar, scc_edge_bar);
+		scc_foo.addOutgoingStates(scc_foo, scc_edge_foo);
+		scc_bar.addOutgoingStates(scc_baz, scc_edge_baz);
+		scc_bar.addOutgoingStates(scc_zoo, scc_edge_zoo);
+		scc_bar.addOutgoingStates(scc_goo, scc_edge_goo);
+		scc_goo.addOutgoingStates(scc_foo, scc_edge_foo);
+		scc_goo.addOutgoingStates(scc_bug, scc_edge_bug);
+		scc_bug.addOutgoingStates(scc_goo, scc_edge_goo);
+		scc_zoo.addOutgoingStates(scc_zoo, scc_edge_zoo);
 		
-		scc.dump();
 
+		scc.dump();
+		scc.buildCGStatesSCC();
+		
+		for (AutoState s : scc.getStates()) {
+			CGAutoState st = (CGAutoState) s;
+			System.out.println("AutoState " + st);
+			System.out.println("statesInTheSameSCC: " + st.getStatesInTheSameSCC());
+			System.out.println("edgesInTheSameSCC: " + st.getEdgesInTheSameSCC());
+			System.out.println("outgoingStatesOfSCC: " + st.getOutgoingStatesOfSCC());
+			System.out.println("outgoingEdgesOfSCC: " + st.getOutgoingEdgesOfSCC());
+		}
+		
+		
+		/*
 		Set roots = scc.getInitStates();
 		Map nodeToPreds = new HashMap<Object, Set<Object>>();
 		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
@@ -154,8 +189,20 @@ public class TestInterAutomaton {
 		List<Set<Object>> sccList = GraphUtil.doAnalysis(roots, nodeToPreds,
 				nodeToSuccs);
 		System.out.println(sccList);
+		*/
 		
 		InterAutomaton test_scc_with_opt = new InterAutomaton();
-		test_scc_with_opt.buildWithOpt(scc, call);
+		InterAutomaton test_scc_without_opt = new InterAutomaton();
+		opts = expr.find();
+		System.out.println(opts);
+		//annotations = scc.annotate(opts);
+		//System.out.println(annotations);
+		
+		/*
+		test_scc_with_opt.buildWithOpt(expr, scc);
+		test_scc_without_opt.buildWithoutOpt(expr, scc);
+		test_scc_with_opt.dump();
+		test_scc_without_opt.dump();
+		*/
 	}
 }

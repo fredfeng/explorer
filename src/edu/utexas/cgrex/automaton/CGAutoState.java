@@ -6,8 +6,69 @@ public class CGAutoState extends AutoState {
 	// the incoming edges correspond to the same method, i.e., this.Id
 	// so we do not use map, instead, we just use set
 	protected Set<AutoState> incomingStates = new HashSet<AutoState>();
+	
 	protected AutoEdge incomingEdge;
 
+	/* fields to handle SCC when annotating */
+	protected boolean belongsToASCC = false; 
+	
+	// only when belongsToASCC == true will we update the following sets?
+	protected Set<AutoState> statesInTheSameSCC;
+	
+	protected Set<AutoEdge> edgesInTheSameSCC;
+	
+	protected Set<AutoState> outgoingStatesOfSCC;
+	
+	protected Set<AutoEdge> outgoingEdgesOfSCC;
+	
+	public void setBelongsToASCC() {
+		belongsToASCC = true;
+	}
+	
+	public boolean isBelongsToASCC() {
+		return belongsToASCC;
+	}
+	
+	/** setters */
+	public void setStatesInTheSameSCC(Set<AutoState> statesInTheSameSCC) {
+		this.statesInTheSameSCC = statesInTheSameSCC;
+	}
+	
+	public void setEdgesInTheSameSCC(Set<AutoEdge> edgesInTheSameSCC) {
+		this.edgesInTheSameSCC = edgesInTheSameSCC;
+	}
+	
+	public void setOutgoingStatesOfSCC(Set<AutoState> outgoingStatesOfSCC) {
+		this.outgoingStatesOfSCC = outgoingStatesOfSCC;
+	}
+	
+	public void setOutgoingEdgesOfSCC(Set<AutoEdge> outgoingEdgesOfSCC) {
+		this.outgoingEdgesOfSCC = outgoingEdgesOfSCC;
+	}
+	
+	/** getters */
+	public Set<AutoState> getStatesInTheSameSCC() {
+		return statesInTheSameSCC;
+	}
+	
+	public Set<AutoEdge> getEdgesInTheSameSCC() {
+		return edgesInTheSameSCC;
+	}
+	
+	public Set<AutoState> getOutgoingStatesOfSCC() {
+		return outgoingStatesOfSCC;
+	}
+	
+	public Set<AutoEdge> getOutgoingEdgesOfSCC() {
+		return outgoingEdgesOfSCC;
+	}
+	
+	
+	
+	
+	
+	
+	
 	public CGAutoState(Object id, boolean isInitState, boolean isFinalState,
 			AutoEdge incomingEdge) {
 		super(id, isInitState, isFinalState);

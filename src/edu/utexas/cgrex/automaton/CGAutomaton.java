@@ -2,9 +2,97 @@ package edu.utexas.cgrex.automaton;
 
 import java.util.*;
 
+import edu.utexas.cgrex.utils.GraphUtil;
+
 // cgfsm is the slave fsm
 public class CGAutomaton extends Automaton {
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void buildCGStatesSCC() {
+		Set roots = initStates;
+		Map nodeToPreds = new HashMap<Object, Set<Object>>();
+		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
+		for (AutoState s : states) {
+			nodeToPreds.put(s, s.getIncomingStatesKeySet());
+			nodeToSuccs.put(s, s.getOutgoingStatesKeySet());
+		}
+		Object sccListTmp = GraphUtil.doAnalysis(roots, nodeToPreds,
+				nodeToSuccs);
+		List<Set<AutoState>> sccList = (List<Set<AutoState>>) sccListTmp;
+
+		for (Set<AutoState> scc : sccList) {
+			Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
+			Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
+			Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();		
+			for (AutoState s : scc) {
+				CGAutoState st = (CGAutoState) s;
+				// find all the edges in the same SCC
+				for (AutoEdge e: st.getOutgoingStatesInvKeySet()) {
+					Set<AutoState> lookup = st.outgoingStatesInvLookup(e);
+					for (AutoState ss : lookup) {
+						if (scc.contains(ss)) {
+							edgesInTheSameSCC.add(e);
+							break;
+						}
+					}
+				}
+				// find all the edges going out of this SCC
+				for (AutoEdge e : st.getOutgoingStatesInvKeySet()) {
+					Set<AutoState> lookup = st.outgoingStatesInvLookup(e);
+					for (AutoState ss : lookup) {
+						if (!scc.contains(ss)) {
+							outgoingEdgesOfSCC.add(e);
+							break;
+						}
+					}
+				}
+				// find all the states being neighbors of this SCC
+				for (AutoState outState : st.getOutgoingStatesKeySet()) {
+					if (!scc.contains(outState))
+						outgoingStatesOfSCC.add(outState);
+				}
+			}
+			for (AutoState s : scc) {
+				CGAutoState st = (CGAutoState) s;
+				st.setBelongsToASCC();
+				// scc is statesInTheSameSCC
+				st.setStatesInTheSameSCC(scc);
+				st.setEdgesInTheSameSCC(edgesInTheSameSCC);
+				st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
+				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
+			}
+		}
+		
+		for (AutoState s : states) {
+			CGAutoState st = (CGAutoState) s;
+			if (!st.isBelongsToASCC()) {
+				// add st itself in the statesInTheSameSCC
+				Set<AutoState> statesInTheSameSCC = new HashSet<AutoState>();
+				statesInTheSameSCC.add(st);
+				st.setStatesInTheSameSCC(statesInTheSameSCC);
+				// add the cycle edge of st (if existed) to the edgesInTheSameSCC
+				Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
+				AutoEdge ce = st.getCycleEdge();
+				if (ce != null) 
+					edgesInTheSameSCC.add(st.getCycleEdge());
+				st.setEdgesInTheSameSCC(edgesInTheSameSCC);
+				// remove the cycle edge from the outgoingEdgesOfSCC
+				Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
+				outgoingEdgesOfSCC.addAll(st.getIncomingStatesInvKeySet());
+				AutoEdge cycle = st.getCycleEdge();
+				//if (cycle != null)
+					outgoingEdgesOfSCC.remove(cycle);
+				st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
+				// remove st state from the outgoingStatesOfSCC
+				Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
+				outgoingStatesOfSCC.addAll(st.getOutgoingStatesKeySet());
+				//if (outgoingStatesOfSCC.contains(st))
+					outgoingStatesOfSCC.remove(st);
+				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
+			}
+		}
+	}
+	
 	// the first state in return value is the state in refsm
 	// the second state in return value is the state in cgfsm
 	// i.e.,
