@@ -1,4 +1,4 @@
-package test.util;
+package edu.utexas.cgrex.analyses;
 
 import java.util.*;
 

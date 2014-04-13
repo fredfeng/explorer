@@ -1,22 +1,21 @@
-package test.util;
+package edu.utexas.cgrex.automaton;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 // refsm is the master fsm
-public class refsm extends fsm {
+public class RegAutomaton extends Automaton {
 	
 	// find() method returns a map that maps each state in refsm with a dot edge
 	// to a set of edges that must be followed to reach the one of the final state in refsm
-	public Map<State, Set<Edge>> find() {
-		Map<State, Set<Edge>> opts = new HashMap<State, Set<Edge>>();
-		for (State s : states) {
+	public Map<AutoState, Set<AutoEdge>> find() {
+		Map<AutoState, Set<AutoEdge>> opts = new HashMap<AutoState, Set<AutoEdge>>();
+		for (AutoState s : states) {
 			// we want to optimize for the states with cycle
 			// so we only care about states that have (.*) edge
-			refsmState currState = (refsmState) s;
+			RegAutoState currState = (RegAutoState) s;
 			// we can replace this by hasCycleEdge() if the only possible cycle is dot edge
 			if (currState.hasOutgoingDotEdge()) {
 				// we do not regard final state as a qualified state
@@ -25,11 +24,11 @@ public class refsm extends fsm {
 				if (currState.isFinalState())
 					continue;
 				
-				Set<Edge> keyEdges = new HashSet<Edge>();
+				Set<AutoEdge> keyEdges = new HashSet<AutoEdge>();
 				opts.put(currState, keyEdges);
-				for (Object e : currState.outgoingStatesInv()) {
-					Edge eg = (Edge) e;
-					if (!eg.isDot())
+				for (AutoEdge e : currState.getOutgoingStatesInvKeySet()) {
+					AutoEdge eg = (AutoEdge) e;
+					if (!eg.isDotEdge())
 						keyEdges.add(eg);
 				}
 			}

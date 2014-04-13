@@ -1,9 +1,9 @@
-package test.util;
+package edu.utexas.cgrex.automaton;
 
 import java.util.*;
 
 // cgfsm is the slave fsm
-public class cgfsm extends fsm {
+public class CGAutomaton extends Automaton {
 	
 	// the first state in return value is the state in refsm
 	// the second state in return value is the state in cgfsm
@@ -14,10 +14,10 @@ public class cgfsm extends fsm {
 	// foreach masterState, "annotate" method annotates each slaveState
 	// to be true or false, denoting whether we should create the statePair
 	// in the intersection machine and whether we should go ahead
-	public Map<State, Map<State, Boolean>> annotate(Map<State, Set<Edge>> regExprOpts) {
-		Map<State, Map<State, Boolean>> opts = new HashMap<State, Map<State, Boolean>>();
-		for (State stateInReg : regExprOpts.keySet()) {
-			Set<Edge> keyEdges = regExprOpts.get(stateInReg);
+	public Map<AutoState, Map<AutoState, Boolean>> annotate(Map<AutoState, Set<AutoEdge>> regExprOpts) {
+		Map<AutoState, Map<AutoState, Boolean>> opts = new HashMap<AutoState, Map<AutoState, Boolean>>();
+		for (AutoState stateInReg : regExprOpts.keySet()) {
+			Set<AutoEdge> keyEdges = regExprOpts.get(stateInReg);
 			opts.put(stateInReg, annotateOneMasterState(keyEdges));
 		}
 		return opts;
@@ -29,11 +29,10 @@ public class cgfsm extends fsm {
 	// Map <  State,     Boolean  >
 	//          |           |
 	//      slaveState  true: create
-	protected Map<State, Boolean> annotateOneMasterState(Set<Edge> keyEdges) {
-		Map<State, Boolean> opts = new HashMap<State, Boolean>();
-		for (Object s : initStates) {
-			State st = (State) s; // foreach slave state
-			annotateOneSlaveStateOneMasterState(st, keyEdges, opts);
+	protected Map<AutoState, Boolean> annotateOneMasterState(Set<AutoEdge> keyEdges) {
+		Map<AutoState, Boolean> opts = new HashMap<AutoState, Boolean>();
+		for (AutoState s : initStates) {
+			annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
 		}
 		return opts;
 	}
@@ -43,8 +42,8 @@ public class cgfsm extends fsm {
 	// annotate the slave state with true/false
 	// denoting whether the subgraph of the slave state has at least one key edge
 	// that leads to the final state of regular expr fsm
-	protected boolean annotateOneSlaveStateOneMasterState(State currSlaveState, 
-			Set<Edge> keyEdges, Map<State, Boolean> opts) {
+	protected boolean annotateOneSlaveStateOneMasterState(AutoState currSlaveState, 
+			Set<AutoEdge> keyEdges, Map<AutoState, Boolean> opts) {
 		// termination conditions
 		// 1. if this slave state has been visited, return its boolean value
 		// this is just a speedup
@@ -75,8 +74,8 @@ public class cgfsm extends fsm {
 		}
 		*/
 		// this has only constant-complexity
-		for (Edge e : keyEdges) {
-			if (currSlaveState.outgoingStatesInv().contains(e)) {
+		for (AutoEdge e : keyEdges) {
+			if (currSlaveState.getOutgoingStatesInvKeySet().contains(e)) {
 				edge_result = true;
 				// opts.put(currSlaveState, true);
 				break;
@@ -94,11 +93,10 @@ public class cgfsm extends fsm {
 		if (edge_result)
 			opts.put(currSlaveState, true);
 		// we check for the neighboring states of currSlaveState
-		for (Object s : currSlaveState.outgoingStates()) {
-			State st = (State) s;
+		for (AutoState s : currSlaveState.getOutgoingStatesKeySet()) {
 			if (s.equals(currSlaveState))
 				continue; // eliminate infinite loop
-			state_result = state_result || annotateOneSlaveStateOneMasterState(st, keyEdges, opts);
+			state_result = state_result || annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
 		}
 		// synthesize the result and annotate
 		boolean result = edge_result || state_result;

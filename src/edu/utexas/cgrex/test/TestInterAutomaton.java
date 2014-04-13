@@ -1,25 +1,33 @@
-package test;
+package edu.utexas.cgrex.test;
 
 import java.util.*;
 
-import test.util.*;
+import edu.utexas.cgrex.automaton.AutoEdge;
+import edu.utexas.cgrex.automaton.AutoState;
+import edu.utexas.cgrex.automaton.CGAutoState;
+import edu.utexas.cgrex.automaton.CGAutomaton;
+import edu.utexas.cgrex.automaton.InterAutomaton;
+import edu.utexas.cgrex.automaton.RegAutoState;
+import edu.utexas.cgrex.automaton.RegAutomaton;
+import edu.utexas.cgrex.utils.GraphUtil;
 
-public class TestIntersectFSM {
+
+public class TestInterAutomaton {
 	public static void main(String[] args) {
-		cgfsm call = new cgfsm();
-		refsm expr = new refsm(); 
+		CGAutomaton call = new CGAutomaton();
+		RegAutomaton expr = new RegAutomaton(); 
 		
 		/** construct a simulated regular expr fsm */
-		Edge expr_edge_foo = new Edge(new refsmId("foo"));
-		Edge expr_edge_baz = new Edge(new refsmId("baz"));	
-		Edge expr_edge_bar = new Edge(new refsmId("bar"));
-		dotEdge expr_edge_dot = new dotEdge(new refsmId("dot"));
+		AutoEdge expr_edge_foo = new AutoEdge("foo");
+		AutoEdge expr_edge_baz = new AutoEdge("baz");	
+		AutoEdge expr_edge_bar = new AutoEdge("bar");
+		AutoEdge expr_edge_dot = new AutoEdge("dot", true);
 		
-		refsmState expr_init = new refsmState(new refsmId(1), true, false);
-		refsmState expr_state_1 = new refsmState(new refsmId(2), false, false);
-		refsmState expr_state_2 = new refsmState(new refsmId(3), false, false);
-		refsmState expr_state_3 = new refsmState(new refsmId(4), false, false);
-		refsmState expr_final = new refsmState(new refsmId(5), false, true);
+		RegAutoState expr_init = new RegAutoState(1, true, false);
+		RegAutoState expr_state_1 = new RegAutoState(2);
+		RegAutoState expr_state_2 = new RegAutoState(3);
+		RegAutoState expr_state_3 = new RegAutoState(4);
+		RegAutoState expr_final = new RegAutoState(5, false, true);
 		
 		expr.addStates(expr_init);
 		expr.addStates(expr_final);
@@ -49,20 +57,20 @@ public class TestIntersectFSM {
 		expr_final.addOutgoingStates(expr_final, expr_edge_dot);
 		
 		/** construct a simulated call graph fsm */
-		Edge call_edge_foo = new Edge(new cgfsmId("foo"));
-		Edge call_edge_baz = new Edge(new cgfsmId("baz"));
-		Edge call_edge_main = new Edge(new cgfsmId("main"));
-		Edge call_edge_x = new Edge(new cgfsmId("x"));
-		Edge call_edge_y = new Edge(new cgfsmId("y"));
-		Edge call_edge_z = new Edge(new cgfsmId("z"));
+		AutoEdge call_edge_foo = new AutoEdge("foo");
+		AutoEdge call_edge_baz = new AutoEdge("baz");
+		AutoEdge call_edge_main = new AutoEdge("main");
+		AutoEdge call_edge_x = new AutoEdge("x");
+		AutoEdge call_edge_y = new AutoEdge("y");
+		AutoEdge call_edge_z = new AutoEdge("z");
 		
-		cgfsmState call_init = new cgfsmState(new cgfsmId(1), true, false, null);
-		cgfsmState call_state_1 = new cgfsmState(new cgfsmId(2), false, true, call_edge_x);
-		cgfsmState call_state_2 = new cgfsmState(new cgfsmId(3), false, true, call_edge_y);
-		cgfsmState call_state_3 = new cgfsmState(new cgfsmId(4), false, true, call_edge_z);
-		cgfsmState call_state_4 = new cgfsmState(new cgfsmId(5), false, true, call_edge_main);
-		cgfsmState call_state_5 = new cgfsmState(new cgfsmId(6), false, true, call_edge_foo);
-		cgfsmState call_final = new cgfsmState(new cgfsmId(7), false, true, call_edge_baz);
+		CGAutoState call_init = new CGAutoState(1, true, false, null);
+		CGAutoState call_state_1 = new CGAutoState(2, false, true, call_edge_x);
+		CGAutoState call_state_2 = new CGAutoState(3, false, true, call_edge_y);
+		CGAutoState call_state_3 = new CGAutoState(4, false, true, call_edge_z);
+		CGAutoState call_state_4 = new CGAutoState(5, false, true, call_edge_main);
+		CGAutoState call_state_5 = new CGAutoState(6, false, true, call_edge_foo);
+		CGAutoState call_final = new CGAutoState(7, false, true, call_edge_baz);
 			
 		call.addStates(call_init);
 		call.addStates(call_state_1);
@@ -87,27 +95,27 @@ public class TestIntersectFSM {
 		expr.dump();
 		call.dump();
 		
-		intersectFSM comb_without_opt = new intersectFSM();
+		InterAutomaton comb_without_opt = new InterAutomaton();
 		comb_without_opt.buildWithoutOpt(expr, call);
 		comb_without_opt.dump();
 		
-		Map<State, Set<Edge>> opts = expr.find();
+		Map<AutoState, Set<AutoEdge>> opts = expr.find();
 		System.out.println(opts);
-		Map<State, Map<State, Boolean>> annotations = call.annotate(opts);
+		Map<AutoState, Map<AutoState, Boolean>> annotations = call.annotate(opts);
 		System.out.println(annotations);
 		
-		intersectFSM comb_with_opt = new intersectFSM();
+		InterAutomaton comb_with_opt = new InterAutomaton();
 		comb_with_opt.buildWithOpt(expr, call);
 		comb_with_opt.dump();
 		
 		
 		/** test scc doAnalysis */
-		refsm scc = new refsm();
-		Edge scc_edge = new Edge(new refsmId("edge"));
-		Edge scc_back_edge = new Edge(new refsmId("backEdge"));
+		RegAutomaton scc = new RegAutomaton();
+		AutoEdge scc_edge = new AutoEdge("edge");
+		AutoEdge scc_back_edge = new AutoEdge("backEdge");
 		
-		refsmState scc_init = new refsmState(new refsmId(1), true, false);
-		refsmState scc_final = new refsmState(new refsmId(2), false, true);
+		RegAutoState scc_init = new RegAutoState(1, true, false);
+		RegAutoState scc_final = new RegAutoState(2, false, true);
 		
 		scc.addStates(scc_init);
 		scc.addStates(scc_final);
@@ -121,19 +129,19 @@ public class TestIntersectFSM {
 		scc_final.addOutgoingStates(scc_init, scc_back_edge);
 		scc.dump();
 				
-		Set<Object> roots = scc.getInitStates();
-		Map<Object, Set<Object>> nodeToPreds = new HashMap<Object, Set<Object>>();
-		Map<Object, Set<Object>> nodeToSuccs = new HashMap<Object, Set<Object>>();
-		Iterator<State> it = scc.statesIterator();
+		Set roots = scc.getInitStates();
+		Map nodeToPreds = new HashMap<Object, Set<Object>>();
+		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
+		Iterator<AutoState> it = scc.statesIterator();
 		while (it.hasNext()) {
-			State s = it.next();
-			nodeToPreds.put(s, s.getIncomingStates());
+			AutoState s = it.next();
+			nodeToPreds.put(s, s.getIncomingStatesKeySet());
 			nodeToSuccs.put(s, s.getOutgoingStatesKeySet());
 		}
 		System.out.println(nodeToPreds);
 		System.out.println(nodeToSuccs);
 		
-		List<Set<Object>> sccList = Util.doAnalysis(roots, nodeToPreds, nodeToSuccs);
+		List<Set<Object>> sccList = GraphUtil.doAnalysis(roots, nodeToPreds, nodeToSuccs);
 		System.out.println(sccList);
 	}
 }

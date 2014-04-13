@@ -1,8 +1,9 @@
-package test;
+package edu.utexas.cgrex.test;
 
 import java.util.*;
 
 import edu.utexas.RegularPT.RegularPTTransformer;
+import edu.utexas.cgrex.analyses.MatchEdges;
 import soot.CompilationDeathException;
 import soot.G;
 import soot.Local;
@@ -33,7 +34,6 @@ import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.jimple.toolkits.pointer.util.NativeMethodDriver;
-import test.util.*;
 
 public class test extends SceneTransformer{
 	protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
