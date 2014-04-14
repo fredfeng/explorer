@@ -66,6 +66,7 @@ public class test extends SceneTransformer{
         //MatchEdges me = new MatchEdges(pag);
         AutoPAG me = new AutoPAG(pag);
         me.build();
+        me.dump();
         
         System.out.println("-------match-------");
         Iterator<Object> it = me.matchSourcesIterator();
