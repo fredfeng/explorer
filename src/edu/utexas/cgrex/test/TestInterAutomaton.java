@@ -104,7 +104,8 @@ public class TestInterAutomaton {
 		InterAutomaton comb_without_opt = new InterAutomaton(myopts, expr, call);
 		comb_without_opt.build();
 		comb_without_opt.dump();
-
+		
+		/*
 		Map<AutoState, Set<AutoEdge>> opts = expr.find();
 		System.out.println(opts);
 		Map<AutoState, Map<AutoState, Boolean>> annotations = call
@@ -115,7 +116,7 @@ public class TestInterAutomaton {
 		comb_with_opt.build();
 		comb_with_opt.dump();
 
-		/** test scc doAnalysis */
+		// test scc doAnalysis 
 		CGAutomaton scc = new CGAutomaton();
 		AutoEdge scc_edge_main = new AutoEdge("main");
 		AutoEdge scc_edge_foo = new AutoEdge("foo");
@@ -175,7 +176,7 @@ public class TestInterAutomaton {
 			System.out.println("outgoingStatesOfSCC: " + st.getOutgoingStatesOfSCC());
 			System.out.println("outgoingEdgesOfSCC: " + st.getOutgoingEdgesOfSCC());
 		}
-		
+		*/
 		
 		/*
 		Set roots = scc.getInitStates();
@@ -195,6 +196,7 @@ public class TestInterAutomaton {
 		System.out.println(sccList);
 		*/
 		
+		/*
 		InterAutomaton test_scc_with_opt = new InterAutomaton(myopts, expr, scc);
 		InterAutomaton test_scc_without_opt = new InterAutomaton(myopts, expr, scc);
 		opts = expr.find();
@@ -203,12 +205,7 @@ public class TestInterAutomaton {
 		System.out.println(annotations);
 		test_scc_with_opt.build();
 		test_scc_with_opt.dump();
-		
-		/*
-		test_scc_with_opt.buildWithOpt(expr, scc);
-		test_scc_without_opt.buildWithoutOpt(expr, scc);
-		test_scc_with_opt.dump();
-		test_scc_without_opt.dump();
 		*/
+
 	}
 }

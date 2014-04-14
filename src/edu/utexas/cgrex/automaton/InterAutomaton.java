@@ -18,6 +18,20 @@ public class InterAutomaton extends Automaton {
 		this.options = options;
 		this.masterAutomaton = masterAutomaton;
 		this.slaveAutomaton = slaveAutomaton;
+
+		for (AutoState s : slaveAutomaton.getStates()) {
+			System.out.println("slave" + s);
+			System.out.println(s.getOutgoingStatesInvKeySet());
+			System.out.println(s.getOutgoingStatesKeySet());
+			System.out.println(s.getIncomingStatesInvKeySet());
+		}
+
+		for (AutoState s : masterAutomaton.getStates()) {
+			System.out.println("master" + s);
+			System.out.println(s.getOutgoingStatesInvKeySet());
+			System.out.println(s.getOutgoingStatesKeySet());
+			System.out.println(s.getIncomingStatesInvKeySet());
+		}
 	}
 
 	// if this machine contains a statepair consisting of master and slave
@@ -50,9 +64,90 @@ public class InterAutomaton extends Automaton {
 							.find();
 					Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
 							.annotate(regExprOpts);
-					intersectAnnot(masterInitSt, slaveInitSt, interInitSt, annots);
+					intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
+							annots);
 				} else {
-					//intersect();
+					intersect(masterInitSt, slaveInitSt, interInitSt);
+				}
+			}
+		}
+	}
+
+	protected void intersect(AutoState masterSt, AutoState slaveSt,
+			InterAutoState interSt) {
+		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
+			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
+			for (AutoEdge masterNextEdge : masterSt
+					.outgoingStatesLookup(masterNextState)) {
+				if (masterNextEdge.isDotEdge()) {
+					/*
+					 * boolean toContinue = true; if
+					 * (annots.containsKey(masterSt)) { Map<AutoState, Boolean>
+					 * annot = annots.get(masterSt); if
+					 * (annot.containsKey(slaveSt)) { toContinue =
+					 * annot.get(slaveSt); if (!toContinue) continue; // jump to
+					 * the next master } }
+					 */
+					for (AutoState slaveNxtSt : slaveSt
+							.getOutgoingStatesKeySet()) {
+						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						for (AutoEdge slaveNextEdge : slaveSt
+								.outgoingStatesLookup(slaveNextState)) {
+							InterAutoState newInterSt = containMasterandSlaveState(
+									masterNextState, slaveNextState);
+							if (newInterSt != null) {
+								interSt.addOutgoingStates(newInterSt,
+										slaveNextEdge);
+								newInterSt.addIncomingStates(interSt,
+										slaveNextEdge);
+							} else {
+								newInterSt = new InterAutoState(masterNextState
+										.getId().toString()
+										+ slaveNextState.getId().toString(),
+										masterNextState, slaveNextState);
+								if (newInterSt.buildAsFinal())
+									newInterSt.setFinalState();
+								interSt.addOutgoingStates(newInterSt,
+										slaveNextEdge);
+								newInterSt.addIncomingStates(interSt,
+										slaveNextEdge);
+								states.add(newInterSt);
+								intersect(masterNextState, slaveNextState,
+										newInterSt);
+							}
+						}
+					}
+
+				} else {
+					Set<AutoState> slaveNextStates = slaveSt
+							.outgoingStatesInvLookup(masterNextEdge);
+					if (slaveNextStates == null)
+						continue;
+					for (AutoState slaveNxtSt : slaveNextStates) {
+						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						InterAutoState newInterSt = containMasterandSlaveState(
+								masterNextState, slaveNextState);
+						if (newInterSt != null) {
+							interSt.addOutgoingStates(newInterSt,
+									masterNextEdge);
+							newInterSt.addIncomingStates(interSt,
+									masterNextEdge);
+						} else {
+							newInterSt = new InterAutoState(masterNextState
+									.getId().toString()
+									+ slaveNextState.getId().toString(),
+									masterNextState, slaveNextState);
+							if (newInterSt.buildAsFinal())
+								newInterSt.setFinalState();
+							interSt.addOutgoingStates(newInterSt,
+									masterNextEdge);
+							newInterSt.addIncomingStates(interSt,
+									masterNextEdge);
+							states.add(newInterSt);
+							intersect(masterNextState, slaveNextState,
+									newInterSt);
+						}
+					}
 				}
 			}
 		}
@@ -108,7 +203,7 @@ public class InterAutomaton extends Automaton {
 				} else {
 					Set<AutoState> slaveNextStates = slaveSt
 							.outgoingStatesInvLookup(masterNextEdge);
-					if (slaveNextStates == null) 
+					if (slaveNextStates == null)
 						continue;
 					for (AutoState slaveNxtSt : slaveNextStates) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;

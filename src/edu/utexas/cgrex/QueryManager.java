@@ -78,7 +78,7 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04d", meth.getNumber());
 			uidToMethMap.put(uid, meth);
-			System.out.println("********" + uid);
+			System.out.println("********" + uid + " " + meth);
 
 
 			AutoEdge inEdge = new AutoEdge(uid);
@@ -229,7 +229,7 @@ public class QueryManager {
 
 	private void buildInterAutomaton() {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
-		myoptions.put("annot", true);
+		//myoptions.put("annot", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 		
 		InterAutomaton intoAuto = new InterAutomaton(myopts, regAuto, cgAuto);

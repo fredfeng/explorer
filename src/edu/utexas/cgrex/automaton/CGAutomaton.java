@@ -112,6 +112,7 @@ public class CGAutomaton extends Automaton {
 			Set<AutoEdge> keyEdges = regExprOpts.get(stateInReg);
 			opts.put(stateInReg, annotateOneMasterState(keyEdges));
 		}
+		System.out.println(opts);
 		return opts;
 	}
 
