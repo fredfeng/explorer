@@ -35,7 +35,7 @@ public class Harness {
 							"-p", "cg.spark", "on", "-debug" });
 			
 			String regx = "";
-			//test case: (\u6162|\u6155).*\u1151
+			//test case: (\u6162|\u6155).*\u0097
 			QueryManager qm = new QueryManager();
 			while (true) {
 				Scanner in = new Scanner(System.in);

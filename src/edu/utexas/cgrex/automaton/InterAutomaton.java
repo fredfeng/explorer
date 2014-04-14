@@ -173,6 +173,16 @@ public class InterAutomaton extends Automaton {
 					for (AutoState slaveNxtSt : slaveSt
 							.getOutgoingStatesKeySet()) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						boolean toCreate = true;
+						if (annots.containsKey(masterNextState)) {
+							Map<AutoState, Boolean> annot = annots
+									.get(masterNextState);
+							if (annot.containsKey(slaveNextState)) {
+								toContinue = annot.get(slaveNextState);
+								if (!toCreate)
+									continue; // jump to the next master
+							}
+						}
 						for (AutoEdge slaveNextEdge : slaveSt
 								.outgoingStatesLookup(slaveNextState)) {
 							InterAutoState newInterSt = containMasterandSlaveState(
