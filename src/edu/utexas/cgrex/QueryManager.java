@@ -24,6 +24,7 @@ import dk.brics.automaton.Transition;
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
+import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
@@ -227,8 +228,12 @@ public class QueryManager {
 	}
 
 	private void buildInterAutomaton() {
-		intoAuto = new InterAutomaton();
-		intoAuto.buildWithoutOpt(regAuto, cgAuto);
+		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
+		myoptions.put("annot", true);
+		InterAutoOpts myopts = new InterAutoOpts(myoptions);
+		
+		InterAutomaton intoAuto = new InterAutomaton(myopts, regAuto, cgAuto);
+		intoAuto.build();
 		System.out.println("dump interset automaton.....");
 		intoAuto.dump();
 	}
