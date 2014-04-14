@@ -6,7 +6,20 @@ import chord.util.graph.IGraph;
 import chord.util.graph.MutableGraph;
 
 public class InterAutomaton extends Automaton {
-	
+
+	protected InterAutoOpts options; // control optimization options
+
+	protected Automaton masterAutomaton;
+
+	protected Automaton slaveAutomaton;
+
+	public InterAutomaton(InterAutoOpts options, Automaton masterAutomaton,
+			Automaton slaveAutomaton) {
+		this.options = options;
+		this.masterAutomaton = masterAutomaton;
+		this.slaveAutomaton = slaveAutomaton;
+	}
+
 	// if this machine contains a statepair consisting of master and slave
 	// return that statepair
 	// otherwise, return null
@@ -21,55 +34,108 @@ public class InterAutomaton extends Automaton {
 		return null;
 	}
 
-	// given a regular expression fsm
-	// find all the states that might be optimized which are mapped
-	// to a set of edges
-	// each key is a state that has a dot edge
-	// if that key cannot be optimized, the set is empty (not null)
-	// if that key can be optimized, the set contains the edges
-
-	// build the finite state machine which combines
-	// a call graph state machine and a regular expr state machine
-	public void buildWithoutOpt(Automaton masterFSM, Automaton slaveFSM) {
-		Iterator<AutoState> masterInitStatesIt = masterFSM.initStatesIterator();
-		Iterator<AutoState> slaveInitStatesIt = slaveFSM.initStatesIterator();
-		while (masterInitStatesIt.hasNext()) {
-			AutoState masterInitState = (AutoState) masterInitStatesIt.next();
-			while (slaveInitStatesIt.hasNext()) {
-				AutoState slaveInitState = (AutoState) slaveInitStatesIt.next();
-				InterAutoState sp = new InterAutoState(masterInitState.getId()
-						.toString() + slaveInitState.getId().toString(),
-						masterInitState, slaveInitState);
-				states.add(sp);
-				initStates.add(sp);
-				sp.setInitState();
-				intersectWithoutOpt(masterInitState, slaveInitState, sp);
+	public void build() {
+		Set<AutoState> masterInitStates = masterAutomaton.getInitStates();
+		Set<AutoState> slaveInitStates = slaveAutomaton.getInitStates();
+		for (AutoState masterInitSt : masterInitStates) {
+			for (AutoState slaveInitSt : slaveInitStates) {
+				InterAutoState interInitSt = new InterAutoState(masterInitSt
+						.getId().toString() + slaveInitSt.getId().toString(),
+						masterInitSt, slaveInitSt, true, false);
+				states.add(interInitSt);
+				initStates.add(interInitSt);
+				interInitSt.setInitState();
+				if (options.annotated()) {
+					Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterAutomaton)
+							.find();
+					Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
+							.annotate(regExprOpts);
+					intersectAnnot(masterInitSt, slaveInitSt, interInitSt, annots);
+				} else {
+					//intersect();
+				}
 			}
 		}
 	}
 
-	public void buildWithOpt(Automaton masterFSM, Automaton slaveFSM) {
-		// first parse the masterFSM to get the keyEdges set as the regExprOpts
-		Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterFSM)
-				.find();
-		// then get the annotations for slaveFSM
-		Map<AutoState, Map<AutoState, Boolean>> annotations = ((CGAutomaton) slaveFSM)
-				.annotate(regExprOpts);
-		// call the intersectWithOpt method to build the intersection machine
-		Iterator<AutoState> masterInitStatesIt = masterFSM.initStatesIterator();
-		Iterator<AutoState> slaveInitStatesIt = slaveFSM.initStatesIterator();
-		while (masterInitStatesIt.hasNext()) {
-			AutoState masterInitState = (AutoState) masterInitStatesIt.next();
-			while (slaveInitStatesIt.hasNext()) {
-				AutoState slaveInitState = (AutoState) slaveInitStatesIt.next();
-				InterAutoState sp = new InterAutoState(masterInitState.getId()
-						.toString() + slaveInitState.getId().toString(),
-						masterInitState, slaveInitState);
-				states.add(sp);
-				initStates.add(sp);
-				sp.setInitState();
-				intersectWithOpt(masterInitState, slaveInitState, sp,
-						annotations);
+	protected void intersectAnnot(AutoState masterSt, AutoState slaveSt,
+			InterAutoState interSt,
+			Map<AutoState, Map<AutoState, Boolean>> annots) {
+		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
+			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
+			for (AutoEdge masterNextEdge : masterSt
+					.outgoingStatesLookup(masterNextState)) {
+				if (masterNextEdge.isDotEdge()) {
+					boolean toContinue = true;
+					if (annots.containsKey(masterSt)) {
+						Map<AutoState, Boolean> annot = annots.get(masterSt);
+						if (annot.containsKey(slaveSt)) {
+							toContinue = annot.get(slaveSt);
+							if (!toContinue)
+								continue; // jump to the next master
+						}
+					}
+					for (AutoState slaveNxtSt : slaveSt
+							.getOutgoingStatesKeySet()) {
+						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						for (AutoEdge slaveNextEdge : slaveSt
+								.outgoingStatesLookup(slaveNextState)) {
+							InterAutoState newInterSt = containMasterandSlaveState(
+									masterNextState, slaveNextState);
+							if (newInterSt != null) {
+								interSt.addOutgoingStates(newInterSt,
+										slaveNextEdge);
+								newInterSt.addIncomingStates(interSt,
+										slaveNextEdge);
+							} else {
+								newInterSt = new InterAutoState(masterNextState
+										.getId().toString()
+										+ slaveNextState.getId().toString(),
+										masterNextState, slaveNextState);
+								if (newInterSt.buildAsFinal())
+									newInterSt.setFinalState();
+								interSt.addOutgoingStates(newInterSt,
+										slaveNextEdge);
+								newInterSt.addIncomingStates(interSt,
+										slaveNextEdge);
+								states.add(newInterSt);
+								intersectAnnot(masterNextState, slaveNextState,
+										newInterSt, annots);
+							}
+						}
+					}
+
+				} else {
+					Set<AutoState> slaveNextStates = slaveSt
+							.outgoingStatesInvLookup(masterNextEdge);
+					if (slaveNextStates == null) 
+						continue;
+					for (AutoState slaveNxtSt : slaveNextStates) {
+						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						InterAutoState newInterSt = containMasterandSlaveState(
+								masterNextState, slaveNextState);
+						if (newInterSt != null) {
+							interSt.addOutgoingStates(newInterSt,
+									masterNextEdge);
+							newInterSt.addIncomingStates(interSt,
+									masterNextEdge);
+						} else {
+							newInterSt = new InterAutoState(masterNextState
+									.getId().toString()
+									+ slaveNextState.getId().toString(),
+									masterNextState, slaveNextState);
+							if (newInterSt.buildAsFinal())
+								newInterSt.setFinalState();
+							interSt.addOutgoingStates(newInterSt,
+									masterNextEdge);
+							newInterSt.addIncomingStates(interSt,
+									masterNextEdge);
+							states.add(newInterSt);
+							intersectAnnot(masterNextState, slaveNextState,
+									newInterSt, annots);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -300,5 +366,43 @@ public class InterAutomaton extends Automaton {
 			}
 		}
 	}
+
+	/*
+	 * // given a regular expression fsm // find all the states that might be
+	 * optimized which are mapped // to a set of edges // each key is a state
+	 * that has a dot edge // if that key cannot be optimized, the set is empty
+	 * (not null) // if that key can be optimized, the set contains the edges
+	 * 
+	 * // build the finite state machine which combines // a call graph state
+	 * machine and a regular expr state machine public void
+	 * buildWithoutOpt(Automaton masterFSM, Automaton slaveFSM) {
+	 * Iterator<AutoState> masterInitStatesIt = masterFSM.initStatesIterator();
+	 * Iterator<AutoState> slaveInitStatesIt = slaveFSM.initStatesIterator();
+	 * while (masterInitStatesIt.hasNext()) { AutoState masterInitState =
+	 * (AutoState) masterInitStatesIt.next(); while
+	 * (slaveInitStatesIt.hasNext()) { AutoState slaveInitState = (AutoState)
+	 * slaveInitStatesIt.next(); InterAutoState sp = new
+	 * InterAutoState(masterInitState.getId() .toString() +
+	 * slaveInitState.getId().toString(), masterInitState, slaveInitState);
+	 * states.add(sp); initStates.add(sp); sp.setInitState();
+	 * intersectWithoutOpt(masterInitState, slaveInitState, sp); } } }
+	 * 
+	 * public void buildWithOpt(Automaton masterFSM, Automaton slaveFSM) { //
+	 * first parse the masterFSM to get the keyEdges set as the regExprOpts
+	 * Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterFSM)
+	 * .find(); // then get the annotations for slaveFSM Map<AutoState,
+	 * Map<AutoState, Boolean>> annotations = ((CGAutomaton) slaveFSM)
+	 * .annotate(regExprOpts); // call the intersectWithOpt method to build the
+	 * intersection machine Iterator<AutoState> masterInitStatesIt =
+	 * masterFSM.initStatesIterator(); Iterator<AutoState> slaveInitStatesIt =
+	 * slaveFSM.initStatesIterator(); while (masterInitStatesIt.hasNext()) {
+	 * AutoState masterInitState = (AutoState) masterInitStatesIt.next(); while
+	 * (slaveInitStatesIt.hasNext()) { AutoState slaveInitState = (AutoState)
+	 * slaveInitStatesIt.next(); InterAutoState sp = new
+	 * InterAutoState(masterInitState.getId() .toString() +
+	 * slaveInitState.getId().toString(), masterInitState, slaveInitState);
+	 * states.add(sp); initStates.add(sp); sp.setInitState();
+	 * intersectWithOpt(masterInitState, slaveInitState, sp, annotations); } } }
+	 */
 
 }

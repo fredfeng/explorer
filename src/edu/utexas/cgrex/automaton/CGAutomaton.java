@@ -9,6 +9,7 @@ public class CGAutomaton extends Automaton {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void buildCGStatesSCC() {
+
 		Set roots = initStates;
 		Map nodeToPreds = new HashMap<Object, Set<Object>>();
 		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
@@ -23,11 +24,11 @@ public class CGAutomaton extends Automaton {
 		for (Set<AutoState> scc : sccList) {
 			Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
 			Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
-			Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();		
+			Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
 			for (AutoState s : scc) {
 				CGAutoState st = (CGAutoState) s;
 				// find all the edges in the same SCC
-				for (AutoEdge e: st.getOutgoingStatesInvKeySet()) {
+				for (AutoEdge e : st.getOutgoingStatesInvKeySet()) {
 					Set<AutoState> lookup = st.outgoingStatesInvLookup(e);
 					for (AutoState ss : lookup) {
 						if (scc.contains(ss)) {
@@ -62,7 +63,7 @@ public class CGAutomaton extends Automaton {
 				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
 			}
 		}
-		
+
 		for (AutoState s : states) {
 			CGAutoState st = (CGAutoState) s;
 			if (!st.isBelongsToASCC()) {
@@ -70,29 +71,30 @@ public class CGAutomaton extends Automaton {
 				Set<AutoState> statesInTheSameSCC = new HashSet<AutoState>();
 				statesInTheSameSCC.add(st);
 				st.setStatesInTheSameSCC(statesInTheSameSCC);
-				// add the cycle edge of st (if existed) to the edgesInTheSameSCC
+				// add the cycle edge of st (if existed) to the
+				// edgesInTheSameSCC
 				Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
 				AutoEdge ce = st.getCycleEdge();
-				if (ce != null) 
+				if (ce != null)
 					edgesInTheSameSCC.add(st.getCycleEdge());
 				st.setEdgesInTheSameSCC(edgesInTheSameSCC);
 				// remove the cycle edge from the outgoingEdgesOfSCC
 				Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
 				outgoingEdgesOfSCC.addAll(st.getIncomingStatesInvKeySet());
 				AutoEdge cycle = st.getCycleEdge();
-				//if (cycle != null)
-					outgoingEdgesOfSCC.remove(cycle);
+				// if (cycle != null)
+				outgoingEdgesOfSCC.remove(cycle);
 				st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
 				// remove st state from the outgoingStatesOfSCC
 				Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
 				outgoingStatesOfSCC.addAll(st.getOutgoingStatesKeySet());
-				//if (outgoingStatesOfSCC.contains(st))
-					outgoingStatesOfSCC.remove(st);
+				// if (outgoingStatesOfSCC.contains(st))
+				outgoingStatesOfSCC.remove(st);
 				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
 			}
 		}
 	}
-	
+
 	// the first state in return value is the state in refsm
 	// the second state in return value is the state in cgfsm
 	// i.e.,
@@ -104,8 +106,8 @@ public class CGAutomaton extends Automaton {
 	// in the intersection machine and whether we should go ahead
 	public Map<AutoState, Map<AutoState, Boolean>> annotate(
 			Map<AutoState, Set<AutoEdge>> regExprOpts) {
-		Map<AutoState, Map<AutoState, Boolean>> opts = new HashMap<AutoState, 
-				Map<AutoState, Boolean>>();
+		buildCGStatesSCC();
+		Map<AutoState, Map<AutoState, Boolean>> opts = new HashMap<AutoState, Map<AutoState, Boolean>>();
 		for (AutoState stateInReg : regExprOpts.keySet()) {
 			Set<AutoEdge> keyEdges = regExprOpts.get(stateInReg);
 			opts.put(stateInReg, annotateOneMasterState(keyEdges));
@@ -123,9 +125,59 @@ public class CGAutomaton extends Automaton {
 			Set<AutoEdge> keyEdges) {
 		Map<AutoState, Boolean> opts = new HashMap<AutoState, Boolean>();
 		for (AutoState s : initStates) {
-			annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
+			// annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
+			annotSlaveMasterSCC(s, keyEdges, opts);
 		}
 		return opts;
+	}
+
+	protected boolean annotSlaveMasterSCC(AutoState currSlaveState,
+			Set<AutoEdge> keyEdges, Map<AutoState, Boolean> opts) {
+		// if currSlaveState has been annotated, return the annotation
+		if (opts.containsKey(currSlaveState))
+			return opts.get(currSlaveState);
+
+		// 1. annotate according to the outgoingEdgesOfSCC
+		boolean outEdgsOfSCCAnnot = false;
+		for (AutoEdge e : keyEdges) {
+			Set<AutoEdge> out = ((CGAutoState) currSlaveState)
+					.getOutgoingEdgesOfSCC();
+			if (out != null && out.contains(e)) {
+				outEdgsOfSCCAnnot = true;
+				break;
+			}
+		}
+
+		// 2. annotate according to the outgoingStatesOfSCC
+		// also recursively update the outgoingStates of this SCC (no cycles)
+		boolean outStsOfSCCAnnot = false;
+		
+		for (AutoState s : ((CGAutoState) currSlaveState)
+				.getOutgoingStatesOfSCC()) {
+			outStsOfSCCAnnot = outStsOfSCCAnnot
+					|| annotSlaveMasterSCC(s, keyEdges, opts);
+		}
+
+		// 3. annotate according to the edgesInTheSameSCC
+		boolean edgsInSCCAnnot = false;
+		for (AutoEdge e : keyEdges) {
+			Set<AutoEdge> in = ((CGAutoState) currSlaveState)
+					.getEdgesInTheSameSCC();
+			if (in != null && in.contains(e)) {
+				edgsInSCCAnnot = true;
+				break;
+			}
+		}
+
+		// 4. get the final annotation and annotate the states in this SCC
+		boolean SCCAnnot = outEdgsOfSCCAnnot || outStsOfSCCAnnot
+				|| edgsInSCCAnnot;
+		for (AutoState s : ((CGAutoState) currSlaveState)
+				.getStatesInTheSameSCC()) {
+			opts.put(s, SCCAnnot);
+		}
+
+		return SCCAnnot;
 	}
 
 	// for each master state in regular expr fsm

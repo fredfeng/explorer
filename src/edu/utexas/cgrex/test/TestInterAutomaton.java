@@ -6,6 +6,7 @@ import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
+import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
@@ -95,9 +96,13 @@ public class TestInterAutomaton {
 		// System.out.println("Hello world!");
 		expr.dump();
 		call.dump();
-
-		InterAutomaton comb_without_opt = new InterAutomaton();
-		comb_without_opt.buildWithoutOpt(expr, call);
+		
+		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
+		myoptions.put("annot", true);
+		InterAutoOpts myopts = new InterAutoOpts(myoptions);
+		
+		InterAutomaton comb_without_opt = new InterAutomaton(myopts, expr, call);
+		comb_without_opt.build();
 		comb_without_opt.dump();
 
 		Map<AutoState, Set<AutoEdge>> opts = expr.find();
@@ -106,8 +111,8 @@ public class TestInterAutomaton {
 				.annotate(opts);
 		System.out.println(annotations);
 
-		InterAutomaton comb_with_opt = new InterAutomaton();
-		comb_with_opt.buildWithOpt(expr, call);
+		InterAutomaton comb_with_opt = new InterAutomaton(myopts, expr, call);
+		comb_with_opt.build();
 		comb_with_opt.dump();
 
 		/** test scc doAnalysis */
@@ -159,9 +164,8 @@ public class TestInterAutomaton {
 		scc_bug.addOutgoingStates(scc_goo, scc_edge_goo);
 		scc_zoo.addOutgoingStates(scc_zoo, scc_edge_zoo);
 		
-
-		scc.dump();
 		scc.buildCGStatesSCC();
+		scc.dump();
 		
 		for (AutoState s : scc.getStates()) {
 			CGAutoState st = (CGAutoState) s;
@@ -191,12 +195,14 @@ public class TestInterAutomaton {
 		System.out.println(sccList);
 		*/
 		
-		InterAutomaton test_scc_with_opt = new InterAutomaton();
-		InterAutomaton test_scc_without_opt = new InterAutomaton();
+		InterAutomaton test_scc_with_opt = new InterAutomaton(myopts, expr, scc);
+		InterAutomaton test_scc_without_opt = new InterAutomaton(myopts, expr, scc);
 		opts = expr.find();
 		System.out.println(opts);
-		//annotations = scc.annotate(opts);
-		//System.out.println(annotations);
+		annotations = scc.annotate(opts);
+		System.out.println(annotations);
+		test_scc_with_opt.build();
+		test_scc_with_opt.dump();
 		
 		/*
 		test_scc_with_opt.buildWithOpt(expr, scc);
