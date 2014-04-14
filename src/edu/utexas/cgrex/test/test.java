@@ -3,6 +3,7 @@ package edu.utexas.cgrex.test;
 import java.util.*;
 
 import edu.utexas.RegularPT.RegularPTTransformer;
+import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.analyses.MatchEdges;
 import soot.CompilationDeathException;
 import soot.G;
@@ -62,7 +63,9 @@ public class test extends SceneTransformer{
         PAGDumper dumper = new PAGDumper( pag, output_dir );
         dumper.dump();
         
-        MatchEdges me = new MatchEdges(pag);
+        //MatchEdges me = new MatchEdges(pag);
+        AutoPAG me = new AutoPAG(pag);
+        me.build();
         
         System.out.println("-------match-------");
         Iterator<Object> it = me.matchSourcesIterator();
@@ -83,7 +86,7 @@ public class test extends SceneTransformer{
         	Node[] tos = pag.storeLookup(from);
         	for (int i = 0; i < tos.length; i ++) {
         		FieldRefNode to = (FieldRefNode)tos[i];
-        		System.out.println(from.getNumber() + " | " 
+        		System.out.println(from.getNumber() + " is stored to " 
         				+ to.getBase().getNumber() + " " 
         				+ to.getNumber() + " "
         				+ ((SootField)to.getField()).getName());
@@ -98,7 +101,7 @@ public class test extends SceneTransformer{
         		VarNode to = (VarNode)tos[i];
         		System.out.println(from.getBase().getNumber() + " "
         				+ from.getNumber() + " " 
-        				+ ((SootField)from.getField()).getName() + " | "
+        				+ ((SootField)from.getField()).getName() + " is loaded to "
         				+ to.getNumber());
         	}
         }
