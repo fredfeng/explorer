@@ -22,7 +22,6 @@ import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
 import edu.utexas.cgrex.automaton.AutoEdge;
-import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.automaton.InterAutomaton;
@@ -78,9 +77,13 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04d", meth.getNumber());
 			uidToMethMap.put(uid, meth);
+			System.out.println("********" + uid);
 
-			AutoEdge inEdge = new AutoEdge(meth.getName());
-			CGAutoState st = new CGAutoState("m" + meth.getNumber(),false, true, inEdge);
+
+			AutoEdge inEdge = new AutoEdge(uid);
+			inEdge.setShortName(meth.getName());
+			CGAutoState st = new CGAutoState(meth.getNumber(),false, true, inEdge);
+
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
 		}
@@ -94,31 +97,33 @@ public class QueryManager {
 		RegExp r = new RegExp(regx);
 		Automaton auto = r.toAutomaton(); 
 		regAuto = new RegAutomaton();
-		Set<RegAutoState> finiteStates = new HashSet<RegAutoState>();	
+		//Set<RegAutoState> finiteStates = new HashSet<RegAutoState>();	
 		Set<State> states = auto.getStates();
 		int number = 1;
 				
 		for (State s : states) {
 			// Map<State, Edge>
-			Map<AutoEdge, Set<AutoState>> incomeStates = new HashMap<AutoEdge, Set<AutoState>>(); 
-			RegAutoState mystate = new RegAutoState(number++, false, false);
-			mystate.setOutgoingStatesInv(incomeStates);
+			//Map<AutoEdge, Set<AutoState>> incomeStates = new HashMap<AutoEdge, Set<AutoState>>(); 
+			RegAutoState mystate = new RegAutoState(number, false, false);
+			
+			//mystate.setOutgoingStatesInv(incomeStates);
 
 			//use number to represent state id.
 			jsaToAutostate.put(s, mystate);
+			number++;
 		}
 	
 		for (State s : states) {
 			RegAutoState fsmState = jsaToAutostate.get(s);
 			 // Map<State, Edge>
-			Map<AutoState,Set<AutoEdge>> outgoingStates = new HashMap<AutoState,Set<AutoEdge>>();
+			//Map<AutoState,Set<AutoEdge>> outgoingStates = new HashMap<AutoState,Set<AutoEdge>>();
 		
 			if (s.isAccept()) {
 				fsmState.setFinalState();
 				regAuto.addFinalState(fsmState);
-			} else {//normal states.
-				
 			}
+			
+//			System.out.println(auto.toDot());
 				
 			if (s.equals(auto.getInitialState())) {
 				fsmState.setInitState();
@@ -127,27 +132,22 @@ public class QueryManager {
 					
 			for (Transition t : s.getTransitions()) {
 				RegAutoState tgtState = jsaToAutostate.get(t.getDest());
-				Map tgtIncome = tgtState.getOutgoingStatesInv();
+				//Map tgtIncome = tgtState.getOutgoingStatesInv();
 				//using edge label as id.
 				String unicode = StringUtil.appendChar(t.getMin(), new StringBuilder(""));
 				String shortName = ".";
+				AutoEdge outEdge = new AutoEdge(unicode);
 
 				if (uidToMethMap.get(unicode) != null) {
 					shortName = uidToMethMap.get(unicode).getName();
+				} else {
+					outEdge.setDotEdge();
 				}
-				AutoEdge outEdge = new AutoEdge(shortName);
 				outEdge.setShortName(shortName);
 				
-				Set<RegAutoState> tmpin = new HashSet<RegAutoState>();
-				tmpin.add(fsmState);
-				tgtIncome.put(outEdge, tmpin);
-
-				Set<AutoEdge> tmpout = new HashSet<AutoEdge>();
-				tmpout.add(outEdge);
-				outgoingStates.put(tgtState, tmpout);
+				fsmState.addOutgoingStates(tgtState, outEdge);
+				tgtState.addIncomingStates(fsmState, outEdge);
 			}
-			fsmState.setOutgoingStates(outgoingStates);
-			finiteStates.add(fsmState);
 			
 			regAuto.addStates(fsmState);
 		}	
@@ -162,9 +162,12 @@ public class QueryManager {
 		SootMethod mainMeth = Scene.v().getMainMethod();
 		//init FSM
 		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
-		CGAutoState initState = new CGAutoState(-1, false, true, null);
+
+		// 0 is the initial id.
+		CGAutoState initState = new CGAutoState(0, false, true, null);
 		CGAutoState mainState = methToStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
+		//no incoming edge for initstate.
 
 		cgAuto.addInitState(initState);
 		cgAuto.addStates(initState);
@@ -179,10 +182,10 @@ public class QueryManager {
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
 
-			//worker.
-			Iterator<Edge> eIt =  cg.edgesOutOf(worker);
-			while(eIt.hasNext()) {
-				Edge e = eIt.next();
+			//worker. outgoing edges
+			Iterator<Edge> outIt =  cg.edgesOutOf(worker);
+			while(outIt.hasNext()) {
+				Edge e = outIt.next();
 				//how about SCC? FIXME!!
 				if(e.getTgt().equals(worker)) {//recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
@@ -191,8 +194,24 @@ public class QueryManager {
 					SootMethod tgtMeth = (SootMethod)e.getTgt();
 					worklist.add(tgtMeth);
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
-					CGAutoState tgtState = methToStateMap.get(e.getTgt());
+					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
+				}
+			}
+			
+			//incoming edges
+			Iterator<Edge> inIt =  cg.edgesInto(worker);
+			while(inIt.hasNext()) {
+				Edge e = inIt.next();
+				//how about SCC? FIXME!!
+				if(e.getSrc().equals(worker)) {//recursive call, add self-loop
+					AutoEdge inEdge = methToEdgeMap.get(worker);
+					curState.addIncomingStates(curState, inEdge);
+				} else {
+					SootMethod srcMeth = (SootMethod)e.getSrc();
+					AutoEdge inEdge = methToEdgeMap.get(srcMeth);
+					CGAutoState srcState = methToStateMap.get(srcMeth);
+					curState.addIncomingStates(srcState, inEdge);
 				}
 			}
 	
@@ -203,6 +222,7 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 		
 		//dump automaton of the call graph.
+		System.out.println("dump Callgraph automaton.....");
 		cgAuto.dump();
 	}
 

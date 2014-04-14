@@ -30,6 +30,10 @@ public class AutoEdge {
 		return isDotEdge;
 	}
 	
+	public void setDotEdge() {
+		isDotEdge = true;
+	}
+	
 	public String getShortName() { 
 		return shortName;
 	}
