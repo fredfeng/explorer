@@ -17,6 +17,8 @@ public class RegAutomaton extends Automaton {
 			// we want to optimize for the states with cycle
 			// so we only care about states that have (.*) edge
 			RegAutoState currState = (RegAutoState) s;
+			
+			/*
 			// we can replace this by hasCycleEdge() if the only possible cycle
 			// is dot edge
 			if (currState.hasCycleEdge()) {
@@ -41,6 +43,21 @@ public class RegAutomaton extends Automaton {
 					}
 				}
 			}
+			*/
+			Set<AutoEdge> keyEdges = new HashSet<AutoEdge>();
+			opts.put(currState, keyEdges);
+
+			for (AutoEdge e : currState.getOutgoingStatesInvKeySet()) {
+				AutoEdge eg = (AutoEdge) e;
+				if (!eg.isDotEdge())
+					keyEdges.add(eg);
+				else if (!currState.outgoingStatesInvLookup(eg).equals(
+						currState)) {
+					keyEdges.clear();
+					break;
+				}
+			}
+			
 		}
 		System.out.println(opts);
 		return opts;

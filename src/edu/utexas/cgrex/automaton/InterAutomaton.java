@@ -178,7 +178,7 @@ public class InterAutomaton extends Automaton {
 							Map<AutoState, Boolean> annot = annots
 									.get(masterNextState);
 							if (annot.containsKey(slaveNextState)) {
-								toContinue = annot.get(slaveNextState);
+								toCreate = annot.get(slaveNextState);
 								if (!toCreate)
 									continue; // jump to the next master
 							}
@@ -225,6 +225,16 @@ public class InterAutomaton extends Automaton {
 							newInterSt.addIncomingStates(interSt,
 									masterNextEdge);
 						} else {
+							boolean toCreate = true;
+							if (annots.containsKey(masterNextState)) {
+								Map<AutoState, Boolean> annot = annots
+										.get(masterNextState);
+								if (annot.containsKey(slaveNextState)) {
+									toCreate = annot.get(slaveNextState);
+									if (!toCreate)
+										continue; // jump to the next master
+								}
+							}
 							newInterSt = new InterAutoState(masterNextState
 									.getId().toString()
 									+ slaveNextState.getId().toString(),
