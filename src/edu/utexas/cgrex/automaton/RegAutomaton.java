@@ -44,6 +44,9 @@ public class RegAutomaton extends Automaton {
 				}
 			}
 			*/
+			if (currState.isFinalState())
+				continue;
+			
 			Set<AutoEdge> keyEdges = new HashSet<AutoEdge>();
 			opts.put(currState, keyEdges);
 
@@ -51,10 +54,15 @@ public class RegAutomaton extends Automaton {
 				AutoEdge eg = (AutoEdge) e;
 				if (!eg.isDotEdge())
 					keyEdges.add(eg);
-				else if (!currState.outgoingStatesInvLookup(eg).equals(
-						currState)) {
-					keyEdges.clear();
-					break;
+				else {
+					Set<AutoState> out = currState.outgoingStatesInvLookup(eg);
+					for (AutoState os : out) {
+						if (!os.equals(currState)) {
+							System.out.println("***" + os + " " + currState);
+							keyEdges.clear();
+							break;
+						}
+					}
 				}
 			}
 			

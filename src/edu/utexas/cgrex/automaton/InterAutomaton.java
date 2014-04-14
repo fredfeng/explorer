@@ -161,6 +161,7 @@ public class InterAutomaton extends Automaton {
 			for (AutoEdge masterNextEdge : masterSt
 					.outgoingStatesLookup(masterNextState)) {
 				if (masterNextEdge.isDotEdge()) {
+					/*
 					boolean toContinue = true;
 					if (annots.containsKey(masterSt)) {
 						Map<AutoState, Boolean> annot = annots.get(masterSt);
@@ -170,9 +171,11 @@ public class InterAutomaton extends Automaton {
 								continue; // jump to the next master
 						}
 					}
+					*/
 					for (AutoState slaveNxtSt : slaveSt
 							.getOutgoingStatesKeySet()) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						
 						boolean toCreate = true;
 						if (annots.containsKey(masterNextState)) {
 							Map<AutoState, Boolean> annot = annots
@@ -183,6 +186,7 @@ public class InterAutomaton extends Automaton {
 									continue; // jump to the next master
 							}
 						}
+						
 						for (AutoEdge slaveNextEdge : slaveSt
 								.outgoingStatesLookup(slaveNextState)) {
 							InterAutoState newInterSt = containMasterandSlaveState(
@@ -225,6 +229,7 @@ public class InterAutomaton extends Automaton {
 							newInterSt.addIncomingStates(interSt,
 									masterNextEdge);
 						} else {
+							
 							boolean toCreate = true;
 							if (annots.containsKey(masterNextState)) {
 								Map<AutoState, Boolean> annot = annots
@@ -235,6 +240,7 @@ public class InterAutomaton extends Automaton {
 										continue; // jump to the next master
 								}
 							}
+							
 							newInterSt = new InterAutoState(masterNextState
 									.getId().toString()
 									+ slaveNextState.getId().toString(),

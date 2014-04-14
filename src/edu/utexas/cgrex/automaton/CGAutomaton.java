@@ -110,9 +110,10 @@ public class CGAutomaton extends Automaton {
 		Map<AutoState, Map<AutoState, Boolean>> opts = new HashMap<AutoState, Map<AutoState, Boolean>>();
 		for (AutoState stateInReg : regExprOpts.keySet()) {
 			Set<AutoEdge> keyEdges = regExprOpts.get(stateInReg);
+			System.out.println(stateInReg);
 			opts.put(stateInReg, annotateOneMasterState(keyEdges));
 		}
-		System.out.println(opts);
+		System.out.println("annotations\n" + opts);
 		return opts;
 	}
 
@@ -124,6 +125,7 @@ public class CGAutomaton extends Automaton {
 	// slaveState true: create
 	protected Map<AutoState, Boolean> annotateOneMasterState(
 			Set<AutoEdge> keyEdges) {
+
 		Map<AutoState, Boolean> opts = new HashMap<AutoState, Boolean>();
 		for (AutoState s : initStates) {
 			// annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
@@ -134,6 +136,7 @@ public class CGAutomaton extends Automaton {
 
 	protected boolean annotSlaveMasterSCC(AutoState currSlaveState,
 			Set<AutoEdge> keyEdges, Map<AutoState, Boolean> opts) {
+		System.out.println("***" + currSlaveState);
 		// if currSlaveState has been annotated, return the annotation
 		if (opts.containsKey(currSlaveState))
 			return opts.get(currSlaveState);
@@ -152,11 +155,13 @@ public class CGAutomaton extends Automaton {
 		// 2. annotate according to the outgoingStatesOfSCC
 		// also recursively update the outgoingStates of this SCC (no cycles)
 		boolean outStsOfSCCAnnot = false;
-		
+
+		System.out.println(((CGAutoState) currSlaveState)
+				.getOutgoingStatesOfSCC());
 		for (AutoState s : ((CGAutoState) currSlaveState)
 				.getOutgoingStatesOfSCC()) {
-			outStsOfSCCAnnot = outStsOfSCCAnnot
-					|| annotSlaveMasterSCC(s, keyEdges, opts);
+			outStsOfSCCAnnot = annotSlaveMasterSCC(s, keyEdges, opts)
+					|| outStsOfSCCAnnot;
 		}
 
 		// 3. annotate according to the edgesInTheSameSCC
