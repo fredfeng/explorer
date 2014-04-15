@@ -189,6 +189,7 @@ public class QueryManager {
 		cgAuto.addInitState(initState);
 		cgAuto.addStates(initState);
 
+		//FIXME: should not use list.
 		List<SootMethod> worklist = new LinkedList<SootMethod>();
 		worklist.add(mainMeth);
 
@@ -210,10 +211,9 @@ public class QueryManager {
 					curState.addOutgoingStates(curState, outEdge);
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
-//					if (visitedMap.get(tgtMeth))
-//						continue;
+					if (!visitedMap.get(tgtMeth))
+						worklist.add(tgtMeth);
 
-					worklist.add(tgtMeth);
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
