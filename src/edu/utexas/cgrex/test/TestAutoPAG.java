@@ -36,7 +36,7 @@ import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.jimple.toolkits.pointer.util.NativeMethodDriver;
 
-public class TestPTAnalysis extends SceneTransformer{
+public class TestAutoPAG extends SceneTransformer{
 	protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
 		Map myoptions = new HashMap(options);
         myoptions.put("set-impl", "double");
@@ -124,7 +124,7 @@ public class TestPTAnalysis extends SceneTransformer{
 			StringBuilder options = new StringBuilder();	
 			// 
 			PackManager.v().getPack("wjtp")
-					.add(new Transform("wjtp.test", new TestPTAnalysis()));
+					.add(new Transform("wjtp.test", new TestAutoPAG()));
 
 			soot.Main.v().run(new String[] {
 					"-W",
