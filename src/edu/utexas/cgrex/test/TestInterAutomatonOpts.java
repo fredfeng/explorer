@@ -12,7 +12,7 @@ import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
 import edu.utexas.cgrex.utils.GraphUtil;
 
-public class TestInterAutomaton {
+public class TestInterAutomatonOpts {
 	public static void main(String[] args) {
 		CGAutomaton call = new CGAutomaton();
 		RegAutomaton expr = new RegAutomaton();
