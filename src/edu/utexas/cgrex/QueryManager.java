@@ -95,8 +95,7 @@ public class QueryManager {
 
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getName());
-			CGAutoState st = new CGAutoState(meth.getNumber(), false, true,
-					inEdge);
+			CGAutoState st = new CGAutoState(meth.getNumber(), false, true);
 
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
@@ -182,7 +181,7 @@ public class QueryManager {
 		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
 
 		// 0 is the initial id.
-		CGAutoState initState = new CGAutoState(0, false, true, null);
+		CGAutoState initState = new CGAutoState(0, false, true);
 		CGAutoState mainState = methToStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
 		// no incoming edge for initstate.
@@ -211,8 +210,8 @@ public class QueryManager {
 					curState.addOutgoingStates(curState, outEdge);
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
-					if (visitedMap.get(tgtMeth))
-						continue;
+//					if (visitedMap.get(tgtMeth))
+//						continue;
 
 					worklist.add(tgtMeth);
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
@@ -306,6 +305,7 @@ public class QueryManager {
 			return varSet;
 
 		Body body = method.retrieveActiveBody();
+		System.out.println(body);
 
 		Chain<Unit> units = body.getUnits();
 		Iterator<Unit> uit = units.snapshotIterator();

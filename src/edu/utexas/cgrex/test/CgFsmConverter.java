@@ -97,7 +97,7 @@ public class CgFsmConverter {
 			uidToMethMap.put(uid, meth);
 
 			AutoEdge inEdge = new AutoEdge(meth.getName());
-			CGAutoState st = new CGAutoState("m" + meth.getNumber(),false, true, inEdge);
+			CGAutoState st = new CGAutoState("m" + meth.getNumber(),false, true);
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
 		}
@@ -106,7 +106,7 @@ public class CgFsmConverter {
 		SootMethod mainMeth = Scene.v().getMainMethod();
 		//init FSM
 		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
-		CGAutoState initState = new CGAutoState(-1, false, true, null);
+		CGAutoState initState = new CGAutoState(-1, false, true);
 		CGAutoState mainState = methToStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
 
