@@ -77,7 +77,8 @@ public class CGAutoState extends AutoState {
 	@Override
 	public Set<AutoEdge> getIncomingStatesInvKeySet() {
 		Set<AutoEdge> inv = new HashSet<AutoEdge>();
-		inv.add(incomingEdge);
+		if (incomingEdge != null)
+			inv.add(incomingEdge);
 		return inv;
 	}
 
@@ -114,7 +115,8 @@ public class CGAutoState extends AutoState {
 	@Override
 	public Iterator<AutoEdge> incomingStatesInvIterator() {
 		Set<AutoEdge> inv = new HashSet<AutoEdge>();
-		inv.add(incomingEdge);
+		if (incomingEdge != null)
+			inv.add(incomingEdge);
 		return inv.iterator();
 	}
 
@@ -131,7 +133,8 @@ public class CGAutoState extends AutoState {
 	@Override
 	public Set<AutoEdge> incomingStatesLookup(AutoState state) {
 		Set<AutoEdge> in = new HashSet<AutoEdge>();
-		in.add(incomingEdge);
+		if (incomingEdge != null)
+			in.add(incomingEdge);
 		return in;
 	}
 
@@ -143,8 +146,10 @@ public class CGAutoState extends AutoState {
 	// this ensures that you must add the correct edge
 	@Override
 	public boolean addIncomingStates(AutoState state, AutoEdge edge) {
-		if (edge.equals(incomingEdge)) {
+		if (incomingEdge == null) {
 			incomingEdge = edge;
+			return incomingStates.add(state);
+		} else if (edge.equals(incomingEdge)) {
 			return incomingStates.add(state);
 		} else {
 			return false;
