@@ -7,6 +7,8 @@ import edu.utexas.cgrex.utils.GraphUtil;
 // cgfsm is the slave fsm
 public class CGAutomaton extends Automaton {
 
+	// this building method fills the SCC-related fields of the states in
+	// the automaton so that we can do some SCC analysis
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void buildCGStatesSCC() {
 

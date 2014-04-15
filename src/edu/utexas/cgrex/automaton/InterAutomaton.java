@@ -2,9 +2,6 @@ package edu.utexas.cgrex.automaton;
 
 import java.util.*;
 
-import chord.util.graph.IGraph;
-import chord.util.graph.MutableGraph;
-
 public class InterAutomaton extends Automaton {
 
 	protected InterAutoOpts options; // control optimization options

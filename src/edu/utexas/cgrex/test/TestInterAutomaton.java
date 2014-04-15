@@ -64,15 +64,13 @@ public class TestInterAutomaton {
 		AutoEdge call_edge_y = new AutoEdge("y");
 		AutoEdge call_edge_z = new AutoEdge("z");
 
-		CGAutoState call_init = new CGAutoState(1, true, false, null);
-		CGAutoState call_state_1 = new CGAutoState(2, false, true, call_edge_x);
-		CGAutoState call_state_2 = new CGAutoState(3, false, true, call_edge_y);
-		CGAutoState call_state_3 = new CGAutoState(4, false, true, call_edge_z);
-		CGAutoState call_state_4 = new CGAutoState(5, false, true,
-				call_edge_main);
-		CGAutoState call_state_5 = new CGAutoState(6, false, true,
-				call_edge_foo);
-		CGAutoState call_final = new CGAutoState(7, false, true, call_edge_baz);
+		CGAutoState call_init = new CGAutoState(1, true, false);
+		CGAutoState call_state_1 = new CGAutoState(2, false, true);
+		CGAutoState call_state_2 = new CGAutoState(3, false, true);
+		CGAutoState call_state_3 = new CGAutoState(4, false, true);
+		CGAutoState call_state_4 = new CGAutoState(5, false, true);
+		CGAutoState call_state_5 = new CGAutoState(6, false, true);
+		CGAutoState call_final = new CGAutoState(7, false, true);
 
 		call.addStates(call_init);
 		call.addStates(call_state_1);

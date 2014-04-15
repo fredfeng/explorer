@@ -57,35 +57,81 @@ public abstract class AutoState {
 	public int hashCode() {
 		return id.hashCode();
 	}
-	
+
 	public abstract Set<AutoState> getIncomingStatesKeySet();
-	
-	public abstract Set<AutoEdge> getIncomingStatesInvKeySet(); 
-	
-	//public abstract void setIncomingStates(Map<AutoState, Set<AutoEdge>> incomingStates);
-		
-	//public abstract void setIncomingStates(Set<AutoState> incomingStates);
-	
-	//public abstract void setIncomingStatesInv(Map<AutoEdge, Set<AutoState>> incomingStatesInv);
-	
-	//public abstract void setIncomingStatesInv(AutoEdge incomingEdge);
-	
+
+	public abstract Set<AutoEdge> getIncomingStatesInvKeySet();
+
+	// public abstract void setIncomingStates(Map<AutoState, Set<AutoEdge>>
+	// incomingStates);
+
+	// public abstract void setIncomingStates(Set<AutoState> incomingStates);
+
+	// public abstract void setIncomingStatesInv(Map<AutoEdge, Set<AutoState>>
+	// incomingStatesInv);
+
+	// public abstract void setIncomingStatesInv(AutoEdge incomingEdge);
+
 	public abstract Iterator<AutoState> incomingStatesIterator();
-	
+
 	public abstract Iterator<AutoEdge> incomingStatesInvIterator();
-		
-	//public abstract Map<AutoState, Set<AutoEdge>> getIncomingStates();
-	
-	//public abstract Map<AutoEdge, Set<AutoState>> getIncomingStatesInv();
-	
-	//public abstract AutoEdge getIncomingEdge();
-	
-	public abstract Set<AutoEdge> incomingStatesLookup(AutoState state); 
+
+	// public abstract Map<AutoState, Set<AutoEdge>> getIncomingStates();
+
+	// public abstract Map<AutoEdge, Set<AutoState>> getIncomingStatesInv();
+
+	// public abstract AutoEdge getIncomingEdge();
+
+	public abstract Set<AutoEdge> incomingStatesLookup(AutoState state);
 
 	public abstract Set<AutoState> incomingStatesInvLookup(AutoEdge edge);
-	
+
 	public abstract boolean addIncomingStates(AutoState state, AutoEdge edge);
-		
+
+	public abstract boolean deleteOneIncomingState(AutoState state);
+
+	public abstract boolean deleteOneIncomingEdge(AutoEdge edge);
+	
+	public abstract boolean deleteOneIncomingEdge(AutoState state, AutoEdge edge);
+	
+	public abstract boolean isIsolated(); // self-cycle is not isolated
+	
+	// just specify the state
+	public boolean deleteOneOutgoingState(AutoState state) {
+		Set<AutoEdge> edgeList = new HashSet<AutoEdge>();
+		if (outgoingStates.containsKey(state))
+			edgeList.addAll(outgoingStates.get(state));
+		else
+			return false;
+		boolean succ = false;
+		for (AutoEdge edge : edgeList) {
+			succ = succ | deleteFromMap(outgoingStates, state, edge)
+					| deleteFromMapInv(outgoingStatesInv, state, edge);
+		}
+		return succ;
+	}
+
+	// just specify the edge
+	public boolean deleteOneOutgoingEdge(AutoEdge edge) {
+		Set<AutoState> stateList = new HashSet<AutoState>();
+		if (outgoingStatesInv.containsKey(edge))
+			stateList.addAll(outgoingStatesInv.get(edge));
+		else
+			return false;
+		boolean succ = false;
+		for (AutoState state : stateList) {
+			succ = succ | deleteFromMap(outgoingStates, state, edge)
+					| deleteFromMapInv(outgoingStatesInv, state, edge);
+		}
+		return succ;
+	}
+
+	// specify both the end state and the edge
+	public boolean deleteOneOutgoingEdge(AutoState state, AutoEdge edge) {
+		return deleteFromMap(outgoingStates, state, edge)
+				| deleteFromMapInv(outgoingStatesInv, state, edge);
+	}
+
 	public Set<AutoState> getOutgoingStatesKeySet() {
 		return outgoingStates.keySet();
 	}
@@ -93,7 +139,7 @@ public abstract class AutoState {
 	public Set<AutoEdge> getOutgoingStatesInvKeySet() {
 		return outgoingStatesInv.keySet();
 	}
-	
+
 	public boolean addOutgoingStates(AutoState state, AutoEdge edge) {
 		return addToMap(outgoingStates, state, edge)
 				| addToInvMap(outgoingStatesInv, edge, state);
@@ -147,7 +193,7 @@ public abstract class AutoState {
 			return e;
 		return null;
 	}
-	
+
 	// get the cycle edge of this state
 	// if existed, return the cycle edge, else return null
 	public AutoEdge getCycleEdge() {
@@ -157,7 +203,7 @@ public abstract class AutoState {
 		}
 		return null;
 	}
-	
+
 	public Set<AutoEdge> getOutgoingStatesInvKeySetExceptCycleEdge() {
 		Set<AutoEdge> clone = new HashSet<AutoEdge>();
 		clone.addAll(outgoingStatesInv.keySet());
@@ -173,6 +219,11 @@ public abstract class AutoState {
 				return true;
 		}
 		return false;
+	}
+
+	@Override
+	public String toString() {
+		return id.toString();
 	}
 
 	/** protected methods */
@@ -198,9 +249,40 @@ public abstract class AutoState {
 		return stateList.add(state);
 	}
 
-	@Override
-	public String toString() {
-		return id.toString();
+	// delete: this --(edge)-- state from map
+	// if existed and deleted, return true, else return false
+	protected boolean deleteFromMap(Map<AutoState, Set<AutoEdge>> m,
+			AutoState state, AutoEdge edge) {
+		Set<AutoEdge> edgeList = m.get(state);
+
+		if (edgeList == null) {
+			return false; // this edge does not exist
+		} else {
+			if (!edgeList.remove(edge)) // try deleting this edge
+				return false; // this edge does not exist
+
+			if (edgeList.isEmpty())
+				m.remove(state); // remove the item from the map
+		}
+		return true;
+	}
+
+	// delete: this --(state)-- edge from mapinv
+	// if existed and deleted, return true, else return false
+	protected boolean deleteFromMapInv(Map<AutoEdge, Set<AutoState>> m,
+			AutoState state, AutoEdge edge) {
+		Set<AutoState> stateList = m.get(edge);
+
+		if (stateList == null) {
+			return false; // this state does not exist
+		} else {
+			if (!stateList.remove(state)) // try deleting this state
+				return false; // this state does not exist
+			if (stateList.isEmpty())
+				m.remove(edge); // remove the item from the invmap
+		}
+
+		return true;
 	}
 
 }

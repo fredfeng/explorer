@@ -4,15 +4,12 @@ import java.util.*;
 
 public class InterAutoState extends AutoState {
 	protected AutoState masterState;
-	
+
 	protected AutoState slaveState;
-	
-	protected Map<AutoState, Set<AutoEdge>> incomingStates = 
-			new HashMap<AutoState, Set<AutoEdge>>();
-	
-	protected Map<AutoEdge, Set<AutoState>> incomingStatesInv = 
-			new HashMap<AutoEdge, Set<AutoState>>();
-	
+
+	protected Map<AutoState, Set<AutoEdge>> incomingStates = new HashMap<AutoState, Set<AutoEdge>>();
+
+	protected Map<AutoEdge, Set<AutoState>> incomingStatesInv = new HashMap<AutoEdge, Set<AutoState>>();
 
 	public InterAutoState(Object id, AutoState masterState,
 			AutoState slaveState, boolean isInitState, boolean isFinalState) {
@@ -95,6 +92,42 @@ public class InterAutoState extends AutoState {
 	public boolean addIncomingStates(AutoState state, AutoEdge edge) {
 		return addToMap(incomingStates, state, edge)
 				| addToInvMap(incomingStatesInv, edge, state);
+	}
+
+	@Override
+	public boolean deleteOneIncomingState(AutoState state) {
+		Set<AutoEdge> edgeList = new HashSet<AutoEdge>();
+		edgeList.addAll(incomingStates.get(state));
+		boolean succ = false;
+		for (AutoEdge edge : edgeList) {
+			succ = succ | deleteFromMap(incomingStates, state, edge)
+					| deleteFromMapInv(incomingStatesInv, state, edge);
+		}
+		return succ;
+	}
+
+	@Override
+	public boolean deleteOneIncomingEdge(AutoEdge edge) {
+		Set<AutoState> stateList = new HashSet<AutoState>();
+		stateList.addAll(incomingStatesInv.get(edge));
+		boolean succ = false;
+		for (AutoState state : stateList) {
+			succ = succ | deleteFromMap(incomingStates, state, edge)
+					| deleteFromMapInv(incomingStatesInv, state, edge);
+		}
+		return succ;
+	}
+
+	@Override
+	public boolean deleteOneIncomingEdge(AutoState state, AutoEdge edge) {
+		return deleteFromMap(incomingStates, state, edge)
+				| deleteFromMapInv(incomingStatesInv, state, edge);
+	}
+
+	@Override
+	public boolean isIsolated() {
+		return incomingStates.isEmpty() && incomingStatesInv.isEmpty()
+				&& outgoingStates.isEmpty() && outgoingStatesInv.isEmpty();
 	}
 
 	public boolean buildAsInitial() {
