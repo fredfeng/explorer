@@ -1,93 +1,47 @@
 package edu.utexas.cgrex.test;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
 
-import edu.utexas.RegularPT.RegularPTTransformer;
-import edu.utexas.cgrex.analyses.AutoPAG;
-import edu.utexas.cgrex.analyses.MatchEdges;
 import soot.CompilationDeathException;
-import soot.G;
-import soot.Local;
 import soot.PackManager;
 import soot.Scene;
 import soot.SceneTransformer;
-import soot.SootClass;
 import soot.SootField;
-import soot.SootMethod;
-import soot.SourceLocator;
 import soot.Transform;
-import soot.jimple.spark.builder.ContextInsensitiveBuilder;
-import soot.jimple.spark.geom.geomPA.GeomPointsTo;
-import soot.jimple.spark.internal.SparkNativeHelper;
-import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.FieldRefNode;
-import soot.jimple.spark.pag.MethodPAG;
-import soot.jimple.spark.pag.PAG;
-import soot.jimple.spark.pag.PAGDumper;
-import soot.jimple.spark.pag.VarNode;
-import soot.options.SparkOptions;
-import soot.util.queue.QueueReader;
 import soot.jimple.spark.pag.Node;
-import soot.jimple.spark.solver.OnFlyCallGraph;
-import soot.jimple.spark.solver.SCCCollapser;
-import soot.jimple.toolkits.callgraph.CallGraphBuilder;
-import soot.jimple.toolkits.callgraph.Edge;
-import soot.jimple.toolkits.callgraph.ReachableMethods;
-import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
-import soot.jimple.toolkits.pointer.util.NativeMethodDriver;
+import soot.jimple.spark.pag.PAG;
+import soot.jimple.spark.pag.VarNode;
+
 
 public class TestAutoPAG extends SceneTransformer{
 	protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
-		Map myoptions = new HashMap(options);
-        myoptions.put("set-impl", "double");
-        myoptions.put("double-set-old", "hybrid");
-        myoptions.put("double-set-new", "hybrid");
-        myoptions.put("verbose", "true");
-        System.out.println("********************RegularPT*************");
+        System.out.println("********************TestAutoPAG*************");
+        //read default pag from soot.
+		PAG pag = (PAG) Scene.v().getPointsToAnalysis();
 
-        SparkOptions opts = new SparkOptions( myoptions );
-        final String output_dir = SourceLocator.v().getOutputDir();
-
-        // Build pointer assignment graph
-        ContextInsensitiveBuilder b = new ContextInsensitiveBuilder();
-        // prJimplify() does with the methods that does not have an active body
-        // but should and can have an active body
-        if( opts.pre_jimplify() ) b.preJimplify();
-        // setup() builds an empty PAG
-        // and returns a reference to the PAG
-        final PAG pag = b.setup( opts );
-        // build() builds the PAG in b
-        // so updates PAG
-        // this build() uses CHA to build the PAG
-        b.build();
-        PAGDumper dumper = new PAGDumper( pag, output_dir );
-        dumper.dump();
-        
-        //MatchEdges me = new MatchEdges(pag);
-        AutoPAG me = new AutoPAG(pag);
-        me.build();
-        //me.dumpFlow();
-        me.dump();
-        
+		//FIXME:don't support match by default.
         System.out.println("-------match-------");
-        Iterator<Object> it = me.matchSourcesIterator();
-        while (it.hasNext()) {
-        	VarNode from = (VarNode)it.next();
-        	Node[] tos = me.matchLookup(from);
-        	for (int i = 0; i < tos.length; i ++) {
-        		VarNode to = (VarNode)tos[i];
-        		System.out.println(from.getNumber() + " " + to.getNumber());
-        	}
-        }
+//        Iterator<Object> it = me.matchSourcesIterator();
+//        while (it.hasNext()) {
+//        	VarNode from = (VarNode)it.next();
+//        	Node[] tos = me.matchLookup(from);
+//        	for (int i = 0; i < tos.length; i ++) {
+//        		VarNode to = (VarNode)tos[i];
+//        		System.out.println(from.getNumber() + " " + to.getNumber());
+//        	}
+//        }
         
         System.out.println("--------info-------");  
         System.out.println("--------store info---------");
-        it = pag.storeSourcesIterator();
+        Iterator<Object> it = pag.storeSourcesIterator();
         while (it.hasNext()) {
         	VarNode from = (VarNode)it.next();
         	Node[] tos = pag.storeLookup(from);
         	for (int i = 0; i < tos.length; i ++) {
         		FieldRefNode to = (FieldRefNode)tos[i];
+        		if ( !(to.getField() instanceof SootField)) continue;
         		System.out.println(from.getNumber() + " is stored to " 
         				+ to.getBase().getNumber() + " " 
         				+ to.getNumber() + " "
@@ -98,6 +52,8 @@ public class TestAutoPAG extends SceneTransformer{
         it = pag.loadSourcesIterator(); 
         while (it.hasNext()) {
         	FieldRefNode from = (FieldRefNode)it.next();
+    		if ( !(from.getField() instanceof SootField)) continue;
+
         	Node[] tos = pag.loadLookup(from);
         	for (int i = 0; i < tos.length; i ++) {
         		VarNode to = (VarNode)tos[i];
@@ -119,11 +75,8 @@ public class TestAutoPAG extends SceneTransformer{
 	public static void main(String[] args) {
 		String targetLoc = 
 				//"/Users/xwang/oopsla/CallsiteResolver/benchmarks/CFLexamples/bin/";
-				"/Users/xwang/oopsla/CallsiteResolver/CFLexamples/test/bin";
+				"benchmarks/CFLexamples/bin";
 		try {
-
-			StringBuilder options = new StringBuilder();	
-			// 
 			PackManager.v().getPack("wjtp")
 					.add(new Transform("wjtp.test", new TestAutoPAG()));
 
