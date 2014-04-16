@@ -26,9 +26,9 @@ public class AutoPAG extends PAG {
 
 	// HashMap<VarNode, VarNode>
 	protected Map<Object, Object> matchInv = new HashMap<Object, Object>();
-	
+
 	protected Map<Object, Object> flow = new HashMap<Object, Object>();
-	
+
 	protected Map<Object, Object> flowInv = new HashMap<Object, Object>();
 
 	public AutoPAG(PAG pag) {
@@ -49,7 +49,7 @@ public class AutoPAG extends PAG {
 	public boolean doAddMatchEdge(VarNode from, VarNode to) {
 		return addToMap(match, from, to) | addToMap(matchInv, to, from);
 	}
-	
+
 	public boolean addFlowEdge(VarNode from, VarNode to) {
 		return addToMap(flow, from, to) | addToMap(flowInv, to, from);
 	}
@@ -61,11 +61,11 @@ public class AutoPAG extends PAG {
 	public Iterator<Object> matchInvSourcesIterator() {
 		return match.keySet().iterator();
 	}
-	
+
 	public Iterator<Object> flowSourcesIterator() {
 		return flow.keySet().iterator();
 	}
-	
+
 	public Iterator<Object> flowInvSourcesIterator() {
 		return flowInv.keySet().iterator();
 	}
@@ -77,11 +77,11 @@ public class AutoPAG extends PAG {
 	public Set<Object> matchInvSources() {
 		return match.keySet();
 	}
-	
+
 	public Set<Object> flowSources() {
 		return flow.keySet();
 	}
-	
+
 	public Set<Object> flowInvSources() {
 		return flowInv.keySet();
 	}
@@ -93,19 +93,96 @@ public class AutoPAG extends PAG {
 	public Node[] matchInvLookup(VarNode key) {
 		return lookup(matchInv, key);
 	}
-	
+
 	public Node[] flowLookup(VarNode key) {
 		return lookup(flow, key);
 	}
-	
+
 	public Node[] flowInvLookup(VarNode key) {
 		return lookup(flowInv, key);
 	}
 
+	public void dumpFlow() {
+		// maintain a set of all VarNodes
+		Set<Object> allVars = new HashSet<Object>();
+		for (Object obj : flow.keySet())
+			allVars.add(obj);
+		for (Object obj : flowInv.keySet())
+			allVars.add(obj);
+		Iterator<Object> it = father.allocSourcesIterator();
+		while (it.hasNext())
+			allVars.add(it.next());
+		it = father.allocInvSourcesIterator();
+		while (it.hasNext())
+			allVars.add(it.next());
+
+		StringBuilder b = new StringBuilder("digraph AutoPAG {\n");
+		b.append("  rankdir = LR;\n");
+		// create nodes in the dumped graph
+		for (Object obj : allVars) {
+			if (obj instanceof VarNode) {
+				VarNode var = (VarNode) obj;
+				b.append("  ").append("\"VarNode" + var.getNumber() + "\"");
+				b.append(" [shape=circle,label=\"");
+				b.append(var.getNumber());
+				b.append("\"];\n");
+			} else if (obj instanceof AllocNode) {
+				AllocNode var = (AllocNode) obj;
+				b.append("  ").append("\"AllocNode" + var.getNumber() + "\"");
+				b.append(" [shape=triangle,label=\"");
+				b.append(var.getNumber());
+				b.append("\"];\n");
+			}
+		}
+
+		for (Object fl : flowInv.keySet()) {
+			VarNode flowInvSrc = (VarNode) fl;
+
+			Set<Object> flowInvTgts = (Set<Object>) flowInv.get(flowInvSrc);
+			for (Object obj : flowInvTgts) {
+				VarNode flowInvTgt = (VarNode) obj;
+				b.append("  ").append(
+						"\"VarNode" + flowInvSrc.getNumber() + "\"");
+				b.append(" -> ")
+						.append("\"VarNode" + flowInvTgt.getNumber() + "\"")
+						.append(" [label=\"");
+				b.append("flowTo");
+				b.append("\"]\n");
+				System.out.println("VarNode: " + flowInvSrc.getNumber()
+						+ " with type " + flowInvSrc.getType()
+						+ " flowTo VarNode: " + flowInvTgt.getNumber()
+						+ " with type " + flowInvTgt.getType());
+			}
+		}
+
+		it = father.allocInvSourcesIterator();
+		while (it.hasNext()) {
+			VarNode allocInvSrc = (VarNode) it.next();
+			Node[] allocTgts = father.allocInvLookup(allocInvSrc);
+			for (int i = 0; i < allocTgts.length; i++) {
+				AllocNode allocInvTgt = (AllocNode) allocTgts[i];
+				b.append("  ").append(
+						"\"VarNode" + allocInvSrc.getNumber() + "\"");
+				b.append(" -> ")
+						.append("\"AllocNode" + allocInvTgt.getNumber() + "\"")
+						.append(" [label=\"");
+				b.append("new");
+				b.append("\"]\n");
+				System.out.println("VarNode: " + allocInvSrc.getNumber()
+						+ " with type " + allocInvSrc.getType()
+						+ " flowTo AllocNode: " + allocInvTgt.getNumber()
+						+ " with type " + allocInvTgt.getType());
+			}
+		}
+
+		b.append("}\n");
+		System.out.println(b.toString());
+	}
+
 	public void dump() {
 		// keep records of all variables in the match edges (both ends)
-		// and deal with matchEdges
 		Set<Object> allVars = new HashSet<Object>();
+		// deal with matchEdges
 		for (Object obj : match.keySet())
 			allVars.add(obj);
 		for (Object obj : matchInv.keySet())
@@ -145,7 +222,7 @@ public class AutoPAG extends PAG {
 		for (Object obj : allVars) {
 			if (obj instanceof VarNode) {
 				VarNode var = (VarNode) obj;
-				b.append("  ").append("\"VarNode" + var.getNumber() + "\"");
+				b.append("  ").append("\"VarNode" + var.getVariable().hashCode() + "\"");
 				b.append(" [shape=circle,label=\"");
 				b.append(var.getNumber());
 				b.append("\"];\n");
@@ -165,7 +242,8 @@ public class AutoPAG extends PAG {
 				b.append("\"];\n");
 			}
 		}
-
+		
+		//
 		for (Object ms : match.keySet()) {
 			VarNode matchSrc = (VarNode) ms;
 
@@ -173,12 +251,19 @@ public class AutoPAG extends PAG {
 			for (Object obj : matchTgts) {
 				VarNode matchTgt = (VarNode) obj;
 				b.append("  ")
-						.append("\"VarNode" + matchSrc.getNumber() + "\"");
+						.append("\"VarNode" + matchSrc.getVariable().hashCode() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + matchTgt.getNumber() + "\"")
+						.append("\"VarNode" + matchTgt.getVariable().hashCode() + "\"")
 						.append(" [label=\"");
 				b.append("match");
 				b.append("\"]\n");
+				
+				System.out.println("VarNode: " + matchSrc.getNumber()
+						+ " get Variable " + matchSrc.getVariable()
+						+ " with type " + matchSrc.getType()
+						+ " matchTo VarNode: " + matchTgt.getNumber()
+						+ " get Variable " + matchTgt.getVariable()
+						+ " with type " + matchTgt.getType());
 			}
 		}
 
@@ -189,12 +274,19 @@ public class AutoPAG extends PAG {
 			for (int i = 0; i < assgnTgts.length; i++) {
 				VarNode assgnTgt = (VarNode) assgnTgts[i];
 				b.append("  ")
-						.append("\"VarNode" + assgnSrc.getNumber() + "\"");
+						.append("\"VarNode" + assgnSrc.getVariable().hashCode() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + assgnTgt.getNumber() + "\"")
+						.append("\"VarNode" + assgnTgt.getVariable().hashCode() + "\"")
 						.append(" [label=\"");
 				b.append("assign");
 				b.append("\"]\n");
+				
+				System.out.println("VarNode: " + assgnSrc.getNumber()
+						+ " get Variable " + assgnSrc.getVariable()
+						+ " with type " + assgnSrc.getType()
+						+ " assgnTo VarNode: " + assgnTgt.getNumber()
+						+ " get Variable " + assgnTgt.getVariable()
+						+ " with type " + assgnTgt.getType());
 			}
 		}
 
@@ -207,7 +299,7 @@ public class AutoPAG extends PAG {
 				b.append("  ").append(
 						"\"FieldRefNode" + loadSrc.getNumber() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + loadTgt.getNumber() + "\"")
+						.append("\"VarNode" + loadTgt.getVariable().hashCode() + "\"")
 						.append(" [label=\"");
 				b.append("load");
 				b.append("\"]\n");
@@ -221,7 +313,7 @@ public class AutoPAG extends PAG {
 			for (int i = 0; i < storeTgts.length; i++) {
 				FieldRefNode storeTgt = (FieldRefNode) storeTgts[i];
 				b.append("  ")
-						.append("\"VarNode" + storeSrc.getNumber() + "\"");
+						.append("\"VarNode" + storeSrc.getVariable().hashCode() + "\"");
 				b.append(" -> ")
 						.append("\"FieldRefNode" + storeTgt.getNumber() + "\"")
 						.append(" [label=\"");
@@ -239,26 +331,33 @@ public class AutoPAG extends PAG {
 				b.append("  ").append(
 						"\"AllocNode" + allocSrc.getNumber() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + allocTgt.getNumber() + "\"")
+						.append("\"VarNode" + allocTgt.getVariable().hashCode() + "\"")
 						.append(" [label=\"");
 				b.append("new");
 				b.append("\"]\n");
+				
+				System.out.println("AllocNode: " + allocSrc.getNumber()
+						+ " get Variable " + " no available "
+						+ " with type " + allocSrc.getType()
+						+ " allocTo VarNode: " + allocTgt.getNumber()
+						+ " get Variable " + allocTgt.getVariable()
+						+ " with type " + allocTgt.getType());
 			}
 		}
 
 		b.append("}\n");
 		System.out.println(b.toString());
 	}
-	
+
 	/** protected methods */
-	
+
 	protected void createFlow() {
 		// first fill flow by simple
 		Iterator<Object> it = father.simpleSourcesIterator();
 		while (it.hasNext()) {
 			VarNode simpleSrc = (VarNode) it.next();
 			Node[] simpleTgts = father.simpleLookup(simpleSrc);
-			for (int i = 0; i < simpleTgts.length; i ++) {
+			for (int i = 0; i < simpleTgts.length; i++) {
 				addFlowEdge(simpleSrc, (VarNode) simpleTgts[i]);
 			}
 		}
@@ -266,7 +365,7 @@ public class AutoPAG extends PAG {
 		for (Object obj : match.keySet()) {
 			VarNode matchSrc = (VarNode) obj;
 			Set<Object> matchTgts = (Set<Object>) match.get(obj);
-			for (Object matchTgt : matchTgts) 
+			for (Object matchTgt : matchTgts)
 				addFlowEdge(matchSrc, (VarNode) matchTgt);
 		}
 	}

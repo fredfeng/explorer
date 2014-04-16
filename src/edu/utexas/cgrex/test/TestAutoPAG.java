@@ -66,6 +66,7 @@ public class TestAutoPAG extends SceneTransformer{
         //MatchEdges me = new MatchEdges(pag);
         AutoPAG me = new AutoPAG(pag);
         me.build();
+        //me.dumpFlow();
         me.dump();
         
         System.out.println("-------match-------");
@@ -117,8 +118,8 @@ public class TestAutoPAG extends SceneTransformer{
 	
 	public static void main(String[] args) {
 		String targetLoc = 
-				"/Users/xwang/oopsla/CallsiteResolver/benchmarks/CFLexamples/bin/";
-				//"/Users/xwang/oopsla/CallsiteResolver/CFLexamples/test/bin";
+				//"/Users/xwang/oopsla/CallsiteResolver/benchmarks/CFLexamples/bin/";
+				"/Users/xwang/oopsla/CallsiteResolver/CFLexamples/test/bin";
 		try {
 
 			StringBuilder options = new StringBuilder();	
