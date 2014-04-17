@@ -1,5 +1,10 @@
 package edu.utexas.cgrex.analyses;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -7,19 +12,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.utexas.cgrex.utils.SootUtils;
+import soot.G;
 import soot.Local;
+import soot.RefType;
 import soot.SootField;
 import soot.Type;
 import soot.jimple.spark.pag.AllocNode;
+import soot.jimple.spark.pag.ArrayElement;
 import soot.jimple.spark.pag.FieldRefNode;
+import soot.jimple.spark.pag.GlobalVarNode;
+import soot.jimple.spark.pag.LocalVarNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
 
-public class AutoPAG extends PAG {
+public class AutoPAG {
 
-	protected PAG father;
+	protected PAG father; // just a shallow copy of the pag
 
 	// HashMap<VarNode, VarNode>
 	protected Map<Object, Object> match = new HashMap<Object, Object>();
@@ -27,12 +38,15 @@ public class AutoPAG extends PAG {
 	// HashMap<VarNode, VarNode>
 	protected Map<Object, Object> matchInv = new HashMap<Object, Object>();
 
+	// combine match and simple map together
 	protected Map<Object, Object> flow = new HashMap<Object, Object>();
 
+	// combine matchInv and simpleInv together
 	protected Map<Object, Object> flowInv = new HashMap<Object, Object>();
 
+	protected final static Node[] EMPTY_NODE_ARRAY = new Node[0];
+
 	public AutoPAG(PAG pag) {
-		super(pag.getOpts());
 		father = pag;
 	}
 
@@ -41,6 +55,8 @@ public class AutoPAG extends PAG {
 		createFlow(); // create flow and flowInv by match and simple
 	}
 
+	// given a list of variables to query the type
+	// return true if at least one variable points to type by pt analysis
 	public boolean query(List<Local> vars, Type type) {
 
 		return false;
@@ -182,11 +198,13 @@ public class AutoPAG extends PAG {
 	public void dump() {
 		// keep records of all variables in the match edges (both ends)
 		Set<Object> allVars = new HashSet<Object>();
+
 		// deal with matchEdges
 		for (Object obj : match.keySet())
 			allVars.add(obj);
 		for (Object obj : matchInv.keySet())
 			allVars.add(obj);
+
 		// simple (assign)
 		Iterator<Object> it = father.simpleSourcesIterator();
 		while (it.hasNext())
@@ -219,10 +237,12 @@ public class AutoPAG extends PAG {
 		StringBuilder b = new StringBuilder("digraph AutoPAG {\n");
 		b.append("  rankdir = LR;\n");
 
+		// allocate Ids of the variables
 		for (Object obj : allVars) {
+			assert (obj instanceof VarNode || obj instanceof FieldRefNode || obj instanceof AllocNode);
 			if (obj instanceof VarNode) {
 				VarNode var = (VarNode) obj;
-				b.append("  ").append("\"VarNode" + var.getVariable().hashCode() + "\"");
+				b.append("  ").append("\"VarNode" + var.getNumber() + "\"");
 				b.append(" [shape=circle,label=\"");
 				b.append(var.getNumber());
 				b.append("\"];\n");
@@ -231,8 +251,13 @@ public class AutoPAG extends PAG {
 				b.append("  ")
 						.append("\"FieldRefNode" + var.getNumber() + "\"");
 				b.append(" [shape=square,label=\"");
-				b.append(var.getBase().getNumber() + "." + var.getNumber()
-						+ "(" + ((SootField) var.getField()).getName() + ")");
+				if (var.getField() instanceof SootField)
+					b.append(var.getBase().getNumber() + "." + var.getNumber()
+							+ "(" + ((SootField) var.getField()).getName()
+							+ ")");
+				else
+					b.append(var.getBase().getNumber() + "." + var.getNumber()
+							+ "(ArrayElement)");
 				b.append("\"];\n");
 			} else if (obj instanceof AllocNode) {
 				AllocNode var = (AllocNode) obj;
@@ -242,8 +267,10 @@ public class AutoPAG extends PAG {
 				b.append("\"];\n");
 			}
 		}
-		
-		//
+
+		StringBuilder c = new StringBuilder("");
+
+		// draw the graph
 		for (Object ms : match.keySet()) {
 			VarNode matchSrc = (VarNode) ms;
 
@@ -251,19 +278,19 @@ public class AutoPAG extends PAG {
 			for (Object obj : matchTgts) {
 				VarNode matchTgt = (VarNode) obj;
 				b.append("  ")
-						.append("\"VarNode" + matchSrc.getVariable().hashCode() + "\"");
+						.append("\"VarNode" + matchSrc.getNumber() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + matchTgt.getVariable().hashCode() + "\"")
+						.append("\"VarNode" + matchTgt.getNumber() + "\"")
 						.append(" [label=\"");
 				b.append("match");
 				b.append("\"]\n");
-				
-				System.out.println("VarNode: " + matchSrc.getNumber()
-						+ " get Variable " + matchSrc.getVariable()
-						+ " with type " + matchSrc.getType()
-						+ " matchTo VarNode: " + matchTgt.getNumber()
-						+ " get Variable " + matchTgt.getVariable()
-						+ " with type " + matchTgt.getType());
+
+				c.append("VarNode: " + matchSrc.getNumber() + "\n"
+						+ " get Variable " + matchSrc.getVariable() + "\n"
+						+ " with type " + matchSrc.getType() + "\n"
+						+ " matchTo VarNode: " + matchTgt.getNumber() + "\n"
+						+ " get Variable " + matchTgt.getVariable() + "\n"
+						+ " with type " + matchTgt.getType() + "\n\n");
 			}
 		}
 
@@ -274,19 +301,19 @@ public class AutoPAG extends PAG {
 			for (int i = 0; i < assgnTgts.length; i++) {
 				VarNode assgnTgt = (VarNode) assgnTgts[i];
 				b.append("  ")
-						.append("\"VarNode" + assgnSrc.getVariable().hashCode() + "\"");
+						.append("\"VarNode" + assgnSrc.getNumber() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + assgnTgt.getVariable().hashCode() + "\"")
+						.append("\"VarNode" + assgnTgt.getNumber() + "\"")
 						.append(" [label=\"");
 				b.append("assign");
 				b.append("\"]\n");
-				
-				System.out.println("VarNode: " + assgnSrc.getNumber()
-						+ " get Variable " + assgnSrc.getVariable()
-						+ " with type " + assgnSrc.getType()
-						+ " assgnTo VarNode: " + assgnTgt.getNumber()
-						+ " get Variable " + assgnTgt.getVariable()
-						+ " with type " + assgnTgt.getType());
+
+				c.append("VarNode: " + assgnSrc.getNumber() + "\n"
+						+ " get Variable " + assgnSrc.getVariable() + "\n"
+						+ " with type " + assgnSrc.getType() + "\n"
+						+ " assgnTo VarNode: " + assgnTgt.getNumber() + "\n"
+						+ " get Variable " + assgnTgt.getVariable() + "\n"
+						+ " with type " + assgnTgt.getType() + "\n\n");
 			}
 		}
 
@@ -299,10 +326,23 @@ public class AutoPAG extends PAG {
 				b.append("  ").append(
 						"\"FieldRefNode" + loadSrc.getNumber() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + loadTgt.getVariable().hashCode() + "\"")
+						.append("\"VarNode" + loadTgt.getNumber() + "\"")
 						.append(" [label=\"");
 				b.append("load");
 				b.append("\"]\n");
+
+				c.append("FieldRefNode: ");
+				if (loadSrc.getField() instanceof SootField)
+					c.append(loadSrc.getBase().getNumber() + "."
+							+ loadSrc.getNumber() + "("
+							+ ((SootField) loadSrc.getField()).getName()
+							+ ")\n");
+				else
+					c.append(loadSrc.getBase().getNumber() + "."
+							+ loadSrc.getNumber() + "(ArrayElement)\n\n");
+				c.append(" loadTo VarNode: " + loadTgt.getNumber() + "\n"
+						+ " get Variable " + loadTgt.getVariable() + "\n"
+						+ " with type " + loadTgt.getType() + "\n\n");
 			}
 		}
 
@@ -313,13 +353,29 @@ public class AutoPAG extends PAG {
 			for (int i = 0; i < storeTgts.length; i++) {
 				FieldRefNode storeTgt = (FieldRefNode) storeTgts[i];
 				b.append("  ")
-						.append("\"VarNode" + storeSrc.getVariable().hashCode() + "\"");
+						.append("\"VarNode" + storeSrc.getNumber() + "\"");
 				b.append(" -> ")
 						.append("\"FieldRefNode" + storeTgt.getNumber() + "\"")
 						.append(" [label=\"");
 				b.append("store");
 				b.append("\"]\n");
+
+				c.append("VarNode: " + storeSrc.getNumber() + "\n"
+						+ " get Variable " + storeSrc.getVariable() + "\n"
+						+ " with type " + storeSrc.getType() + "\n");
+
+				c.append(" storeTo FieldRefNode: ");
+				if (storeTgt.getField() instanceof SootField)
+					c.append(storeTgt.getBase().getNumber() + "."
+							+ storeTgt.getNumber() + "("
+							+ ((SootField) storeTgt.getField()).getName()
+							+ ")\n\n");
+				else
+					c.append(storeTgt.getBase().getNumber() + "."
+							+ storeTgt.getNumber() + "(ArrayElement)\n\n");
+
 			}
+
 		}
 
 		it = father.allocSourcesIterator();
@@ -331,26 +387,41 @@ public class AutoPAG extends PAG {
 				b.append("  ").append(
 						"\"AllocNode" + allocSrc.getNumber() + "\"");
 				b.append(" -> ")
-						.append("\"VarNode" + allocTgt.getVariable().hashCode() + "\"")
+						.append("\"VarNode" + allocTgt.getNumber() + "\"")
 						.append(" [label=\"");
 				b.append("new");
 				b.append("\"]\n");
-				
-				System.out.println("AllocNode: " + allocSrc.getNumber()
-						+ " get Variable " + " no available "
-						+ " with type " + allocSrc.getType()
-						+ " allocTo VarNode: " + allocTgt.getNumber()
-						+ " get Variable " + allocTgt.getVariable()
-						+ " with type " + allocTgt.getType());
+
+				c.append("AllocNode: " + allocSrc.getNumber() + "\n"
+						+ " with type " + allocSrc.getType() + "\n"
+						+ " allocTo VarNode: " + allocTgt.getNumber() + "\n"
+						+ " get Variable " + allocTgt.getVariable() + "\n"
+						+ " with type " + allocTgt.getType() + "\n\n");
 			}
 		}
 
 		b.append("}\n");
-		System.out.println(b.toString());
+
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"src/autopag.dot"));
+			BufferedWriter cufw = new BufferedWriter(new FileWriter(
+					"sootOutput/autopagDot"));
+			cufw.write(c.toString());
+			bufw.write(b.toString());
+			cufw.close();
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		// System.out.println(b.toString());
 	}
 
 	/** protected methods */
 
+	@SuppressWarnings("unchecked")
 	protected void createFlow() {
 		// first fill flow by simple
 		Iterator<Object> it = father.simpleSourcesIterator();
@@ -370,47 +441,137 @@ public class AutoPAG extends PAG {
 		}
 	}
 
+	protected void fillSrc(Map<SootField, Set<VarNode>> storeSrc,
+			Set<VarNode> ptAllSrc) {
+		for (Iterator<Object> it = father.storeInvSourcesIterator(); it
+				.hasNext();) {
+			FieldRefNode store = (FieldRefNode) it.next();
+			SparkField field = store.getField();
+
+			assert (field instanceof SootField || field instanceof ArrayElement);
+
+			if (field instanceof SootField) {
+				Node[] varList = father.storeInvLookup(store);
+				for (int i = 0; i < varList.length; i++)
+					addToMap(storeSrc, (SootField) field,
+							(VarNode) varList[i]);
+			} else if (field instanceof ArrayElement) {
+				Node[] varList = father.storeInvLookup(store);
+				for (int i = 0; i < varList.length; i++)
+					ptAllSrc.add((VarNode) varList[i]);
+			}
+		}
+	}
+
+	protected void fillTgt(Map<SootField, Set<VarNode>> loadTgt,
+			Set<VarNode> ptAllTgt) {
+		for (Iterator<Object> it = father.loadSourcesIterator(); it.hasNext();) {
+			FieldRefNode load = (FieldRefNode) it.next();
+			SparkField field = load.getField();
+
+			assert(field instanceof SootField);
+
+			if (field instanceof SootField) {
+				Node[] varList = father.loadLookup(load);
+				for (int i = 0; i < varList.length; i++)
+					addToMap(loadTgt, (SootField) field,
+							(VarNode) varList[i]);
+			} else if (field instanceof ArrayElement) {
+				Node[] varList = father.loadLookup(load);
+				for (int i = 0; i < varList.length; i++)
+					ptAllTgt.add((VarNode) varList[i]);
+			}
+		}
+	}
+
+	protected boolean isCompatible(SootField sf1, SootField sf2) {
+		if (sf1.getName() != sf2.getName())
+			return false;
+		assert(sf1.getType() instanceof RefType);
+		//Set<SootClass> subTypeOfSf1 = SootUtils.subTypesOf()
+		return true;
+	}
+
 	protected void createMatch() {
-		// time complexity = O(mn), need improvement
-		Iterator<Object> storeIt = father.storeSourcesIterator();
-		// storeMap: store_src(VarNode) ----> store_targets(FieldRefNode)
-		// x.f = a
-		while (storeIt.hasNext()) {
-			// get the representative of the union
-			VarNode from = ((VarNode) storeIt.next()); // storeSrc, a
-			Node[] storeTargets = father.storeLookup(from);
-			for (int i = 0; i < storeTargets.length; i++) {
-				FieldRefNode storeTarget = (FieldRefNode) storeTargets[i]; // x.f
-				VarNode storeTargetBase = storeTarget.getBase(); // x
-				SparkField storeTargetField = storeTarget.getField(); // f
-				String storeTargetFieldSig = ((SootField) storeTargetField)
-						.getSignature(); // f's signature
-				// three inheritances of SparkField:
-				// ArrayElement, Parm, and SootField
-				if (storeTargetField instanceof SootField) {
-					// b = y.f
-					Iterator<Object> loadIt = father.loadSourcesIterator();
-					while (loadIt.hasNext()) {
-						FieldRefNode loadSrc = (FieldRefNode) loadIt.next(); // y.f
-						VarNode loadSrcBase = loadSrc.getBase(); // y
-						SparkField loadSrcField = loadSrc.getField(); // f
-						if (loadSrcField instanceof SootField) {
-							// see whether x.f and y.f has the same offset of
-							// the field
-							String loadSrcFieldSig = ((SootField) loadSrcField)
-									.getSignature(); // f's signature
-							if (loadSrcFieldSig.equals(storeTargetFieldSig)) {
-								Node[] to = father.loadLookup(loadSrc); // loadTargets,
-																		// b
-								for (int j = 0; j < to.length; j++) {
-									doAddMatchEdge(from, (VarNode) to[j]);
-								}
-							}
+		// for SootField, add match according to getName + getType
+		// Do not use getSignature, signature is Class + Type + Name
+		Map<SootField, Set<VarNode>> storeSrc = new HashMap<SootField, Set<VarNode>>(); // from
+		Map<SootField, Set<VarNode>> loadTgt = new HashMap<SootField, Set<VarNode>>(); // to
+		// for ArrayElement, add match to anyone in target set
+		Set<VarNode> ptAllSrc = new HashSet<VarNode>();
+		Set<VarNode> ptAllTgt = new HashSet<VarNode>();
+		// fill storeSrc and ptAllSrc
+		fillSrc(storeSrc, ptAllSrc);
+		// fill loadTgt and ptAllTgt
+		fillTgt(loadTgt, ptAllTgt);
+
+		// add match edges according to storeSrc and loadTgt maps
+		for (SootField s : storeSrc.keySet()) {
+			Set<VarNode> srcList = storeSrc.get(s);
+			for (SootField t : loadTgt.keySet()) {
+				if (isCompatible(s, t)) {
+					Set<VarNode> tgtList = loadTgt.get(t);
+					for (VarNode src : srcList) {
+						for (VarNode tgt : tgtList) {
+							doAddMatchEdge(src, tgt);
 						}
 					}
 				}
 			}
 		}
+		// add match edges according to ptAllSrc and ptAllTgt
+		for (VarNode src : ptAllSrc) {
+			for (VarNode tgt : ptAllTgt) {
+				doAddMatchEdge(src, tgt);
+			}
+		}
 	}
 
+	/** protected methods */
+	protected boolean addToMap(Map<Object, Object> m, Node key, Node value) {
+		Object valueList = m.get(key);
+
+		if (valueList == null) {
+			m.put(key, valueList = new HashSet(4));
+		} else if (!(valueList instanceof Set)) {
+			Node[] ar = (Node[]) valueList;
+			HashSet<Node> vl = new HashSet<Node>(ar.length + 4);
+			m.put(key, vl);
+			for (Node element : ar)
+				vl.add(element);
+			return vl.add(value);
+		}
+		return ((Set<Node>) valueList).add(value);
+	}
+
+	protected Node[] lookup(Map<Object, Object> m, Object key) {
+		Object valueList = m.get(key);
+		if (valueList == null) {
+			return EMPTY_NODE_ARRAY;
+		}
+		if (valueList instanceof Set) {
+			try {
+				m.put(key,
+						valueList = ((Set) valueList).toArray(EMPTY_NODE_ARRAY));
+			} catch (Exception e) {
+				for (Iterator it = ((Set) valueList).iterator(); it.hasNext();) {
+					G.v().out.println(" " + it.next());
+				}
+				throw new RuntimeException(" " + valueList + e);
+			}
+		}
+		Node[] ret = (Node[]) valueList;
+		return ret;
+	}
+
+	protected boolean addToMap(Map<SootField, Set<VarNode>> m, SootField key,
+			VarNode value) {
+		Set<VarNode> valueList = m.get(key);
+
+		if (valueList == null) {
+			m.put(key, valueList = new HashSet(4));
+		}
+
+		return (valueList).add(value);
+	}
 }
