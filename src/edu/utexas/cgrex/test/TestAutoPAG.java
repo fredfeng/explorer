@@ -67,9 +67,9 @@ public class TestAutoPAG extends SceneTransformer {
 
 		String output_dir = "sootOutput";
 		PAGDumper dumper = new PAGDumper(pag, output_dir);
-		dumper.dump();
+		//dumper.dump();
 		
-		
+		//me.printTypeInfo();
 
 		// print map info
 		// printMap(pag);

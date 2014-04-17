@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.cgrex.utils.SootUtils;
+import soot.ArrayType;
 import soot.Context;
 import soot.G;
 import soot.Local;
@@ -456,7 +457,7 @@ public class AutoPAG {
 
 	public Set<AllocNode> queryTest(VarNode var) {
 		Set<AllocNode> ptAllocSet = searchingObjects(var);
-		
+
 		return ptAllocSet;
 	}
 
@@ -480,7 +481,7 @@ public class AutoPAG {
 			}
 			// then recursively add the others in flowInv
 			Set<VarNode> nextVarNodes = (Set<VarNode>) flowInv.get(head);
-			if (nextVarNodes == null) 
+			if (nextVarNodes == null)
 				continue;
 			for (VarNode nextVarNode : nextVarNodes) {
 				if (visited.contains(nextVarNode))
@@ -624,7 +625,7 @@ public class AutoPAG {
 			FieldRefNode load = (FieldRefNode) it.next();
 			SparkField field = load.getField();
 
-			assert (field instanceof SootField);
+			assert (field instanceof SootField || field instanceof ArrayElement);
 
 			if (field instanceof SootField) {
 				Node[] varList = father.loadLookup(load);
@@ -638,19 +639,61 @@ public class AutoPAG {
 		}
 	}
 
+	public void printTypeInfo() {
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"sootOutput/fieldTypeInfo"));
+			bufw.write(s.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+
+	private StringBuilder s = new StringBuilder("");
+
 	protected boolean isCompatible(SootField sf1, SootField sf2) {
 		if (sf1.getName() != sf2.getName())
 			return false;
 
-		assert (sf1.getType() instanceof RefType);
-		assert (sf2.getType() instanceof RefType);
+		assert (sf1.getType() instanceof RefType || sf1.getType() instanceof ArrayType);
+		assert (sf2.getType() instanceof RefType || sf2.getType() instanceof ArrayType);
 
-		SootClass TypeOfSf1 = ((RefType) sf1.getType()).getSootClass();
-		SootClass TypeOfSf2 = ((RefType) sf2.getType()).getSootClass();
-		Set<SootClass> subTypeOfSf1 = SootUtils.subTypesOf(((RefType) sf1
-				.getType()).getSootClass());
-		Set<SootClass> subTypeOfSf2 = SootUtils.subTypesOf(((RefType) sf2
-				.getType()).getSootClass());
+		// if (sf1.getType() instanceof ArrayType)
+		// s.append("sf1: " + ((ArrayType)sf1.getType()).baseType.getClass());
+		// else
+		// s.append("sf1: " + sf1.getType().getClass());
+		//
+		// if (sf2.getType() instanceof ArrayType)
+		// s.append(" sf2: " + ((ArrayType)sf2.getType()).baseType.getClass() +
+		// "\n");
+		// else
+		// s.append(" sf2: " + sf2.getType().getClass() + "\n");
+
+		SootClass TypeOfSf1, TypeOfSf2;
+		if (sf1.getType() instanceof ArrayType
+				&& ((ArrayType) sf1.getType()).baseType instanceof RefType) {
+			TypeOfSf1 = ((RefType) ((ArrayType) sf1.getType()).baseType)
+					.getSootClass();
+		} else if (sf1.getType() instanceof RefType) {
+			TypeOfSf1 = ((RefType) sf1.getType()).getSootClass();
+		} else {
+			return false;
+		}
+		
+		if (sf2.getType() instanceof ArrayType
+				&& ((ArrayType) sf2.getType()).baseType instanceof RefType) {
+			TypeOfSf2 = ((RefType) ((ArrayType) sf2.getType()).baseType)
+					.getSootClass();
+		} else if (sf2.getType() instanceof RefType) {
+			TypeOfSf2 = ((RefType) sf2.getType()).getSootClass();
+		} else {
+			return false;
+		}
+
+		Set<SootClass> subTypeOfSf1 = SootUtils.subTypesOf(TypeOfSf1);
+		Set<SootClass> subTypeOfSf2 = SootUtils.subTypesOf(TypeOfSf2);
 
 		if (subTypeOfSf1 != null && subTypeOfSf1.contains(TypeOfSf2))
 			return true;
