@@ -2,10 +2,12 @@ package edu.utexas.cgrex.utils;
 
 import soot.FastHierarchy;
 import soot.util.NumberedString;
+import soot.G;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 
+import java.util.Date;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +23,11 @@ import java.util.Iterator;
 public class SootUtils
 {   
     private static HashMap<SootClass,Set<SootClass>> classToSubtypes = new HashMap();
+    
+    protected static void reportTime( String desc, Date start, Date end ) {
+        long time = end.getTime()-start.getTime();
+        G.v().out.println( "[CGregx] "+desc+" in "+time/1000+"."+(time/100)%10+" seconds." );
+    }
 
     public static Set<SootClass> subTypesOf(SootClass cl)
     {
