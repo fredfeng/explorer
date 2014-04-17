@@ -1,4 +1,4 @@
-package edu.utexas.UltraCG;
+package edu.utexas.cgrex.utils;
 
 import soot.FastHierarchy;
 import soot.util.NumberedString;
@@ -40,16 +40,16 @@ public class SootUtils
         while(!worklist.isEmpty()) {
             cl = worklist.removeFirst();
             if(cl.isInterface()) {
-                for(Iterator cIt = fh.getAllImplementersOfInterface(cl).iterator(); cIt.hasNext();) {
-                    final SootClass c = (SootClass) cIt.next();
+                for(Iterator<SootClass> cIt = fh.getAllImplementersOfInterface(cl).iterator(); cIt.hasNext();) {
+                    final SootClass c = cIt.next();
                     if(workset.add(c)) worklist.add(c);
                 }
             } else {
                 if(cl.isConcrete()) {
                     subTypes.add(cl);
                 }
-                for(Iterator cIt = fh.getSubclassesOf(cl).iterator(); cIt.hasNext();) {
-                    final SootClass c = (SootClass) cIt.next();
+                for(Iterator<SootClass> cIt = fh.getSubclassesOf(cl).iterator(); cIt.hasNext();) {
+                    final SootClass c = cIt.next();
                     if(workset.add(c)) worklist.add(c);
                 }
             }
