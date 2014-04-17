@@ -550,7 +550,6 @@ public class AutoPAG {
 		}
 	}
 
-	/** protected methods */
 	protected boolean addToMap(Map<Object, Object> m, Node key, Node value) {
 		Object valueList = m.get(key);
 
@@ -681,7 +680,7 @@ public class AutoPAG {
 		} else {
 			return false;
 		}
-		
+
 		if (sf2.getType() instanceof ArrayType
 				&& ((ArrayType) sf2.getType()).baseType instanceof RefType) {
 			TypeOfSf2 = ((RefType) ((ArrayType) sf2.getType()).baseType)

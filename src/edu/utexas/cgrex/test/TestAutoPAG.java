@@ -2,12 +2,14 @@ package edu.utexas.cgrex.test;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.cgrex.analyses.AutoPAG;
+import edu.utexas.cgrex.utils.SootUtils;
 import soot.CompilationDeathException;
 import soot.PackManager;
 import soot.Scene;
@@ -48,7 +50,10 @@ public class TestAutoPAG extends SceneTransformer {
 		for (Object obj : me.flowInvSources()) {
 			VarNode v = (VarNode) obj;
 			b.append("VarNode: " + v.getNumber() + " points to: ");
+			//Date start = new Date();
 			Set<AllocNode> s = me.queryTest(v);
+			//Date end = new Date();
+			//SootUtils.reportTime("TEST Query", start, end);
 			for (AllocNode node : s) {
 				b.append(node.getNumber() + " ");
 			}
@@ -97,8 +102,8 @@ public class TestAutoPAG extends SceneTransformer {
 
 	public static void main(String[] args) {
 		String targetLoc = // "benchmarks/CFLexamples/bin";
-		// "benchmarks/sablecc-3.7/classes";
-		"benchmarks/test/bin";
+		 "benchmarks/sablecc-3.7/classes";
+		//"benchmarks/test/bin";
 		try {
 			PackManager.v().getPack("wjtp")
 					.add(new Transform("wjtp.test", new TestAutoPAG()));
