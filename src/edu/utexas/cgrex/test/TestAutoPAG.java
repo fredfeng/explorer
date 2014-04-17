@@ -41,6 +41,29 @@ public class TestAutoPAG extends SceneTransformer {
 		AutoPAG me = new AutoPAG(pag);
 		me.build();
 		me.dump();
+		me.dumpFlow();
+		
+		StringBuilder b = new StringBuilder("");
+		
+		for (Object obj : me.flowInvSources()) {
+			VarNode v = (VarNode) obj;
+			b.append("VarNode: " + v.getNumber() + " points to: ");
+			Set<AllocNode> s = me.queryTest(v);
+			for (AllocNode node : s) {
+				b.append(node.getNumber() + " ");
+			}
+			b.append("\n");
+		}
+		
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"sootOutput/ptAnalysis"));
+			bufw.write(b.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
 
 		String output_dir = "sootOutput";
 		PAGDumper dumper = new PAGDumper(pag, output_dir);
@@ -73,7 +96,7 @@ public class TestAutoPAG extends SceneTransformer {
 	}
 
 	public static void main(String[] args) {
-		String targetLoc =  //"benchmarks/CFLexamples/bin";
+		String targetLoc = // "benchmarks/CFLexamples/bin";
 		// "benchmarks/sablecc-3.7/classes";
 		"benchmarks/test/bin";
 		try {

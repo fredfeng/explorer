@@ -8,16 +8,23 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.cgrex.utils.SootUtils;
+import soot.Context;
 import soot.G;
 import soot.Local;
+import soot.PointsToAnalysis;
+import soot.PointsToSet;
 import soot.RefType;
+import soot.SootClass;
 import soot.SootField;
 import soot.Type;
+import soot.Value;
+import soot.jimple.FieldRef;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.ArrayElement;
 import soot.jimple.spark.pag.FieldRefNode;
@@ -39,10 +46,17 @@ public class AutoPAG {
 	protected Map<Object, Object> matchInv = new HashMap<Object, Object>();
 
 	// combine match and simple map together
+	// flow is stored in the same way as other maps
 	protected Map<Object, Object> flow = new HashMap<Object, Object>();
 
 	// combine matchInv and simpleInv together
+	// to do dfs, we need to use flowInv because we want to
+	// start from a variable and end at a new node
 	protected Map<Object, Object> flowInv = new HashMap<Object, Object>();
+
+	// store the reaching objects of varnodes in the flow map
+	// so that to provide a speedup for continuing queries
+	protected Map<VarNode, AllocNode> ptAllocNodes = new HashMap<VarNode, AllocNode>();
 
 	protected final static Node[] EMPTY_NODE_ARRAY = new Node[0];
 
@@ -53,13 +67,6 @@ public class AutoPAG {
 	public void build() {
 		createMatch(); // create match and matchInv
 		createFlow(); // create flow and flowInv by match and simple
-	}
-
-	// given a list of variables to query the type
-	// return true if at least one variable points to type by pt analysis
-	public boolean query(List<Local> vars, Type type) {
-
-		return false;
 	}
 
 	public boolean doAddMatchEdge(VarNode from, VarNode to) {
@@ -136,6 +143,9 @@ public class AutoPAG {
 		b.append("  rankdir = LR;\n");
 		// create nodes in the dumped graph
 		for (Object obj : allVars) {
+
+			assert (obj instanceof VarNode || obj instanceof AllocNode);
+
 			if (obj instanceof VarNode) {
 				VarNode var = (VarNode) obj;
 				b.append("  ").append("\"VarNode" + var.getNumber() + "\"");
@@ -164,10 +174,6 @@ public class AutoPAG {
 						.append(" [label=\"");
 				b.append("flowTo");
 				b.append("\"]\n");
-				System.out.println("VarNode: " + flowInvSrc.getNumber()
-						+ " with type " + flowInvSrc.getType()
-						+ " flowTo VarNode: " + flowInvTgt.getNumber()
-						+ " with type " + flowInvTgt.getType());
 			}
 		}
 
@@ -184,15 +190,20 @@ public class AutoPAG {
 						.append(" [label=\"");
 				b.append("new");
 				b.append("\"]\n");
-				System.out.println("VarNode: " + allocInvSrc.getNumber()
-						+ " with type " + allocInvSrc.getType()
-						+ " flowTo AllocNode: " + allocInvTgt.getNumber()
-						+ " with type " + allocInvTgt.getType());
 			}
 		}
 
 		b.append("}\n");
-		System.out.println(b.toString());
+
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"src/autopagFlow.dot"));
+			bufw.write(b.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
 	}
 
 	public void dump() {
@@ -415,11 +426,70 @@ public class AutoPAG {
 			e.printStackTrace();
 			System.exit(0);
 		}
+	}
 
-		// System.out.println(b.toString());
+	// given a list of variables to query the type
+	// return true if at least one variable points to type by pt analysis
+	// Value: FieldRef / Local
+	public boolean query(List<Value> vars, Type type) {
+		for (Value var : vars) {
+
+			assert (var instanceof Local || var instanceof FieldRef);
+
+			VarNode v = null;
+			if (var instanceof Local)
+				v = father.findLocalVarNode(var);
+			else
+				v = father.findGlobalVarNode(((FieldRef) var).getField());
+
+			Set<AllocNode> ptAllocSet = searchingObjects(v);
+			Set<Type> ptTypeSet = new HashSet<Type>();
+			for (AllocNode alloc : ptAllocSet)
+				ptTypeSet.add(alloc.getType());
+
+			if (ptTypeSet.contains(type))
+				return true;
+
+		}
+		return false;
+	}
+
+	public Set<AllocNode> queryTest(VarNode var) {
+		Set<AllocNode> ptAllocSet = searchingObjects(var);
+		
+		return ptAllocSet;
 	}
 
 	/** protected methods */
+
+	// worklist algorithm
+	protected Set<AllocNode> searchingObjects(VarNode start) {
+		LinkedList<VarNode> workList = new LinkedList<VarNode>();
+		Set<VarNode> visited = new HashSet<VarNode>();
+		Set<AllocNode> reachable = new HashSet<AllocNode>();
+
+		workList.add(start);
+		VarNode head = null;
+		while (((head = workList.poll()) != null) && (!visited.contains(head))) {
+			// mark head as visited
+			visited.add(head);
+			// first try to add allocNode if head is in allocInv
+			Node[] objs = father.allocInvLookup(head);
+			for (int i = 0; i < objs.length; i++) {
+				reachable.add((AllocNode) objs[i]);
+			}
+			// then recursively add the others in flowInv
+			Set<VarNode> nextVarNodes = (Set<VarNode>) flowInv.get(head);
+			if (nextVarNodes == null) 
+				continue;
+			for (VarNode nextVarNode : nextVarNodes) {
+				if (visited.contains(nextVarNode))
+					continue;
+				workList.add(nextVarNode);
+			}
+		}
+		return reachable;
+	}
 
 	@SuppressWarnings("unchecked")
 	protected void createFlow() {
@@ -429,7 +499,8 @@ public class AutoPAG {
 			VarNode simpleSrc = (VarNode) it.next();
 			Node[] simpleTgts = father.simpleLookup(simpleSrc);
 			for (int i = 0; i < simpleTgts.length; i++) {
-				addFlowEdge(simpleSrc, (VarNode) simpleTgts[i]);
+				if (!simpleSrc.equals(simpleTgts[i])) // eliminate self-cycle
+					addFlowEdge(simpleSrc, (VarNode) simpleTgts[i]);
 			}
 		}
 		// then fill flow by match
@@ -437,59 +508,9 @@ public class AutoPAG {
 			VarNode matchSrc = (VarNode) obj;
 			Set<Object> matchTgts = (Set<Object>) match.get(obj);
 			for (Object matchTgt : matchTgts)
-				addFlowEdge(matchSrc, (VarNode) matchTgt);
+				if (!matchSrc.equals(matchTgt)) // eliminate self-cycle
+					addFlowEdge(matchSrc, (VarNode) matchTgt);
 		}
-	}
-
-	protected void fillSrc(Map<SootField, Set<VarNode>> storeSrc,
-			Set<VarNode> ptAllSrc) {
-		for (Iterator<Object> it = father.storeInvSourcesIterator(); it
-				.hasNext();) {
-			FieldRefNode store = (FieldRefNode) it.next();
-			SparkField field = store.getField();
-
-			assert (field instanceof SootField || field instanceof ArrayElement);
-
-			if (field instanceof SootField) {
-				Node[] varList = father.storeInvLookup(store);
-				for (int i = 0; i < varList.length; i++)
-					addToMap(storeSrc, (SootField) field,
-							(VarNode) varList[i]);
-			} else if (field instanceof ArrayElement) {
-				Node[] varList = father.storeInvLookup(store);
-				for (int i = 0; i < varList.length; i++)
-					ptAllSrc.add((VarNode) varList[i]);
-			}
-		}
-	}
-
-	protected void fillTgt(Map<SootField, Set<VarNode>> loadTgt,
-			Set<VarNode> ptAllTgt) {
-		for (Iterator<Object> it = father.loadSourcesIterator(); it.hasNext();) {
-			FieldRefNode load = (FieldRefNode) it.next();
-			SparkField field = load.getField();
-
-			assert(field instanceof SootField);
-
-			if (field instanceof SootField) {
-				Node[] varList = father.loadLookup(load);
-				for (int i = 0; i < varList.length; i++)
-					addToMap(loadTgt, (SootField) field,
-							(VarNode) varList[i]);
-			} else if (field instanceof ArrayElement) {
-				Node[] varList = father.loadLookup(load);
-				for (int i = 0; i < varList.length; i++)
-					ptAllTgt.add((VarNode) varList[i]);
-			}
-		}
-	}
-
-	protected boolean isCompatible(SootField sf1, SootField sf2) {
-		if (sf1.getName() != sf2.getName())
-			return false;
-		assert(sf1.getType() instanceof RefType);
-		//Set<SootClass> subTypeOfSf1 = SootUtils.subTypesOf()
-		return true;
 	}
 
 	protected void createMatch() {
@@ -513,7 +534,8 @@ public class AutoPAG {
 					Set<VarNode> tgtList = loadTgt.get(t);
 					for (VarNode src : srcList) {
 						for (VarNode tgt : tgtList) {
-							doAddMatchEdge(src, tgt);
+							if (!src.equals(tgt)) // eliminate self-cycle
+								doAddMatchEdge(src, tgt);
 						}
 					}
 				}
@@ -574,4 +596,68 @@ public class AutoPAG {
 
 		return (valueList).add(value);
 	}
+
+	protected void fillSrc(Map<SootField, Set<VarNode>> storeSrc,
+			Set<VarNode> ptAllSrc) {
+		for (Iterator<Object> it = father.storeInvSourcesIterator(); it
+				.hasNext();) {
+			FieldRefNode store = (FieldRefNode) it.next();
+			SparkField field = store.getField();
+
+			assert (field instanceof SootField || field instanceof ArrayElement);
+
+			if (field instanceof SootField) {
+				Node[] varList = father.storeInvLookup(store);
+				for (int i = 0; i < varList.length; i++)
+					addToMap(storeSrc, (SootField) field, (VarNode) varList[i]);
+			} else if (field instanceof ArrayElement) {
+				Node[] varList = father.storeInvLookup(store);
+				for (int i = 0; i < varList.length; i++)
+					ptAllSrc.add((VarNode) varList[i]);
+			}
+		}
+	}
+
+	protected void fillTgt(Map<SootField, Set<VarNode>> loadTgt,
+			Set<VarNode> ptAllTgt) {
+		for (Iterator<Object> it = father.loadSourcesIterator(); it.hasNext();) {
+			FieldRefNode load = (FieldRefNode) it.next();
+			SparkField field = load.getField();
+
+			assert (field instanceof SootField);
+
+			if (field instanceof SootField) {
+				Node[] varList = father.loadLookup(load);
+				for (int i = 0; i < varList.length; i++)
+					addToMap(loadTgt, (SootField) field, (VarNode) varList[i]);
+			} else if (field instanceof ArrayElement) {
+				Node[] varList = father.loadLookup(load);
+				for (int i = 0; i < varList.length; i++)
+					ptAllTgt.add((VarNode) varList[i]);
+			}
+		}
+	}
+
+	protected boolean isCompatible(SootField sf1, SootField sf2) {
+		if (sf1.getName() != sf2.getName())
+			return false;
+
+		assert (sf1.getType() instanceof RefType);
+		assert (sf2.getType() instanceof RefType);
+
+		SootClass TypeOfSf1 = ((RefType) sf1.getType()).getSootClass();
+		SootClass TypeOfSf2 = ((RefType) sf2.getType()).getSootClass();
+		Set<SootClass> subTypeOfSf1 = SootUtils.subTypesOf(((RefType) sf1
+				.getType()).getSootClass());
+		Set<SootClass> subTypeOfSf2 = SootUtils.subTypesOf(((RefType) sf2
+				.getType()).getSootClass());
+
+		if (subTypeOfSf1 != null && subTypeOfSf1.contains(TypeOfSf2))
+			return true;
+		if (subTypeOfSf2 != null && subTypeOfSf2.contains(TypeOfSf1))
+			return true;
+
+		return false;
+	}
+
 }
