@@ -2,36 +2,39 @@ package edu.utexas.cgrex.test;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.cgrex.analyses.AutoPAG;
-import edu.utexas.cgrex.utils.SootUtils;
+import soot.Body;
 import soot.CompilationDeathException;
+import soot.Local;
 import soot.PackManager;
+import soot.RefType;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Transform;
-import soot.Unit;
-import soot.jimple.Stmt;
+import soot.Type;
+import soot.Value;
+import soot.jimple.FieldRef;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.ArrayElement;
 import soot.jimple.spark.pag.ClassConstantNode;
 import soot.jimple.spark.pag.FieldRefNode;
 import soot.jimple.spark.pag.GlobalVarNode;
 import soot.jimple.spark.pag.LocalVarNode;
-import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.PAGDumper;
-import soot.jimple.spark.pag.Parm;
 import soot.jimple.spark.pag.StringConstantNode;
-import soot.jimple.spark.pag.VarNode;
+import edu.utexas.cgrex.analyses.AutoPAG;
+import edu.utexas.cgrex.utils.SootUtils;
 
 public class TestAutoPAG extends SceneTransformer {
 	protected void internalTransform(String phaseName,
@@ -44,37 +47,64 @@ public class TestAutoPAG extends SceneTransformer {
 		me.build();
 		me.dump();
 		me.dumpFlow();
-		
-		StringBuilder b = new StringBuilder("");
-		
-		for (Object obj : me.flowInvSources()) {
-			VarNode v = (VarNode) obj;
-			b.append("VarNode: " + v.getNumber() + " points to: ");
-			//Date start = new Date();
-			Set<AllocNode> s = me.queryTest(v);
-			//Date end = new Date();
-			//SootUtils.reportTime("TEST Query", start, end);
-			for (AllocNode node : s) {
-				b.append(node.getNumber() + " ");
+
+		// test query method
+		// StringBuilder b = new StringBuilder("");
+		// for (Object obj : me.flowInvSources()) {
+		// VarNode v = (VarNode) obj;
+		// b.append("VarNode: " + v.getNumber() + " points to: ");
+		// // Date start = new Date();
+		// Set<AllocNode> s = me.queryTest(v);
+		// // Date end = new Date();
+		// // SootUtils.reportTime("TEST Query", start, end);
+		// for (AllocNode node : s) {
+		// b.append(node.getNumber() + " ");
+		// }
+		// b.append("\n");
+		// }
+		//
+		// try {
+		// BufferedWriter bufw = new BufferedWriter(new FileWriter(
+		// "sootOutput/ptAnalysis"));
+		// bufw.write(b.toString());
+		// bufw.close();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// System.exit(0);
+		// }
+
+		for (Iterator cIt = Scene.v().getClasses().iterator(); cIt.hasNext();) {
+			final SootClass c = (SootClass) cIt.next();
+
+			Type p = null;
+			List<Value> toQuery = new ArrayList<Value>();
+			for (Iterator mIt = c.methodIterator(); mIt.hasNext();) {
+				SootMethod m = (SootMethod) mIt.next();
+				if (!m.isConcrete())
+					continue;
+				if (!m.hasActiveBody())
+					continue;
+				Body body = m.getActiveBody();
+
+				for (Local l : body.getLocals()) {
+					if (l.getType() instanceof RefType
+							|| l.getType() instanceof FieldRef)
+						toQuery.add(l);
+					p = l.getType();
+				}
 			}
-			b.append("\n");
-		}
-		
-		try {
-			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/ptAnalysis"));
-			bufw.write(b.toString());
-			bufw.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
+			Date start = new Date();
+			// System.out.println(me.insensitiveQuery(toQuery, p));
+			System.out.println(me.sensitiveQuery(toQuery, p));
+			Date end = new Date();
+			SootUtils.reportTime("Query Time:", start, end);
 		}
 
 		String output_dir = "sootOutput";
 		PAGDumper dumper = new PAGDumper(pag, output_dir);
-		//dumper.dump();
-		
-		//me.printTypeInfo();
+		dumper.dump();
+
+		// me.printTypeInfo();
 
 		// print map info
 		// printMap(pag);
@@ -102,8 +132,8 @@ public class TestAutoPAG extends SceneTransformer {
 
 	public static void main(String[] args) {
 		String targetLoc = // "benchmarks/CFLexamples/bin";
-		 "benchmarks/sablecc-3.7/classes";
-		//"benchmarks/test/bin";
+		"benchmarks/sablecc-3.7/classes";
+		// "benchmarks/test/bin";
 		try {
 			PackManager.v().getPack("wjtp")
 					.add(new Transform("wjtp.test", new TestAutoPAG()));

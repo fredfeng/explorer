@@ -1,10 +1,7 @@
 package edu.utexas.cgrex.analyses;
 
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,12 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.cgrex.utils.SootUtils;
 import soot.ArrayType;
-import soot.Context;
 import soot.G;
 import soot.Local;
-import soot.PointsToAnalysis;
 import soot.PointsToSet;
 import soot.RefType;
 import soot.SootClass;
@@ -26,15 +20,17 @@ import soot.SootField;
 import soot.Type;
 import soot.Value;
 import soot.jimple.FieldRef;
+import soot.jimple.spark.ondemand.DemandCSPointsTo;
+import soot.jimple.spark.ondemand.pautil.ContextSensitiveInfo;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.ArrayElement;
 import soot.jimple.spark.pag.FieldRefNode;
-import soot.jimple.spark.pag.GlobalVarNode;
-import soot.jimple.spark.pag.LocalVarNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
+import soot.jimple.spark.sets.HybridPointsToSet;
+import edu.utexas.cgrex.utils.SootUtils;
 
 public class AutoPAG {
 
@@ -432,7 +428,7 @@ public class AutoPAG {
 	// given a list of variables to query the type
 	// return true if at least one variable points to type by pt analysis
 	// Value: FieldRef / Local
-	public boolean query(List<Value> vars, Type type) {
+	public boolean insensitiveQuery(List<Value> vars, Type type) {
 		for (Value var : vars) {
 
 			assert (var instanceof Local || var instanceof FieldRef);
@@ -452,6 +448,26 @@ public class AutoPAG {
 				return true;
 
 		}
+		return false;
+	}
+
+	public boolean sensitiveQuery(List<Value> vars, Type type) {
+		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
+				new ContextSensitiveInfo(father), father);
+		for (Value var : vars) {
+			assert (var instanceof Local || var instanceof FieldRef);
+			PointsToSet ptSet = null;
+			if (var instanceof Local) {
+				ptSet = ptAnalysis.reachingObjects((Local) var);
+			} else if (var instanceof FieldRef) {
+				return true;
+			}
+			Set<Type> ptTypeSet = ptSet.possibleTypes();
+			assert (ptTypeSet != null);
+			if (ptTypeSet.contains(type))
+				return true;
+		}
+
 		return false;
 	}
 
@@ -566,6 +582,17 @@ public class AutoPAG {
 		return ((Set<Node>) valueList).add(value);
 	}
 
+	protected boolean addToMap(Map<SootField, Set<VarNode>> m, SootField key,
+			VarNode value) {
+		Set<VarNode> valueList = m.get(key);
+
+		if (valueList == null) {
+			m.put(key, valueList = new HashSet(4));
+		}
+
+		return (valueList).add(value);
+	}
+
 	protected Node[] lookup(Map<Object, Object> m, Object key) {
 		Object valueList = m.get(key);
 		if (valueList == null) {
@@ -584,17 +611,6 @@ public class AutoPAG {
 		}
 		Node[] ret = (Node[]) valueList;
 		return ret;
-	}
-
-	protected boolean addToMap(Map<SootField, Set<VarNode>> m, SootField key,
-			VarNode value) {
-		Set<VarNode> valueList = m.get(key);
-
-		if (valueList == null) {
-			m.put(key, valueList = new HashSet(4));
-		}
-
-		return (valueList).add(value);
 	}
 
 	protected void fillSrc(Map<SootField, Set<VarNode>> storeSrc,
@@ -638,37 +654,12 @@ public class AutoPAG {
 		}
 	}
 
-	public void printTypeInfo() {
-		try {
-			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/fieldTypeInfo"));
-			bufw.write(s.toString());
-			bufw.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
-	}
-
-	private StringBuilder s = new StringBuilder("");
-
 	protected boolean isCompatible(SootField sf1, SootField sf2) {
 		if (sf1.getName() != sf2.getName())
 			return false;
 
 		assert (sf1.getType() instanceof RefType || sf1.getType() instanceof ArrayType);
 		assert (sf2.getType() instanceof RefType || sf2.getType() instanceof ArrayType);
-
-		// if (sf1.getType() instanceof ArrayType)
-		// s.append("sf1: " + ((ArrayType)sf1.getType()).baseType.getClass());
-		// else
-		// s.append("sf1: " + sf1.getType().getClass());
-		//
-		// if (sf2.getType() instanceof ArrayType)
-		// s.append(" sf2: " + ((ArrayType)sf2.getType()).baseType.getClass() +
-		// "\n");
-		// else
-		// s.append(" sf2: " + sf2.getType().getClass() + "\n");
 
 		SootClass TypeOfSf1, TypeOfSf2;
 		if (sf1.getType() instanceof ArrayType

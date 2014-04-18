@@ -25,8 +25,8 @@ public class SootUtils {
 
 	public static void reportTime(String desc, Date start, Date end) {
 		long time = end.getTime() - start.getTime();
-		G.v().out.println("[CGregx] " + desc + " in " + time / 1000 + "."
-				+ (time / 100) % 10 + " seconds.");
+		G.v().out
+				.println("[CGregx] " + desc + " in " + time + " milliseconds.");
 	}
 
 	public static Set<SootClass> subTypesOf(SootClass cl) {
