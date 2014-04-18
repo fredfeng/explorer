@@ -61,6 +61,10 @@ public class AutoPAG {
 		father = pag;
 	}
 
+	public PAG getFather() {
+		return father;
+	}
+
 	public void build() {
 		createMatch(); // create match and matchInv
 		createFlow(); // create flow and flowInv by match and simple
@@ -152,8 +156,8 @@ public class AutoPAG {
 			} else if (obj instanceof AllocNode) {
 				AllocNode var = (AllocNode) obj;
 				b.append("  ").append("\"AllocNode" + var.getNumber() + "\"");
-				b.append(" [shape=triangle,label=\"");
-				b.append(var.getNumber());
+				b.append(" [shape=doublecircle,label=\"");
+				b.append(var.getType());
 				b.append("\"];\n");
 			}
 		}
@@ -270,8 +274,8 @@ public class AutoPAG {
 			} else if (obj instanceof AllocNode) {
 				AllocNode var = (AllocNode) obj;
 				b.append("  ").append("\"AllocNode" + var.getNumber() + "\"");
-				b.append(" [shape=triangle,label=\"");
-				b.append(var.getNumber());
+				b.append(" [shape=doublecircle,label=\"");
+				b.append(var.getType());
 				b.append("\"];\n");
 			}
 		}
@@ -439,6 +443,9 @@ public class AutoPAG {
 			else
 				v = father.findGlobalVarNode(((FieldRef) var).getField());
 
+			if (v == null)
+				continue;
+
 			Set<AllocNode> ptAllocSet = searchingObjects(v);
 			Set<Type> ptTypeSet = new HashSet<Type>();
 			for (AllocNode alloc : ptAllocSet)
@@ -471,10 +478,51 @@ public class AutoPAG {
 		return false;
 	}
 
-	public Set<AllocNode> queryTest(VarNode var) {
+	public Set<AllocNode> insensitiveQueryTest(VarNode var) {
 		Set<AllocNode> ptAllocSet = searchingObjects(var);
-
 		return ptAllocSet;
+	}
+
+	// given a list of variables, return a set consisting of all types
+	// each variable in the list can point to by sensitive pt analysis
+	public Set<Type> sensitiveQueryTest(List<Value> vars) {
+		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
+				new ContextSensitiveInfo(father), father);
+		Set<Type> ptTypeSet = new HashSet<Type>();
+		for (Value var : vars) {
+			assert (var instanceof Local || var instanceof FieldRef);
+			PointsToSet ptSet = null;
+			if (var instanceof Local) {
+				ptSet = ptAnalysis.reachingObjects((Local) var);
+			}
+			ptTypeSet.addAll(ptSet.possibleTypes());
+		}
+		assert (ptTypeSet != null);
+		return ptTypeSet;
+	}
+
+	// given a list of variables, return a set of types that each variable
+	// in the list can point to by insensitive pt analysis
+	public Set<Type> insensitiveQueryTest(List<Value> vars) {
+		Set<Type> ptTypeSet = new HashSet<Type>();
+		for (Value var : vars) {
+			assert (var instanceof Local || var instanceof FieldRef);
+			VarNode v = null;
+			if (var instanceof Local) {
+				v = father.findLocalVarNode(var);
+			} else if (var instanceof FieldRef) {
+				v = father.findGlobalVarNode(((FieldRef) var).getField());
+			}
+
+			if (v == null)
+				continue;
+
+			Set<AllocNode> ptAllocSet = searchingObjects(v);
+			for (AllocNode alloc : ptAllocSet)
+				ptTypeSet.add(alloc.getType());
+
+		}
+		return ptTypeSet;
 	}
 
 	/** protected methods */
@@ -485,9 +533,16 @@ public class AutoPAG {
 		Set<VarNode> visited = new HashSet<VarNode>();
 		Set<AllocNode> reachable = new HashSet<AllocNode>();
 
+		assert (start != null);
+		if (start.getNumber() == 85) {
+			System.out.println("hellowolrd!");
+		}
+
 		workList.add(start);
 		VarNode head = null;
-		while (((head = workList.poll()) != null) && (!visited.contains(head))) {
+		while (((head = workList.poll()) != null) && !visited.contains(head)) {
+//			if (visited.contains(head))
+//				continue;
 			// mark head as visited
 			visited.add(head);
 			// first try to add allocNode if head is in allocInv
@@ -495,14 +550,20 @@ public class AutoPAG {
 			for (int i = 0; i < objs.length; i++) {
 				reachable.add((AllocNode) objs[i]);
 			}
+			if (objs.length > 0)
+				continue;
 			// then recursively add the others in flowInv
 			Set<VarNode> nextVarNodes = (Set<VarNode>) flowInv.get(head);
-			if (nextVarNodes == null)
+			if (nextVarNodes == null) {
 				continue;
+			}
 			for (VarNode nextVarNode : nextVarNodes) {
 				if (visited.contains(nextVarNode))
 					continue;
 				workList.add(nextVarNode);
+			}
+			if (start.getNumber() == 85) {
+				System.out.println(workList);
 			}
 		}
 		return reachable;
