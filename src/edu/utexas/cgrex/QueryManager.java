@@ -91,7 +91,7 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04d", meth.getNumber());
 			uidToMethMap.put(uid, meth);
-			System.out.println("********" + uid + " " + meth);
+//			System.out.println("********" + uid + " " + meth);
 
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getName());
@@ -170,8 +170,8 @@ public class QueryManager {
 		}
 
 		// dump current result.
-		System.out.println("dump regular graph.");
-		regAuto.dump();
+//		System.out.println("dump regular graph.");
+//		regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -243,8 +243,8 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
-		System.out.println("dump Callgraph automaton.....");
-		cgAuto.dump();
+//		System.out.println("dump Callgraph automaton.....");
+//		cgAuto.dump();
 	}
 
 	private void buildInterAutomaton() {
@@ -254,8 +254,8 @@ public class QueryManager {
 
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-		System.out.println("dump interset automaton.....");
-		interAuto.dump();
+//		System.out.println("dump interset automaton.....");
+//		interAuto.dump();
 	}
 
 	private void grepMinCut() {
@@ -276,7 +276,7 @@ public class QueryManager {
 					SootMethod calleeMeth = uidToMethMap.get(outEdge.getId());
 					Type declaredType = calleeMeth.getDeclaringClass().getType();
 					Set<Local> varSet = getVarList(callerMeth, calleeMeth);
-					System.out.println("******perform points-to query:" + declaredType +"===" + varSet);
+					System.out.println("******perform points-toq query:" + declaredType +"===" + varSet);
 				}
 			}
 		}
@@ -305,7 +305,6 @@ public class QueryManager {
 			return varSet;
 
 		Body body = method.retrieveActiveBody();
-		System.out.println(body);
 
 		Chain<Unit> units = body.getUnits();
 		Iterator<Unit> uit = units.snapshotIterator();

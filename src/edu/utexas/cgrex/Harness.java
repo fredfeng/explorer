@@ -36,7 +36,7 @@ public class Harness {
 					"-output-format", "none",
 					"-p", "jb", "use-original-names:true",
 					//"-p", "cg.cha", "on",
-					"-p", "cg.spark", "on",
+//					"-p", "cg.spark", "on",
 					"-debug"} );
 
 		} catch (CompilationDeathException e) {

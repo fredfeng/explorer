@@ -112,11 +112,7 @@ public class GraphUtil {
 		LinkedList<AutoState> spath = dfs(residual);
 		LinkedList<AutoState> tpath = new LinkedList(residual.getStates());
 		tpath.removeAll(spath);
-
-
 		
-		System.out.println(tpath);
-
 		// collect all the edges that cross between S and T
 		for(AutoState s : tpath) {
 			for (Iterator<AutoEdge> cIt = s.outgoingStatesInvIterator(); cIt
