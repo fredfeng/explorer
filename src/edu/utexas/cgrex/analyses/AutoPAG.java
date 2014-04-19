@@ -534,15 +534,22 @@ public class AutoPAG {
 		Set<AllocNode> reachable = new HashSet<AllocNode>();
 
 		assert (start != null);
-		if (start.getNumber() == 85) {
+		if (start.getNumber() == 46) {
 			System.out.println("hellowolrd!");
 		}
 
 		workList.add(start);
 		VarNode head = null;
-		while (((head = workList.poll()) != null) && !visited.contains(head)) {
-//			if (visited.contains(head))
-//				continue;
+		while (!workList.isEmpty()) {
+			head = workList.poll();
+			if (start.getNumber() == 46) {
+				System.out.println("now consider the node: " + head);
+			}
+			if (visited.contains(head)) {
+				if (start.getNumber() == 46) 
+					System.out.println("this node has been visited: " + head);
+				continue;
+			}
 			// mark head as visited
 			visited.add(head);
 			// first try to add allocNode if head is in allocInv
@@ -550,10 +557,17 @@ public class AutoPAG {
 			for (int i = 0; i < objs.length; i++) {
 				reachable.add((AllocNode) objs[i]);
 			}
-			if (objs.length > 0)
-				continue;
+//			if (objs.length > 0) {
+//				if (start.getNumber() == 46) 
+//					System.out.println("this node is alloc Node realted " + head);
+//				continue;
+//			}
 			// then recursively add the others in flowInv
 			Set<VarNode> nextVarNodes = (Set<VarNode>) flowInv.get(head);
+			if (start.getNumber() == 46) {
+				System.out.println("adding neighbors of " + head);
+				System.out.println("neighbors: " + nextVarNodes);
+			}
 			if (nextVarNodes == null) {
 				continue;
 			}
@@ -562,8 +576,8 @@ public class AutoPAG {
 					continue;
 				workList.add(nextVarNode);
 			}
-			if (start.getNumber() == 85) {
-				System.out.println(workList);
+			if (start.getNumber() == 46) {
+				System.out.println("workList: " + workList);
 			}
 		}
 		return reachable;

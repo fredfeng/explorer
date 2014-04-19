@@ -15,6 +15,7 @@ public class CGAutomaton extends Automaton {
 		Set roots = initStates;
 		Map nodeToPreds = new HashMap<Object, Set<Object>>();
 		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
+
 		for (AutoState s : states) {
 			nodeToPreds.put(s, s.getIncomingStatesKeySet());
 			nodeToSuccs.put(s, s.getOutgoingStatesKeySet());

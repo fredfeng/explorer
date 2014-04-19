@@ -1,6 +1,9 @@
 package edu.utexas.cgrex.test;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +24,7 @@ import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
+import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.PAG;
 import soot.util.Chain;
 import edu.utexas.cgrex.analyses.AutoPAG;
@@ -29,8 +33,7 @@ public class TestPrecision extends SceneTransformer {
 
 	public static void main(String[] args) {
 		String targetLoc = "benchmarks/sablecc-3.7/classes";
-//		String targetLoc = "benchmarks/CFLexample/bin";
-
+		// String targetLoc = "benchmarks/CFLexample/bin";
 
 		try {
 			PackManager.v().getPack("wjtp")
@@ -65,10 +68,21 @@ public class TestPrecision extends SceneTransformer {
 		AutoPAG me = new AutoPAG(pag);
 		me.build();
 		
+		
+	}
+
+	protected void test2(AutoPAG me) {
+		
+	}
+	
+	
+	
+	protected void test1(AutoPAG me) {
 		int total = 0;
 		int hit = 0;
 		int eq = 0;
 
+		StringBuilder b = new StringBuilder("");
 		for (Iterator cIt = Scene.v().getClasses().iterator(); cIt.hasNext();) {
 			final SootClass c = (SootClass) cIt.next();
 			// collect variables in each method
@@ -81,7 +95,7 @@ public class TestPrecision extends SceneTransformer {
 					continue;
 
 				Body body = m.getActiveBody();
-				
+
 				Chain<Unit> units = body.getUnits();
 				Iterator<Unit> uit = units.snapshotIterator();
 				while (uit.hasNext()) {
@@ -89,30 +103,53 @@ public class TestPrecision extends SceneTransformer {
 					// invocation statements
 					if (stmt.containsInvokeExpr()) {
 						InvokeExpr ie = stmt.getInvokeExpr();
-		                if( (ie instanceof VirtualInvokeExpr) 
-		                		|| (ie instanceof InterfaceInvokeExpr)){
-		                		//ie.get
-		                	total++;
-		                	Local var = (Local)ie.getUseBoxes().get(0).getValue();
-		                	System.out.println("begin points-to set query:" + var);
-		                	List list1 = new ArrayList();
-		                	list1.add(var);
-		                	Set s1 = me.insensitiveQueryTest(list1);
-		                	Set s2 = me.sensitiveQueryTest(list1);
-		                	//s1 should be always the super set of s2.
-		                	System.out.println("result::::" + s1 + s2 + s1.containsAll(s2));
-		                	if(s1.containsAll(s2)) hit++;
-		                	if(s1.containsAll(s2) && s2.containsAll(s1)) eq++;
+						if ((ie instanceof VirtualInvokeExpr)
+								|| (ie instanceof InterfaceInvokeExpr)) {
+							// ie.get
+							total++;
+							Local var = (Local) ie.getUseBoxes().get(0)
+									.getValue();
+							List list1 = new ArrayList();
+							list1.add(var);
+							Set s1 = me.insensitiveQueryTest(list1);
+							Set s2 = me.sensitiveQueryTest(list1);
+							// s1 should be always the super set of s2.
+							if (!s1.containsAll(s2)) {
+								System.out
+										.println("----------------------------------------------------------------------------------------------------");
+								b.append("---------------------------------------------------------------------------------------------------\n");
+								System.out.println("begin points-to set query:"
+										+ var);
+								b.append("begin points-to set query: " + var
+										+ "\n");
+								System.out.println("insensitive_result::::"
+										+ s1);
+								b.append("insensitive_result::::" + s1 + "\n");
+								System.out.println("sensitive_result::::" + s2);
+								b.append("sensitive_result::::" + s2 + "\n");
+							}
+							if (s1.containsAll(s2))
+								hit++;
+							if (s1.containsAll(s2) && s2.containsAll(s1))
+								eq++;
 
-		                }
+						}
 					}
 				}
-				
 			}
 		}
-		
-		System.out.println("FINAL result of precision: " + "soundness: " + hit + "/" + total + " precision: " + eq + "/" + total);
-		
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"sootOutput/precision"));
+			bufw.write(b.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		System.out.println("FINAL result of precision: " + "soundness: " + hit
+				+ "/" + total + " precision: " + eq + "/" + total);
 	}
 
 }

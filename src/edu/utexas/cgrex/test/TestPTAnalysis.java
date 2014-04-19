@@ -34,6 +34,13 @@ public class TestPTAnalysis extends SceneTransformer {
 		me.build();
 		System.out.println("This is in TestPTAnalysis Class.");
 
+		compFile(me);
+
+		me.dumpFlow();
+		me.dump();
+	}
+
+	protected void compFile(AutoPAG me) {
 		String b = testSensitive(me);
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
@@ -56,8 +63,6 @@ public class TestPTAnalysis extends SceneTransformer {
 			System.exit(0);
 		}
 
-		me.dumpFlow();
-		me.dump();
 	}
 
 	protected String testInsensitive(AutoPAG me) {

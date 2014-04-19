@@ -90,20 +90,32 @@ public class TestInterAutomatonOpts {
 		call_state_4.addOutgoingStates(call_state_5, call_edge_foo);
 		call_state_5.addOutgoingStates(call_final, call_edge_baz);
 		call_final.addOutgoingStates(call_final, call_edge_baz);
-
+		
+		call_state_1.addIncomingStates(call_init, call_edge_x);
+		call_state_2.addIncomingStates(call_state_1, call_edge_y);
+		call_state_3.addIncomingStates(call_state_1, call_edge_z);
+		call_state_4.addIncomingStates(call_init, call_edge_main);
+		call_state_5.addIncomingStates(call_state_4, call_edge_foo);
+		call_final.addIncomingStates(call_state_5, call_edge_baz);
+		call_final.addIncomingStates(call_final, call_edge_baz);
+		
+		
+		
 		// System.out.println("Hello world!");
 		expr.dump();
 		call.dump();
+		System.out.println("get incoming states");
+		System.out.println(call_state_4.getIncomingStatesKeySet());
 		
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
-		myoptions.put("annot", true);
+		//myoptions.put("annot", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 		
 		InterAutomaton comb_without_opt = new InterAutomaton(myopts, expr, call);
 		comb_without_opt.build();
 		comb_without_opt.dump();
 		
-		/*
+		
 		Map<AutoState, Set<AutoEdge>> opts = expr.find();
 		System.out.println(opts);
 		Map<AutoState, Map<AutoState, Boolean>> annotations = call
@@ -113,7 +125,8 @@ public class TestInterAutomatonOpts {
 		InterAutomaton comb_with_opt = new InterAutomaton(myopts, expr, call);
 		comb_with_opt.build();
 		comb_with_opt.dump();
-
+		
+		/*
 		// test scc doAnalysis 
 		CGAutomaton scc = new CGAutomaton();
 		AutoEdge scc_edge_main = new AutoEdge("main");
@@ -124,14 +137,14 @@ public class TestInterAutomatonOpts {
 		AutoEdge scc_edge_zoo = new AutoEdge("zoo");
 		AutoEdge scc_edge_bug = new AutoEdge("bug");
 
-		CGAutoState scc_init = new CGAutoState(1, true, false, null);
-		CGAutoState scc_main = new CGAutoState(2, false, true, scc_edge_main);
-		CGAutoState scc_foo = new CGAutoState(3, false, true, scc_edge_foo);
-		CGAutoState scc_bar = new CGAutoState(4, false, true, scc_edge_bar);
-		CGAutoState scc_baz = new CGAutoState(5, false, true, scc_edge_baz);
-		CGAutoState scc_goo = new CGAutoState(6, false, true, scc_edge_goo);
-		CGAutoState scc_zoo = new CGAutoState(7, false, true, scc_edge_zoo);
-		CGAutoState scc_bug = new CGAutoState(8, false, true, scc_edge_bug);
+		CGAutoState scc_init = new CGAutoState(1, true, false);
+		CGAutoState scc_main = new CGAutoState(2, false, true);
+		CGAutoState scc_foo = new CGAutoState(3, false, true);
+		CGAutoState scc_bar = new CGAutoState(4, false, true);
+		CGAutoState scc_baz = new CGAutoState(5, false, true);
+		CGAutoState scc_goo = new CGAutoState(6, false, true);
+		CGAutoState scc_zoo = new CGAutoState(7, false, true);
+		CGAutoState scc_bug = new CGAutoState(8, false, true);
 
 		scc.addStates(scc_init);
 		scc.addStates(scc_main);
@@ -163,8 +176,10 @@ public class TestInterAutomatonOpts {
 		scc_bug.addOutgoingStates(scc_goo, scc_edge_goo);
 		scc_zoo.addOutgoingStates(scc_zoo, scc_edge_zoo);
 		
-		scc.buildCGStatesSCC();
 		scc.dump();
+		System.out.println("--------dumping scc");
+		scc.buildCGStatesSCC();
+		
 		
 		for (AutoState s : scc.getStates()) {
 			CGAutoState st = (CGAutoState) s;
@@ -192,9 +207,9 @@ public class TestInterAutomatonOpts {
 		List<Set<Object>> sccList = GraphUtil.doAnalysis(roots, nodeToPreds,
 				nodeToSuccs);
 		System.out.println(sccList);
-		*/
 		
-		/*
+		
+		
 		InterAutomaton test_scc_with_opt = new InterAutomaton(myopts, expr, scc);
 		InterAutomaton test_scc_without_opt = new InterAutomaton(myopts, expr, scc);
 		opts = expr.find();
