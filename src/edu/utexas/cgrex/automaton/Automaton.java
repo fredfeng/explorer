@@ -45,7 +45,25 @@ public abstract class Automaton {
 	public void addStates(AutoState state) {
 		states.add(state);
 	}
-
+	
+	public AutoEdge getEdgeBySrc(AutoState src, AutoState sink) {
+		AutoEdge e = null;
+		for (AutoState as : getStates()) {
+			if(!as.equals(src)) continue;
+			
+			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
+					.hasNext();) {
+				AutoState tgtState = cIt.next();
+				if(!tgtState.equals(sink)) continue;
+				Set<AutoEdge> out = as.outgoingStatesLookup(tgtState);
+				e = out.iterator().next();
+				return e;
+			}
+		}
+	
+		return e;
+	}
+	
 	// 1. delete the specified state from the states field in Automaton
 	// so that you can never find that state in the states of the Automaton
 	// 2. delete the edges like other --> state so that others can never find
@@ -112,4 +130,5 @@ public abstract class Automaton {
 		b.append("}\n");
 		System.out.println(b.toString());
 	}
+	
 }

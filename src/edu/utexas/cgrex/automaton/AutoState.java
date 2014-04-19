@@ -7,6 +7,7 @@ import java.util.*;
 // correspond to a single method, which depends on the specific regular expr
 
 public abstract class AutoState {
+
 	// Id corresponds to the soot method in the call graph
 	// initial and final states' Id are null
 	protected Object id;
@@ -14,6 +15,8 @@ public abstract class AutoState {
 	protected boolean isInitState = false;
 
 	protected boolean isFinalState = false;
+
+	private boolean visited = false;
 
 	// Map<State, Set<Edge>>
 	protected Map<AutoState, Set<AutoEdge>> outgoingStates = new HashMap<AutoState, Set<AutoEdge>>();
@@ -29,6 +32,20 @@ public abstract class AutoState {
 
 	public Object getId() {
 		return id;
+	}
+	
+	/**
+	 * @return the visited
+	 */
+	public boolean isVisited() {
+		return visited;
+	}
+
+	/**
+	 * @param visited the visited to set
+	 */
+	public void setVisited(boolean visited) {
+		this.visited = visited;
 	}
 
 	public void setInitState() {
