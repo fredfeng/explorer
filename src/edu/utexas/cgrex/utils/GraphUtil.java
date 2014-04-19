@@ -17,7 +17,6 @@ import com.rits.cloning.Cloner;
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.Automaton;
-import edu.utexas.cgrex.automaton.CGAutomaton;
 
 public class GraphUtil {
 	public static List<Set<Object>> doAnalysis(Set<Object> roots,
@@ -36,9 +35,9 @@ public class GraphUtil {
 	 * 
 	 * @return
 	 */
-	public static LinkedList<AutoState> dfs(Automaton auto, AutoState init) {
+	public static LinkedList<AutoState> dfs(Automaton auto) {
 		resetVisited(auto);
-		init = auto.getInitStates().iterator().next();
+		AutoState init = auto.getInitStates().iterator().next();
 		Stack<AutoState> queue = new Stack<AutoState>();
 		LinkedList<AutoState> path = new LinkedList<AutoState>();
 		queue.push(init);
@@ -77,12 +76,7 @@ public class GraphUtil {
 		
 		// we should continue if there is a path to final state in residual
 		// graph.
-//		while (constainsId( dfs(residual, init), finalState)) {
-			while (extractPath(residual) != null) {
-
-			System.out.println("XXXXXXX iteration**************" + residual);
-			residual.dump();
-
+		while (extractPath(residual) != null) {
 			// find the augment path until no path can be found.
 			Pair<Integer, LinkedList<AutoState>> pair = extractPath(residual);
 			int min = pair.val0;
@@ -95,13 +89,10 @@ public class GraphUtil {
 				//no such edge in original graph. modify inverse edge.
 				if(ae == null) {
 					AutoEdge invE = auto.getEdgeBySrc(tgt, src);
-					System.out.println("setflow*******inv " + invE.getFlow() + "+" + min);
 					assert((invE.getFlow() + min) <= invE.getWeight());
 					invE.setFlow(invE.getFlow() + min);
 					invE.setShortName(invE.getFlow() + "/" + invE.getWeight());
-					invE.setShortName("fuck");
 				} else {
-					System.out.println("setflow*******ae " + src + "=>" + tgt+ "    " + ae.getFlow() + "+" + min + "<=" + ae.getWeight());
 					assert((ae.getFlow() + min) <= ae.getWeight());
 					ae.setFlow(ae.getFlow() + min);
 					ae.setShortName(ae.getFlow() + "/" + ae.getWeight());
@@ -109,21 +100,33 @@ public class GraphUtil {
 
 				src = tgt;
 			}
-			
-			System.out.println("new auto....");
-			auto.dump();
-			
+						
 			residual = genResidualGraph(auto);
 		}
 		
-		System.out.println("Final result:::::");
+		System.out.println("Final result, dump cut set:");
 		residual.dump();
-
-
+		
 		// collect all the vertices(As set S) that are reachable from the
 		// initial node
+		LinkedList<AutoState> spath = dfs(residual);
+		LinkedList<AutoState> tpath = new LinkedList(residual.getStates());
+		tpath.removeAll(spath);
+
+
+		
+		System.out.println(tpath);
 
 		// collect all the edges that cross between S and T
+		for(AutoState s : tpath) {
+			for (Iterator<AutoEdge> cIt = s.outgoingStatesInvIterator(); cIt
+					.hasNext();) {
+				AutoEdge inEdge = cIt.next();
+				AutoState tgt = s.outgoingStatesInvLookup(inEdge).iterator().next();
+				if(!tpath.contains(tgt) && (inEdge.getWeight()>0)) 
+					System.out.println(s + "->" + tgt + " " + inEdge.getWeight());
+			}
+		}
 
 	}
 	
@@ -139,9 +142,8 @@ public class GraphUtil {
 	}
 
 	public static Automaton genResidualGraph(Automaton g) {
-		Automaton residual = new CGAutomaton();
 		Cloner cloner = new Cloner();
-		residual = cloner.deepClone(g);
+		Automaton residual = cloner.deepClone(g);
 		resetVisited(residual);
 
 		for (AutoState as : residual.getStates())
@@ -149,8 +151,8 @@ public class GraphUtil {
 					.hasNext();) {
 				AutoEdge e = cIt.next();
 				int newWt = e.getWeight() - e.getFlow();
-				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
-						+ e.getWeight() + '=' + newWt);
+//				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
+//						+ e.getWeight() + '=' + newWt);
 				assert (newWt >= 0);
 				e.setWeight(newWt);
 				e.setShortName(e.getWeight() + "");
@@ -178,19 +180,16 @@ public class GraphUtil {
 			Automaton auto) {
 		resetVisited(auto);
 
-		LinkedList<AutoState> path = dfs(auto, auto.getInitStates().iterator()
-				.next());
-		// contains final state?
-
+		LinkedList<AutoState> path = dfs(auto);
 		int minWt = 1000;
-		AutoState src = auto.getInitStates().iterator().next();
 		AutoState end = auto.getFinalStates().iterator().next();
+		
+		if(!path.contains(end)) return null;
+
 		while (!path.getLast().equals(end))
 			path.pollLast();
 		if(path.size() == 0) return null;
 		
-		System.out.println("contains a path to final:" + path);
-
 		LinkedList<AutoState> realpath = new LinkedList<AutoState>();
 		AutoState cursor = path.getLast();
 		realpath.add(path.getLast());
@@ -198,7 +197,7 @@ public class GraphUtil {
 		for (int i = (path.size() - 2) ; i >= 0; i--) {
 			AutoState pre = path.get(i);
 			AutoEdge edge = auto.getEdgeBySrc(pre, cursor);
-			if(edge != null) {
+			if(edge != null && (edge.getWeight() > 0)) {
 				realpath.add(pre);
 				cursor = pre;
 				if (edge.getWeight() < minWt) minWt = edge.getWeight();
@@ -206,20 +205,6 @@ public class GraphUtil {
 		}
 
 	    Collections.reverse(realpath);
-		System.out.println("contains real path to final:" +  realpath);
-		
-
-		
-//		for (int i = 1; i < path.size(); i++) {
-//			System.out.println(src + "--->" +path.get(i));
-//			AutoEdge target = src.outgoingStatesLookup(path.get(i)).iterator()
-//					.next();
-//			if (target.getWeight() < minWt)
-//				minWt = target.getWeight();
-//
-//			src = path.get(i);
-//		}
-
 		return new Pair<Integer, LinkedList<AutoState>>(minWt, realpath);
 	}
 }
