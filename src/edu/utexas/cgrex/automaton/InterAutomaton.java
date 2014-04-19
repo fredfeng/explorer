@@ -102,8 +102,10 @@ public class InterAutomaton extends Automaton {
 										.getId().toString()
 										+ slaveNextState.getId().toString(),
 										masterNextState, slaveNextState);
-								if (newInterSt.buildAsFinal())
+								if (newInterSt.buildAsFinal()) {
 									newInterSt.setFinalState();
+									addFinalState(newInterSt);
+								}
 								interSt.addOutgoingStates(newInterSt,
 										slaveNextEdge);
 								newInterSt.addIncomingStates(interSt,
@@ -134,8 +136,10 @@ public class InterAutomaton extends Automaton {
 									.getId().toString()
 									+ slaveNextState.getId().toString(),
 									masterNextState, slaveNextState);
-							if (newInterSt.buildAsFinal())
+							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
+								addFinalState(newInterSt);
+							}
 							interSt.addOutgoingStates(newInterSt,
 									masterNextEdge);
 							newInterSt.addIncomingStates(interSt,
@@ -198,8 +202,10 @@ public class InterAutomaton extends Automaton {
 										.getId().toString()
 										+ slaveNextState.getId().toString(),
 										masterNextState, slaveNextState);
-								if (newInterSt.buildAsFinal())
+								if (newInterSt.buildAsFinal()) {
 									newInterSt.setFinalState();
+									addFinalState(newInterSt);
+								}
 								interSt.addOutgoingStates(newInterSt,
 										slaveNextEdge);
 								newInterSt.addIncomingStates(interSt,
@@ -242,8 +248,10 @@ public class InterAutomaton extends Automaton {
 									.getId().toString()
 									+ slaveNextState.getId().toString(),
 									masterNextState, slaveNextState);
-							if (newInterSt.buildAsFinal())
+							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
+								addFinalState(newInterSt);
+							}
 							interSt.addOutgoingStates(newInterSt,
 									masterNextEdge);
 							newInterSt.addIncomingStates(interSt,
@@ -325,8 +333,10 @@ public class InterAutomaton extends Automaton {
 										.toString()
 										+ slaveNextState.getId().toString(),
 										masterNextState, slaveNextState);
-								if (sp.buildAsFinal())
+								if (sp.buildAsFinal()) {
 									sp.setFinalState();
+									addFinalState(sp);
+								}
 								buildState.addOutgoingStates(sp, slaveNextEdge);
 								sp.addIncomingStates(buildState, slaveNextEdge);
 								states.add(sp); // this machine is moved to the
@@ -359,8 +369,10 @@ public class InterAutomaton extends Automaton {
 									.toString()
 									+ slaveNextState.getId().toString(),
 									masterNextState, slaveNextState);
-							if (sp.buildAsFinal())
+							if (sp.buildAsFinal()) {
 								sp.setFinalState();
+								addFinalState(sp);
+							}
 							buildState.addOutgoingStates(sp, masterNextEdge);
 							sp.addIncomingStates(buildState, masterNextEdge);
 							states.add(sp);
@@ -439,8 +451,10 @@ public class InterAutomaton extends Automaton {
 										.toString()
 										+ slaveNextState.getId().toString(),
 										masterNextState, slaveNextState);
-								if (sp.buildAsFinal())
+								if (sp.buildAsFinal()) {
 									sp.setFinalState();
+									addFinalState(sp);
+								}
 								buildState.addOutgoingStates(sp, slaveNextEdge);
 								sp.addIncomingStates(buildState, slaveNextEdge);
 								states.add(sp); // this machine is moved to the
@@ -471,8 +485,10 @@ public class InterAutomaton extends Automaton {
 									.toString()
 									+ slaveNextState.getId().toString(),
 									masterNextState, slaveNextState);
-							if (sp.buildAsFinal())
+							if (sp.buildAsFinal()) {
 								sp.setFinalState();
+								addFinalState(sp);
+							}
 							buildState.addOutgoingStates(sp, masterNextEdge);
 							sp.addIncomingStates(buildState, masterNextEdge);
 							states.add(sp);
