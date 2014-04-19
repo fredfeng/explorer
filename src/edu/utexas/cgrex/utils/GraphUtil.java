@@ -73,9 +73,7 @@ public class GraphUtil {
 	public static void minCut(Automaton auto, AutoState init) {
 		// reset all flow values to 0
 		// build the residual graph
-//		AutoState finalState = auto.getFinalStates().iterator().next();
 		Automaton residual = genResidualGraph(auto);
-//		System.out.println("FUCK..." + "==>" + finalState + constainsId( dfs(residual, init), finalState));
 		
 		// we should continue if there is a path to final state in residual
 		// graph.
