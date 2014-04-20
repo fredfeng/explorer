@@ -17,6 +17,7 @@ import soot.Scene;
 import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
+import soot.Value;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
@@ -28,14 +29,15 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
+import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.automaton.AutoEdge;
-import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
+import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.StringUtil;
 
@@ -47,6 +49,10 @@ import edu.utexas.cgrex.utils.StringUtil;
  */
 
 public class QueryManager {
+	
+	AutoPAG autoPAG;
+
+	private int INFINITY = 9999;
 
 	// default CHA-based call graph.
 	CallGraph cg;
@@ -73,7 +79,8 @@ public class QueryManager {
 	// automaton for intersect graph.
 	InterAutomaton interAuto;
 
-	public QueryManager() {
+	public QueryManager(AutoPAG autoPAG) {
+		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();
 		regAuto = new RegAutomaton();
 
@@ -262,28 +269,68 @@ public class QueryManager {
 		//such as special invoke, static invoke and certain virtual invoke.
 		if(interAuto.getFinalStates().size() == 0) return;
 				
-		Set<AutoEdge> cutset = GraphUtil.minCut(interAuto);
-	}
+		//Stop conditions:
+		//1. Refute all edges in current cut set;(Yes)
+		//2. Can not find a mincut without infinity anymore.(No)
+		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
 
-	private boolean doPointsToQuery() {
-		for (AutoState s : interAuto.getStates()) {
-			// local vars
-			if (s.getIncomingStatesInvKeySet().size() == 0)
-				continue;
-			AutoEdge inEdge = s.getIncomingStatesInvKeySet().iterator().next();
-			SootMethod callerMeth = uidToMethMap.get(inEdge.getId());
+		boolean answer = false;
+		//contains infinity edge?
+		while(!hasInfinityEdges(cutset)) {
+	
+			answer = false;
+			for(CutEntity e : cutset){
+				if(doPointsToQuery(e)) {
+					System.out.println("--------VERIFY one Edge.");
 
-			for (AutoState tgt : s.getOutgoingStatesKeySet()) {
-				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {
-					// type info.
-					SootMethod calleeMeth = uidToMethMap.get(outEdge.getId());
-					Type declaredType = calleeMeth.getDeclaringClass().getType();
-					Set<Local> varSet = getVarList(callerMeth, calleeMeth);
-					System.out.println("******perform points-toq query:" + declaredType +"===" + varSet);
+					answer = true; 
+					e.edge.setInfinityWeight();
+				} else { //e is a false positive.
+					//remove this edge and refine call graph.
+					System.out.println("-------------DELETE ME");
 				}
 			}
+			
+			//all edges are refute, stop.
+			if(!answer) break;
+			//modify visited edges and continue.
+			cutset = GraphUtil.minCut(interAuto);
 		}
+		
+		if(answer)
+			System.out.println("---------query done, answer is: YES");
+		else 
+			System.out.println("---------query done, answer is: NO");
+
+//		interAuto.dump();
+		
+	}
+	
+	private boolean hasInfinityEdges(Set<CutEntity> set) {
+		for(CutEntity e : set)
+			if(e.edge.getWeight() == INFINITY) return true;
+		
 		return false;
+	}
+
+	private boolean doPointsToQuery(CutEntity cut) {
+		
+		// type info.
+		SootMethod calleeMeth = uidToMethMap.get(cut.edge.getId());
+		if(calleeMeth.isMain()) return true;
+		
+		Type declaredType = calleeMeth.getDeclaringClass().getType();
+
+		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
+		SootMethod callerMeth = uidToMethMap.get(inEdge.getId());
+
+		List<Value> varSet = getVarList(callerMeth, calleeMeth);
+		System.out.println("------perform points-toq query:" + declaredType
+				+ "|" + varSet);
+
+		if(varSet.size() == 0) return true;
+		
+		return autoPAG.insensitiveQuery(varSet, declaredType);
 	}
 
 	private void refineCallgraph() {
@@ -297,14 +344,13 @@ public class QueryManager {
 
 		buildRegAutomaton(regx);
 		buildInterAutomaton();
-		doPointsToQuery();
 
 		return false;
 	}
 
 	//get a list of vars that can invoke method tgt.
-	private Set<Local> getVarList(SootMethod method, SootMethod tgt) {
-		Set<Local> varSet = new HashSet<Local>();
+	private List<Value> getVarList(SootMethod method, SootMethod tgt) {
+		List<Value> varSet = new LinkedList<Value>();
 		if (!method.isConcrete())
 			return varSet;
 
@@ -323,7 +369,7 @@ public class QueryManager {
                 	SootMethod callee = ie.getMethod();
                 	if(tgt.equals(callee)) {
                 		//ie.get
-                		Local var = (Local)ie.getUseBoxes().get(0).getValue();
+                		Value var = ie.getUseBoxes().get(0).getValue();
                 		varSet.add(var);
                 	}
                 }

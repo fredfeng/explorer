@@ -20,6 +20,10 @@ import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.Automaton;
 
 public class GraphUtil {
+	
+	public static Cloner cloner = new Cloner();
+
+		
 	public static List<Set<Object>> doAnalysis(Set<Object> roots,
 			Map<Object, Set<Object>> nodeToPreds,
 			Map<Object, Set<Object>> nodeToSuccs) {
@@ -70,8 +74,10 @@ public class GraphUtil {
 	 * @param auto
 	 * @param init
 	 */
-	public static Set<AutoEdge> minCut(Automaton auto) {
+	public static Set<CutEntity> minCut(Automaton auto) {
+
 		// reset all flow values to 0
+		resetAuto(auto);
 		// build the residual graph
 		Automaton residual = genResidualGraph(auto);
 		
@@ -116,29 +122,61 @@ public class GraphUtil {
 		// collect all the vertices(As set S) that are reachable from the
 		// initial node
 		LinkedList<AutoState> spath = dfs(residual);
-		LinkedList<AutoState> tpath = new LinkedList(residual.getStates());
-		tpath.removeAll(spath);
+		Set<AutoState> orgStates = new HashSet(auto.getStates());
+		orgStates.retainAll(spath);
+		LinkedList<AutoState> tpath = new LinkedList(auto.getStates());
+		tpath.removeAll(orgStates);
 		
 		// collect all the edges that cross between S and T
-		Set<AutoEdge> cutset = new HashSet<AutoEdge>();
-		for(AutoState s : tpath) {
+		Set<CutEntity> cutset = new HashSet<CutEntity>();
+		for(AutoState s : orgStates) {
+			//outgoing edges.
 			for (Iterator<AutoEdge> cIt = s.outgoingStatesInvIterator(); cIt
 					.hasNext();) {
+				AutoEdge outEdge = cIt.next();
+				AutoState tgt = s.outgoingStatesInvLookup(outEdge).iterator().next();
+				if(tpath.contains(tgt) && (outEdge.getWeight()>0)) {
+					System.out.println(s + "->" + tgt + " " + outEdge.getWeight());
+					cutset.add(new CutEntity(s,outEdge));
+				}
+			}
+			
+			for (Iterator<AutoEdge> cIt = s.incomingStatesInvIterator(); cIt
+					.hasNext();) {
+				//incoming edges.
 				AutoEdge inEdge = cIt.next();
-				AutoState tgt = s.outgoingStatesInvLookup(inEdge).iterator().next();
-				if(!tpath.contains(tgt) && (inEdge.getWeight()>0)) {
-					System.out.println(s + "->" + tgt + " " + inEdge.getWeight());
-					cutset.add(inEdge);
+				AutoState src = s.incomingStatesInvLookup(inEdge).iterator().next();
+				if( tpath.contains(src) && (inEdge.getWeight()>0)) {
+					System.out.println(src + "-*>" + s + " " + inEdge.getWeight());
+					cutset.add(new CutEntity(src,inEdge));
 				}
 			}
 		}
-		
+				
 		return cutset;
 
 	}
+	
+	/*reset all flow values to 0 for the new round.*/
+	public static void resetAuto(Automaton auto) {
+		for(AutoState s : auto.getStates()) {
+			//outgoing edges.
+			for (Iterator<AutoEdge> cIt = s.outgoingStatesInvIterator(); cIt
+					.hasNext();) {
+				AutoEdge outEdge = cIt.next();
+				outEdge.setFlow(0);
+			}
+			
+			for (Iterator<AutoEdge> cIt = s.incomingStatesInvIterator(); cIt
+					.hasNext();) {
+				//incoming edges.
+				AutoEdge inEdge = cIt.next();
+				inEdge.setFlow(0);
+			}
+		}
+	}
 
 	public static Automaton genResidualGraph(Automaton g) {
-		Cloner cloner = new Cloner();
 		Automaton residual = cloner.deepClone(g);
 		resetVisited(residual);
 

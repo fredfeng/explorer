@@ -9,6 +9,8 @@ public class AutoEdge {
 
 	protected boolean isDotEdge = false;
 	
+	private int INFINITY = 9999;
+	
 	//name displayed in the graph.
 	protected String shortName = "";
 	
@@ -42,6 +44,10 @@ public class AutoEdge {
 	 */
 	public void setWeight(int weight) {
 		this.weight = weight;
+	}
+	
+	public void setInfinityWeight() {
+		this.weight = INFINITY;
 	}
 
 	public AutoEdge(Object id) {
