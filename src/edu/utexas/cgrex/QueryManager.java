@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.rits.cloning.Cloner;
+
 import soot.Body;
 import soot.Local;
 import soot.MethodOrMethodContext;
@@ -36,6 +38,7 @@ import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
+import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.StringUtil;
 
 /**
@@ -168,6 +171,8 @@ public class QueryManager {
 
 			regAuto.addStates(fsmState);
 		}
+		System.out.println("regAuto dump");
+		regAuto.dump();
 
 		// dump current result.
 //		System.out.println("dump regular graph.");
@@ -181,9 +186,11 @@ public class QueryManager {
 		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
 
 		// 0 is the initial id.
-		CGAutoState initState = new CGAutoState(0, false, true);
+		CGAutoState initState = new CGAutoState(0, true, true);
 		CGAutoState mainState = methToStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
+		mainState.addIncomingStates(initState, callEdgeMain);
+
 		// no incoming edge for initstate.
 
 		cgAuto.addInitState(initState);
@@ -209,6 +216,9 @@ public class QueryManager {
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
 					curState.addOutgoingStates(curState, outEdge);
+					
+					curState.addIncomingStates(curState, outEdge);
+
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
 					if (!visitedMap.get(tgtMeth))
@@ -217,22 +227,9 @@ public class QueryManager {
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
-				}
-			}
-
-			// incoming edges
-			Iterator<Edge> inIt = cg.edgesInto(worker);
-			while (inIt.hasNext()) {
-				Edge e = inIt.next();
-				// how about SCC? FIXME!!
-				if (e.getSrc().equals(worker)) {// recursive call, add self-loop
-					AutoEdge inEdge = methToEdgeMap.get(worker);
-					curState.addIncomingStates(curState, inEdge);
-				} else {
-					SootMethod srcMeth = (SootMethod) e.getSrc();
-					AutoEdge inEdge = methToEdgeMap.get(srcMeth);
-					CGAutoState srcState = methToStateMap.get(srcMeth);
-					curState.addIncomingStates(srcState, inEdge);
+					
+					//add incoming state.
+					tgtState.addIncomingStates(curState, outEdge);
 				}
 			}
 
@@ -243,8 +240,8 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
-//		System.out.println("dump Callgraph automaton.....");
 //		cgAuto.dump();
+		cgAuto.validate();
 	}
 
 	private void buildInterAutomaton() {
@@ -254,12 +251,20 @@ public class QueryManager {
 
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-//		System.out.println("dump interset automaton.....");
-//		interAuto.dump();
-	}
-
-	private void grepMinCut() {
-
+		System.out.println("dump interset automaton.....");
+		interAuto.validate();
+		interAuto.dump();
+		Cloner cloner = new Cloner();
+		cloner.deepClone(interAuto);
+		
+		//before we do the mincut, we need to exclude some trivial cases
+		//such as special invoke, static invoke and certain virtual invoke.
+		if(interAuto.getFinalStates().size() == 0) return;
+		
+		System.out.println("size:" + interAuto.getFinalStates().size());
+		
+		Set<AutoEdge> cutset = GraphUtil.minCut(interAuto);
+		
 	}
 
 	private boolean doPointsToQuery() {

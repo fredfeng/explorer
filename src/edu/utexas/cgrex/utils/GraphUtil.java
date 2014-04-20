@@ -1,6 +1,7 @@
 package edu.utexas.cgrex.utils;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,7 +70,7 @@ public class GraphUtil {
 	 * @param auto
 	 * @param init
 	 */
-	public static void minCut(Automaton auto, AutoState init) {
+	public static Set<AutoEdge> minCut(Automaton auto) {
 		// reset all flow values to 0
 		// build the residual graph
 		Automaton residual = genResidualGraph(auto);
@@ -114,27 +115,21 @@ public class GraphUtil {
 		tpath.removeAll(spath);
 		
 		// collect all the edges that cross between S and T
+		Set<AutoEdge> cutset = new HashSet<AutoEdge>();
 		for(AutoState s : tpath) {
 			for (Iterator<AutoEdge> cIt = s.outgoingStatesInvIterator(); cIt
 					.hasNext();) {
 				AutoEdge inEdge = cIt.next();
 				AutoState tgt = s.outgoingStatesInvLookup(inEdge).iterator().next();
-				if(!tpath.contains(tgt) && (inEdge.getWeight()>0)) 
+				if(!tpath.contains(tgt) && (inEdge.getWeight()>0)) {
 					System.out.println(s + "->" + tgt + " " + inEdge.getWeight());
+					cutset.add(inEdge);
+				}
 			}
 		}
+		
+		return cutset;
 
-	}
-	
-	public static boolean constainsId(LinkedList<AutoState> list, AutoState tgtState) {
-		boolean f = false;
-		for(AutoState as : list) {
-			if (as.equals(tgtState)) {
-				f = true;
-				break;
-			}
-		}
-		return f;
 	}
 
 	public static Automaton genResidualGraph(Automaton g) {
@@ -147,8 +142,8 @@ public class GraphUtil {
 					.hasNext();) {
 				AutoEdge e = cIt.next();
 				int newWt = e.getWeight() - e.getFlow();
-//				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
-//						+ e.getWeight() + '=' + newWt);
+				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
+						+ e.getWeight() + '=' + newWt);
 				assert (newWt >= 0);
 				e.setWeight(newWt);
 				e.setShortName(e.getWeight() + "");
@@ -156,6 +151,7 @@ public class GraphUtil {
 					// need to create new edge for the first time.
 					AutoState tgt = as.outgoingStatesInvLookup(e).iterator()
 							.next();
+					assert(tgt!=null);
 					if (residual.getEdgeBySrc(tgt, as) == null) {
 						AutoEdge revEdge = new AutoEdge(cIt.hashCode(),
 								e.getFlow(), e.getFlow() + "");

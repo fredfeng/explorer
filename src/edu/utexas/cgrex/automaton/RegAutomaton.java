@@ -58,7 +58,7 @@ public class RegAutomaton extends Automaton {
 					Set<AutoState> out = currState.outgoingStatesInvLookup(eg);
 					for (AutoState os : out) {
 						if (!os.equals(currState)) {
-							System.out.println("***" + os + " " + currState);
+//							System.out.println("***" + os + " " + currState);
 							keyEdges.clear();
 							break;
 						}

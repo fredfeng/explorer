@@ -72,7 +72,7 @@ public abstract class AutoState {
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		return super.hashCode();
 	}
 
 	public abstract Set<AutoState> getIncomingStatesKeySet();
@@ -158,6 +158,7 @@ public abstract class AutoState {
 	}
 
 	public boolean addOutgoingStates(AutoState state, AutoEdge edge) {
+		assert(state.getId() != null);
 		return addToMap(outgoingStates, state, edge)
 				| addToInvMap(outgoingStatesInv, edge, state);
 	}

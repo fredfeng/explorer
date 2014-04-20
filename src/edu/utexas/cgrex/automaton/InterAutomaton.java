@@ -16,19 +16,19 @@ public class InterAutomaton extends Automaton {
 		this.masterAutomaton = masterAutomaton;
 		this.slaveAutomaton = slaveAutomaton;
 
-		for (AutoState s : slaveAutomaton.getStates()) {
-			System.out.println("slave" + s);
-			System.out.println(s.getOutgoingStatesInvKeySet());
-			System.out.println(s.getOutgoingStatesKeySet());
-			System.out.println(s.getIncomingStatesInvKeySet());
-		}
-
-		for (AutoState s : masterAutomaton.getStates()) {
-			System.out.println("master" + s);
-			System.out.println(s.getOutgoingStatesInvKeySet());
-			System.out.println(s.getOutgoingStatesKeySet());
-			System.out.println(s.getIncomingStatesInvKeySet());
-		}
+//		for (AutoState s : slaveAutomaton.getStates()) {
+//			System.out.println("slave" + s);
+//			System.out.println(s.getOutgoingStatesInvKeySet());
+//			System.out.println(s.getOutgoingStatesKeySet());
+//			System.out.println(s.getIncomingStatesInvKeySet());
+//		}
+//
+//		for (AutoState s : masterAutomaton.getStates()) {
+//			System.out.println("master" + s);
+//			System.out.println(s.getOutgoingStatesInvKeySet());
+//			System.out.println(s.getOutgoingStatesKeySet());
+//			System.out.println(s.getIncomingStatesInvKeySet());
+//		}
 	}
 
 	// if this machine contains a statepair consisting of master and slave

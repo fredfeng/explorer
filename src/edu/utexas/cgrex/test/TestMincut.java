@@ -16,7 +16,7 @@ public class TestMincut {
 		// TODO Auto-generated method stub
 		CGAutomaton cg = new TestMincut().gen();
 		cg.dump();
-		GraphUtil.minCut(cg, cg.getInitStates().iterator().next());
+		GraphUtil.minCut(cg);
 	}
 
 	

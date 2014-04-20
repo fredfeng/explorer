@@ -131,4 +131,20 @@ public abstract class Automaton {
 		System.out.println(b.toString());
 	}
 	
+	//validate whether current automaton is well-formed.
+	public void validate() {
+		Set<AutoState> all = new HashSet();
+		all.addAll(this.getStates());
+		all.addAll(this.getFinalStates());
+		all.addAll(this.getInitStates());
+		for (AutoState as : all) {
+			assert(as.getId() != null);
+			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
+					.hasNext();) {
+				AutoState tgtState = cIt.next();
+				assert (tgtState.incomingStatesLookup(as).size() > 0);
+			}
+		}
+	}
+	
 }
