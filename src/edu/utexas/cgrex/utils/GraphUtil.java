@@ -82,6 +82,9 @@ public class GraphUtil {
 			Pair<Integer, LinkedList<AutoState>> pair = extractPath(residual);
 			int min = pair.val0;
 
+//			residual.dump();
+//			System.out.println("--------------" + min + pair.val1);
+//			auto.dump();
 			AutoState src = pair.val1.getFirst();
 			for (int i = 1; i < pair.val1.size(); i++) {
 				AutoState tgt = pair.val1.get(i);
@@ -90,8 +93,10 @@ public class GraphUtil {
 				//no such edge in original graph. modify inverse edge.
 				if(ae == null) {
 					AutoEdge invE = auto.getEdgeBySrc(tgt, src);
-					assert((invE.getFlow() + min) <= invE.getWeight());
-					invE.setFlow(invE.getFlow() + min);
+					System.out.println(src + "->" +tgt+ " " + invE.getFlow() + "+" + min + "<=" + invE.getWeight());
+					assert((invE.getFlow() - min) <= invE.getWeight());
+					invE.setFlow(invE.getFlow() - min);
+					assert(invE.getFlow() >= 0);
 					invE.setShortName(invE.getFlow() + "/" + invE.getWeight());
 				} else {
 					assert((ae.getFlow() + min) <= ae.getWeight());
@@ -142,8 +147,8 @@ public class GraphUtil {
 					.hasNext();) {
 				AutoEdge e = cIt.next();
 				int newWt = e.getWeight() - e.getFlow();
-				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
-						+ e.getWeight() + '=' + newWt);
+//				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
+//						+ e.getWeight() + '=' + newWt);
 				assert (newWt >= 0);
 				e.setWeight(newWt);
 				e.setShortName(e.getWeight() + "");

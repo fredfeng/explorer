@@ -10,8 +10,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import com.rits.cloning.Cloner;
-
 import soot.Body;
 import soot.Local;
 import soot.MethodOrMethodContext;
@@ -171,9 +169,6 @@ public class QueryManager {
 
 			regAuto.addStates(fsmState);
 		}
-		System.out.println("regAuto dump");
-		regAuto.dump();
-
 		// dump current result.
 //		System.out.println("dump regular graph.");
 //		regAuto.dump();
@@ -215,9 +210,13 @@ public class QueryManager {
 				// how about SCC? FIXME!!
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
-					curState.addOutgoingStates(curState, outEdge);
+					//need fresh instance for each callsite but share same uid.
+					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
+					outEdgeFresh.setShortName(worker.getName());
+
+					curState.addOutgoingStates(curState, outEdgeFresh);
 					
-					curState.addIncomingStates(curState, outEdge);
+					curState.addIncomingStates(curState, outEdgeFresh);
 
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
@@ -225,11 +224,15 @@ public class QueryManager {
 						worklist.add(tgtMeth);
 
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
+					//need fresh instance for each callsite but share same uid.
+					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
+					outEdgeFresh.setShortName(tgtMeth.getName());
+
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
-					curState.addOutgoingStates(tgtState, outEdge);
+					curState.addOutgoingStates(tgtState, outEdgeFresh);
 					
 					//add incoming state.
-					tgtState.addIncomingStates(curState, outEdge);
+					tgtState.addIncomingStates(curState, outEdgeFresh);
 				}
 			}
 
@@ -251,20 +254,15 @@ public class QueryManager {
 
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-		System.out.println("dump interset automaton.....");
+//		System.out.println("dump interset automaton.....");
 		interAuto.validate();
-		interAuto.dump();
-		Cloner cloner = new Cloner();
-		cloner.deepClone(interAuto);
+//		interAuto.dump();
 		
 		//before we do the mincut, we need to exclude some trivial cases
 		//such as special invoke, static invoke and certain virtual invoke.
 		if(interAuto.getFinalStates().size() == 0) return;
-		
-		System.out.println("size:" + interAuto.getFinalStates().size());
-		
+				
 		Set<AutoEdge> cutset = GraphUtil.minCut(interAuto);
-		
 	}
 
 	private boolean doPointsToQuery() {
@@ -295,6 +293,7 @@ public class QueryManager {
 
 	// entry method for the query.
 	public boolean doQuery(String regx) {
+		regx = regx.replaceAll("\\s+","");
 
 		buildRegAutomaton(regx);
 		buildInterAutomaton();

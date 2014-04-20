@@ -47,7 +47,7 @@ public class AutoEdge {
 	public AutoEdge(Object id) {
 		this.id = id;
 		this.isDotEdge = false;
-		shortName = (String) id;
+		shortName = String.valueOf(id);
 	}
 	
 	public AutoEdge(Object id, int weight, String shortName) {
