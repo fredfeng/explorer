@@ -113,6 +113,7 @@ public class TestPrecision extends SceneTransformer {
 								b.append("------------------------------------------------\n");
 								System.out.println("insensitive_result::::"
 										+ size1);
+								b.append("Callsites::::" + stmt + "\n");
 								b.append("insensitive_result::::" + s1 + "\n");
 								b.append("insensitive result size::::" + size1
 										+ "\n");
@@ -133,7 +134,7 @@ public class TestPrecision extends SceneTransformer {
 		Collections.sort(a);
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/precision_details"));
+					"benchmarks/output/sablecc-3.7-ptAnalysisResults"));
 			bufw.write(b.toString());
 			bufw.close();
 			b = new StringBuilder("");
