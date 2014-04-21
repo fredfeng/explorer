@@ -12,10 +12,13 @@ public class CutEntity {
 	
 	public AutoState state;
 	public AutoEdge edge;
+	public AutoState endState;
+
 	
-	public CutEntity(AutoState state, AutoEdge edge) {
+	public CutEntity(AutoState state, AutoEdge edge, AutoState endState) {
 		this.state = state;
 		this.edge = edge;
+		this.endState = endState;
 	}
 	
 	@Override

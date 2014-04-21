@@ -1,21 +1,20 @@
 package edu.utexas.cgrex.utils;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import soot.FastHierarchy;
-import soot.util.NumberedString;
 import soot.G;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
-
-import java.util.Date;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Iterator;
+import soot.Type;
 
 /**
  * @author Saswat Anand
@@ -27,6 +26,47 @@ public class SootUtils {
 		long time = end.getTime() - start.getTime();
 		G.v().out
 				.println("[CGregx] " + desc + " in " + time + " milliseconds.");
+	}
+	
+	/*
+	 * Given a sootClass and one of its method, return all sub-types that do not
+	 * override this method
+	 */
+	public static List<Type> compatibleTypeList(SootClass cl, SootMethod meth) {
+		HashSet<Type> subTypes = new HashSet<Type>();
+		LinkedList<SootClass> worklist = new LinkedList<SootClass>();
+		FastHierarchy fh = Scene.v().getOrMakeFastHierarchy();
+
+		if (subTypes.add(cl.getType()))
+			worklist.add(cl);
+		while (!worklist.isEmpty()) {
+			cl = worklist.removeFirst();
+			if (cl.isInterface()) {
+				for (Iterator<SootClass> cIt = fh
+						.getAllImplementersOfInterface(cl).iterator(); cIt
+						.hasNext();) {
+					final SootClass c = cIt.next();
+					if (subTypes.add(c.getType()))
+						worklist.add(c);
+				}
+			} else {
+//				if (cl.isConcrete()) {
+//					subTypes.add(cl);
+//				}
+				for (Iterator<SootClass> cIt = fh.getSubclassesOf(cl)
+						.iterator(); cIt.hasNext();) {
+					final SootClass c = cIt.next();
+					if (!c.declaresMethod(meth.getName(),
+							meth.getParameterTypes())
+							&& subTypes.add(c.getType()))
+						worklist.add(c);
+				}
+			}
+		}
+		
+		List<Type> list = new ArrayList();
+		list.addAll(subTypes);
+		return list;
 	}
 
 	public static Set<SootClass> subTypesOf(SootClass cl) {

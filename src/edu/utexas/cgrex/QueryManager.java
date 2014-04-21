@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import soot.Body;
-import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootMethod;
@@ -39,6 +38,7 @@ import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
+import edu.utexas.cgrex.utils.SootUtils;
 import edu.utexas.cgrex.utils.StringUtil;
 
 /**
@@ -56,6 +56,8 @@ public class QueryManager {
 
 	// default CHA-based call graph.
 	CallGraph cg;
+	
+	Map<Value, Edge> valueToCallEdgeMap = new HashMap<Value, Edge>();
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
 
@@ -287,7 +289,8 @@ public class QueryManager {
 					e.edge.setInfinityWeight();
 				} else { //e is a false positive.
 					//remove this edge and refine call graph.
-					System.out.println("-------------DELETE ME");
+					//remove this edge from interauto.
+					interAuto.deleteOneEdge(e.state, e.endState, e.edge);
 				}
 			}
 			
@@ -319,23 +322,32 @@ public class QueryManager {
 		SootMethod calleeMeth = uidToMethMap.get(cut.edge.getId());
 		if(calleeMeth.isMain()) return true;
 		
-		Type declaredType = calleeMeth.getDeclaringClass().getType();
+//		Type declaredType = calleeMeth.getDeclaringClass().getType();
 
 		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
 		SootMethod callerMeth = uidToMethMap.get(inEdge.getId());
 
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
-		System.out.println("------perform points-toq query:" + declaredType
-				+ "|" + varSet);
+		List<Type> typeSet = SootUtils.compatibleTypeList(
+				calleeMeth.getDeclaringClass(), calleeMeth);
+		
+		//refine call graph with detail info.
+		Map<Value, Boolean> detailMap = autoPAG.insensitiveRefine(varSet, typeSet);
+		for(Value v : detailMap.keySet()) {
+			if(!detailMap.get(v))
+				refineCallgraph(v);
+		}
 
 		if(varSet.size() == 0) return true;
 		
-		return autoPAG.insensitiveQuery(varSet, declaredType);
+		return autoPAG.insensitiveQuery(varSet, typeSet);
 	}
 
-	private void refineCallgraph() {
+	private void refineCallgraph(Value v) {
 		// FIXME.
-		cg.removeEdge(null);
+		Edge e = valueToCallEdgeMap.get(v);
+		System.out.println("---------Refine call edge: " + e);
+		cg.removeEdge(e);
 	}
 
 	// entry method for the query.
@@ -371,6 +383,9 @@ public class QueryManager {
                 		//ie.get
                 		Value var = ie.getUseBoxes().get(0).getValue();
                 		varSet.add(var);
+                		Edge calledge = cg.findEdge(stmt, ie.getMethod());
+                		//FIXME: is this correct to map value to its callsite?
+                		valueToCallEdgeMap.put(var, calledge);
                 	}
                 }
 			}

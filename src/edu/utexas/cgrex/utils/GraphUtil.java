@@ -137,7 +137,7 @@ public class GraphUtil {
 				AutoState tgt = s.outgoingStatesInvLookup(outEdge).iterator().next();
 				if(tpath.contains(tgt) && (outEdge.getWeight()>0)) {
 					System.out.println(s + "->" + tgt + " " + outEdge.getWeight());
-					cutset.add(new CutEntity(s,outEdge));
+					cutset.add(new CutEntity(s,outEdge, tgt));
 				}
 			}
 			
@@ -148,7 +148,7 @@ public class GraphUtil {
 				AutoState src = s.incomingStatesInvLookup(inEdge).iterator().next();
 				if( tpath.contains(src) && (inEdge.getWeight()>0)) {
 					System.out.println(src + "-*>" + s + " " + inEdge.getWeight());
-					cutset.add(new CutEntity(src,inEdge));
+					cutset.add(new CutEntity(src,inEdge, s));
 				}
 			}
 		}
