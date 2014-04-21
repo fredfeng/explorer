@@ -429,7 +429,7 @@ public class AutoPAG {
 		}
 	}
 
-	// given a list of variables to query the type
+	// given a list of variables to query and one type
 	// return true if at least one variable points to type by pt analysis
 	// Value: FieldRef / Local
 	public boolean insensitiveQuery(List<Value> vars, Type type) {
@@ -443,7 +443,9 @@ public class AutoPAG {
 			else
 				v = father.findGlobalVarNode(((FieldRef) var).getField());
 
-			if (v == null)
+			assert (v != null);
+
+			if (v == null) // I forget why I added this...
 				continue;
 
 			Set<AllocNode> ptAllocSet = searchingObjects(v);
@@ -458,6 +460,78 @@ public class AutoPAG {
 		return false;
 	}
 
+	// overload: given a list of variables and a list of types
+	// return true if the types the variables point to have common types
+	// with the types in the list
+	public boolean insensitiveQuery(List<Value> vars, List<Type> types) {
+		for (Value var : vars) {
+
+			assert (var instanceof Local || var instanceof FieldRef);
+
+			VarNode v = null;
+			if (var instanceof Local)
+				v = father.findLocalVarNode(var);
+			else if (var instanceof FieldRef)
+				v = father.findGlobalVarNode(((FieldRef) var).getField());
+
+			if (v == null)
+				continue;
+
+			Set<AllocNode> ptAllocSet = searchingObjects(v);
+			Set<Type> ptTypeSet = new HashSet<Type>();
+			for (AllocNode alloc : ptAllocSet)
+				ptTypeSet.add(alloc.getType());
+
+			ptTypeSet.retainAll(types);
+			if (!ptTypeSet.isEmpty())
+				return true;
+
+		}
+		return false;
+	}
+
+	// this method returns the detailed true/false information for
+	// each variable in the variable list, which is used for refining
+	// the call graph automaton
+	public Map<Value, Boolean> insensitiveRefine(List<Value> vars,
+			List<Type> types) {
+		Map<Value, Boolean> refine = new HashMap<Value, Boolean>();
+
+		for (Value var : vars) {
+
+			assert (var instanceof Local || var instanceof FieldRef);
+
+			VarNode v = null;
+			if (var instanceof Local)
+				v = father.findLocalVarNode(var);
+			else if (var instanceof FieldRef)
+				v = father.findGlobalVarNode(((FieldRef) var).getField());
+
+			// v might not appear in pag maybe because lack of modeling or
+			// dynamic allocation, just return true to be conservative
+			if (v == null) {
+				refine.put(var, true);
+				continue;
+			}
+
+			Set<AllocNode> ptAllocSet = searchingObjects(v);
+			Set<Type> ptTypeSet = new HashSet<Type>();
+			for (AllocNode alloc : ptAllocSet)
+				ptTypeSet.add(alloc.getType());
+
+			ptTypeSet.retainAll(types);
+			if (!ptTypeSet.isEmpty())
+				refine.put(var, true);
+			else
+				refine.put(var, false);
+		}
+
+		return refine;
+	}
+
+	// given a list of variables to query and one type
+	// return true if at least one variable points to type by pt analysis
+	// this is sensitive using Manu's pt analysis framework
 	public boolean sensitiveQuery(List<Value> vars, Type type) {
 		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
 				new ContextSensitiveInfo(father), father);
@@ -478,6 +552,62 @@ public class AutoPAG {
 		return false;
 	}
 
+	// given a list of variables and a list of types
+	// return true if vars and types have at least one common element
+	public boolean sensitiveQuery(List<Value> vars, List<Type> types) {
+		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
+				new ContextSensitiveInfo(father), father);
+		for (Value var : vars) {
+			assert (var instanceof Local || var instanceof FieldRef);
+			PointsToSet ptSet = null;
+			if (var instanceof Local) {
+				ptSet = ptAnalysis.reachingObjects((Local) var);
+			} else if (var instanceof FieldRef) {
+				return true;
+			}
+			Set<Type> ptTypeSet = ptSet.possibleTypes();
+
+			assert (ptTypeSet != null);
+
+			ptTypeSet.retainAll(types);
+			if (!ptTypeSet.isEmpty())
+				return true;
+		}
+
+		return false;
+	}
+
+	public Map<Value, Boolean> sensitiveRefine(List<Value> vars, List<Type> types) {
+		Map<Value, Boolean> refine = new HashMap<Value, Boolean>();
+		
+		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
+				new ContextSensitiveInfo(father), father);
+		for (Value var : vars) {
+			
+			assert (var instanceof Local || var instanceof FieldRef);
+			
+			PointsToSet ptSet = null;
+			if (var instanceof Local) {
+				ptSet = ptAnalysis.reachingObjects((Local) var);
+			} else if (var instanceof FieldRef) {
+				refine.put(var, true);
+				continue;
+			}
+			Set<Type> ptTypeSet = ptSet.possibleTypes();
+
+			assert (ptTypeSet != null);
+
+			ptTypeSet.retainAll(types);
+			if (!ptTypeSet.isEmpty())
+				refine.put(var, true);
+			else
+				refine.put(var, false);
+		}
+
+		return refine;
+	}
+
+	// just for testing
 	public Set<AllocNode> insensitiveQueryTest(VarNode var) {
 		Set<AllocNode> ptAllocSet = searchingObjects(var);
 		return ptAllocSet;
@@ -514,6 +644,8 @@ public class AutoPAG {
 				v = father.findGlobalVarNode(((FieldRef) var).getField());
 			}
 
+			assert (v != null);
+
 			if (v == null)
 				continue;
 
@@ -546,7 +678,7 @@ public class AutoPAG {
 				System.out.println("now consider the node: " + head);
 			}
 			if (visited.contains(head)) {
-				if (start.getNumber() == 46) 
+				if (start.getNumber() == 46)
 					System.out.println("this node has been visited: " + head);
 				continue;
 			}
@@ -557,11 +689,11 @@ public class AutoPAG {
 			for (int i = 0; i < objs.length; i++) {
 				reachable.add((AllocNode) objs[i]);
 			}
-//			if (objs.length > 0) {
-//				if (start.getNumber() == 46) 
-//					System.out.println("this node is alloc Node realted " + head);
-//				continue;
-//			}
+			// if (objs.length > 0) {
+			// if (start.getNumber() == 46)
+			// System.out.println("this node is alloc Node realted " + head);
+			// continue;
+			// }
 			// then recursively add the others in flowInv
 			Set<VarNode> nextVarNodes = (Set<VarNode>) flowInv.get(head);
 			if (start.getNumber() == 46) {
