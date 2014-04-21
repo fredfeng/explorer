@@ -36,6 +36,7 @@ import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
+import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.SootUtils;
@@ -352,10 +353,22 @@ public class QueryManager {
 
 	// entry method for the query.
 	public boolean doQuery(String regx) {
-		regx = regx.replaceAll("\\s+","");
-
-		buildRegAutomaton(regx);
-		buildInterAutomaton();
+		
+		//ignore user input, run our own batch test.
+		int benchmarkSize = 1000;
+		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
+		for(int i = 0; i < benchmarkSize; i++) {
+			regx = generator.genRegx();		
+			regx = regx.replaceAll("\\s+","");
+			System.out.println("Random regx------" + regx);
+			buildRegAutomaton(regx);
+			buildInterAutomaton();
+		}
+		
+//		regx = regx.replaceAll("\\s+","");
+//
+//		buildRegAutomaton(regx);
+//		buildInterAutomaton();
 
 		return false;
 	}

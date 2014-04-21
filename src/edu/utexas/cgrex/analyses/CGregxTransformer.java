@@ -29,18 +29,21 @@ public class CGregxTransformer extends SceneTransformer {
 
 		QueryManager qm = new QueryManager(me);
 		String regx = "";
-		while (true) {
-			Scanner in = new Scanner(System.in);
-			System.out.println("Please Enter a string:");
-			regx = in.nextLine();
-			//press "q" to exit the program
-			if(regx.equals("q"))  				
-				System.exit(0);
-			else {
-				System.out.println("You entered string " + regx);
-				qm.doQuery(regx);
-			}
-		}
+		
+		qm.doQuery(regx);
+
+//		while (true) {
+//			Scanner in = new Scanner(System.in);
+//			System.out.println("Please Enter a string:");
+//			regx = in.nextLine();
+//			//press "q" to exit the program
+//			if(regx.equals("q"))  				
+//				System.exit(0);
+//			else {
+//				System.out.println("You entered string " + regx);
+//				qm.doQuery(regx);
+//			}
+//		}
 
     }
 }
