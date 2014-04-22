@@ -5,14 +5,19 @@
   <property name="target.loc" location="${target}"/>
 
   <target name="analyze" depends="jar">
-	<java classname="edu.utexas.Harness"
+	<java classname="edu.utexas.cgrex.Harness"
           maxmemory="32g"
           fork="true"
           failonerror="true">
       <classpath>
 		<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
-		<pathelement location="${this.dir}/lib/soot-nightly.jar"/>
-		<pathelement location="${this.dir}/lib/heros-nightly.jar"/>
+		<pathelement location="lib/heros-nightly.jar"/>
+		<pathelement location="lib/automaton.jar"/>
+		<pathelement location="lib/chord.jar"/>
+		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+		<pathelement location="lib/cloning-1.9.0.jar"/>
+		<pathelement location="lib/soot-nightly.jar"/>
+		<pathelement location="lib/objenesis-1.2.jar"/>
       </classpath>
       <arg value="${target.loc}"/>
 	</java>
@@ -28,7 +33,12 @@
     <javac srcdir="src" destdir="build" debug="true">
 	  <classpath>
 		<pathelement location="lib/heros-nightly.jar"/>
+		<pathelement location="lib/automaton.jar"/>
+		<pathelement location="lib/chord.jar"/>
+		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+		<pathelement location="lib/cloning-1.9.0.jar"/>
 		<pathelement location="lib/soot-nightly.jar"/>
+		<pathelement location="lib/objenesis-1.2.jar"/>
 	  </classpath>
 	</javac>
   </target>

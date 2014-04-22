@@ -361,7 +361,7 @@ public class QueryManager {
 	public boolean doQuery(String regx) {
 		
 		//ignore user input, run our own batch test.
-		int benchmarkSize = 10000;
+		int benchmarkSize = 1000000;
 		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
 		for(int i = 0; i < benchmarkSize; i++) {
 			regx = generator.genRegx();		

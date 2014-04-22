@@ -7,12 +7,16 @@ import edu.utexas.cgrex.analyses.CGregxTransformer;
 
 public class Harness {
 
+    public static int benchmarkSize;
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String targetLoc = "benchmarks/CFLexamples/bin/";
+		String targetLoc = args[0];
+        System.out.println("begin to run benchmark----------" + targetLoc);
+		//String targetLoc = "benchmarks/CFLexamples/bin/";
 //		String targetLoc = "benchmarks/sablecc-3.7/classes/";
 
 
