@@ -94,7 +94,7 @@ public abstract class Automaton {
 		StringBuilder b = new StringBuilder("digraph Automaton {\n");
 		b.append("  rankdir = LR;\n");
 		for (AutoState s : states) {
-			b.append("  ").append(s.id);
+			b.append("  ").append("\""+ s.id + "\"");
 
 			if (s.isFinalState) {
 				b.append(" [shape=doublecircle,label=\"");
@@ -107,17 +107,17 @@ public abstract class Automaton {
 			}
 
 			if (s.isInitState) {
-				b.append("  initial [shape=plaintext,label=\"");
+				b.append("  \"initial\" [shape=plaintext,label=\"");
 				b.append(s.id);
 				b.append("\"];\n");
-				b.append("  initial -> ").append(s.id).append("\n");
+				b.append("  \"initial\" -> ").append("\""+ s.id + "\"").append("\n");
 			}
 
 			for (AutoState tgt : s.getOutgoingStates().keySet()) {
 				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {
-					b.append("  ").append(s.id);
+					b.append("  ").append("\""+ s.id + "\"");
 
-					b.append(" -> ").append(tgt.id).append(" [label=\"");
+					b.append(" -> ").append("\""+ tgt.id + "\"").append(" [label=\"");
 					if (outEdge.isDotEdge())
 						b.append(".");
 					else

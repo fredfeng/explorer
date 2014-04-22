@@ -106,7 +106,9 @@ public class QueryManager {
 
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getName());
-			CGAutoState st = new CGAutoState(meth.getNumber(), false, true);
+//			CGAutoState st = new CGAutoState(meth.getNumber(), false, true);
+			CGAutoState st = new CGAutoState(uid, false, true);
+
 
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
@@ -321,6 +323,8 @@ public class QueryManager {
 		
 		// type info.
 		SootMethod calleeMeth = uidToMethMap.get(cut.edge.getId());
+		System.out.println(cut.edge.getId());
+		assert(calleeMeth != null);
 		if(calleeMeth.isMain()) return true;
 		
 //		Type declaredType = calleeMeth.getDeclaringClass().getType();
