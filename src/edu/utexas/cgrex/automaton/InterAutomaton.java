@@ -50,8 +50,8 @@ public class InterAutomaton extends Automaton {
 		Set<AutoState> slaveInitStates = slaveAutomaton.getInitStates();
 		for (AutoState masterInitSt : masterInitStates) {
 			for (AutoState slaveInitSt : slaveInitStates) {
-				InterAutoState interInitSt = new InterAutoState(masterInitSt
-						.getId().toString() + slaveInitSt.getId().toString(),
+				InterAutoState interInitSt = new InterAutoState(
+						masterInitSt.getId() + "@" + slaveInitSt.getId(),
 						masterInitSt, slaveInitSt, true, false);
 				states.add(interInitSt);
 				initStates.add(interInitSt);
@@ -221,49 +221,53 @@ public class InterAutomaton extends Automaton {
 							}
 						}
 
-						for (AutoEdge slaveNextEdge : slaveSt
-								.outgoingStatesLookup(slaveNextState)) {
-							InterAutoState newInterSt = containMasterandSlaveState(
+						// I guess the following two lines of code are not
+						// useful at all
+						// for (AutoEdge slaveNextEdge : slaveSt
+						// .outgoingStatesLookup(slaveNextState)) {
+
+						InterAutoState newInterSt = containMasterandSlaveState(
+								masterNextState, slaveNextState);
+						if (newInterSt != null) {
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
+						} else {
+							newInterSt = new InterAutoState(
+									masterNextState.getId() + "@"
+											+ slaveNextState.getId(),
 									masterNextState, slaveNextState);
-							if (newInterSt != null) {
-								interSt.addOutgoingStates(newInterSt,
-										slaveNextEdge);
-								newInterSt.addIncomingStates(interSt,
-										slaveNextEdge);
-							} else {
-								newInterSt = new InterAutoState(masterNextState
-										.getId().toString()
-										+ slaveNextState.getId().toString(),
-										masterNextState, slaveNextState);
-								if (newInterSt.buildAsFinal()) {
-									newInterSt.setFinalState();
-									addFinalState(newInterSt);
-								}
-								interSt.addOutgoingStates(newInterSt,
-										slaveNextEdge);
-								newInterSt.addIncomingStates(interSt,
-										slaveNextEdge);
-								states.add(newInterSt);
-								intersectAnnot(masterNextState, slaveNextState,
-										newInterSt, annots);
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							if (newInterSt.buildAsFinal()) {
+								newInterSt.setFinalState();
+								addFinalState(newInterSt);
 							}
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
+							states.add(newInterSt);
+							intersectAnnot(masterNextState, slaveNextState,
+									newInterSt, annots);
 						}
+						// }
 					}
 
 				} else {
 					Set<AutoState> slaveNextStates = slaveSt
 							.outgoingStatesInvLookup(masterNextEdge);
 					if (slaveNextStates == null)
-						continue;
+						continue; // cannot find that edge
+					// can find the edge
 					for (AutoState slaveNxtSt : slaveNextStates) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
 						InterAutoState newInterSt = containMasterandSlaveState(
 								masterNextState, slaveNextState);
 						if (newInterSt != null) {
-							interSt.addOutgoingStates(newInterSt,
-									masterNextEdge);
-							newInterSt.addIncomingStates(interSt,
-									masterNextEdge);
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
 						} else {
 
 							boolean toCreate = true;
@@ -277,18 +281,18 @@ public class InterAutomaton extends Automaton {
 								}
 							}
 
-							newInterSt = new InterAutoState(masterNextState
-									.getId().toString()
-									+ slaveNextState.getId().toString(),
+							newInterSt = new InterAutoState(
+									masterNextState.getId() + "@"
+											+ slaveNextState.getId(),
 									masterNextState, slaveNextState);
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
 							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
 								addFinalState(newInterSt);
 							}
-							interSt.addOutgoingStates(newInterSt,
-									masterNextEdge);
-							newInterSt.addIncomingStates(interSt,
-									masterNextEdge);
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
 							states.add(newInterSt);
 							intersectAnnot(masterNextState, slaveNextState,
 									newInterSt, annots);
