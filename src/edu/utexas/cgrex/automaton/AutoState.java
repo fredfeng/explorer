@@ -70,10 +70,10 @@ public abstract class AutoState {
 				&& (id.equals(((AutoState) other).id) ? true : false);
 	}
 
-	@Override
-	public int hashCode() {
-		return super.hashCode();
-	}
+//	@Override
+//	public int hashCode() {
+//		return super.hashCode();
+//	}
 
 	public abstract Set<AutoState> getIncomingStatesKeySet();
 

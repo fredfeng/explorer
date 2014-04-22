@@ -16,19 +16,19 @@ public class InterAutomaton extends Automaton {
 		this.masterAutomaton = masterAutomaton;
 		this.slaveAutomaton = slaveAutomaton;
 
-//		for (AutoState s : slaveAutomaton.getStates()) {
-//			System.out.println("slave" + s);
-//			System.out.println(s.getOutgoingStatesInvKeySet());
-//			System.out.println(s.getOutgoingStatesKeySet());
-//			System.out.println(s.getIncomingStatesInvKeySet());
-//		}
-//
-//		for (AutoState s : masterAutomaton.getStates()) {
-//			System.out.println("master" + s);
-//			System.out.println(s.getOutgoingStatesInvKeySet());
-//			System.out.println(s.getOutgoingStatesKeySet());
-//			System.out.println(s.getIncomingStatesInvKeySet());
-//		}
+		// for (AutoState s : slaveAutomaton.getStates()) {
+		// System.out.println("slave" + s);
+		// System.out.println(s.getOutgoingStatesInvKeySet());
+		// System.out.println(s.getOutgoingStatesKeySet());
+		// System.out.println(s.getIncomingStatesInvKeySet());
+		// }
+		//
+		// for (AutoState s : masterAutomaton.getStates()) {
+		// System.out.println("master" + s);
+		// System.out.println(s.getOutgoingStatesInvKeySet());
+		// System.out.println(s.getOutgoingStatesKeySet());
+		// System.out.println(s.getIncomingStatesInvKeySet());
+		// }
 	}
 
 	// if this machine contains a statepair consisting of master and slave
@@ -70,8 +70,129 @@ public class InterAutomaton extends Automaton {
 		}
 	}
 
+	// this is the currently in-use method which does not do any optimizations
 	protected void intersect(AutoState masterSt, AutoState slaveSt,
 			InterAutoState interSt) {
+		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
+			// master automaton first makes a move
+			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
+			for (AutoEdge masterNextEdge : masterSt
+					.outgoingStatesLookup(masterNextState)) {
+				// slave automaton then makes a move accordingly
+
+				// if the edge of the master automaton is a (.*) edge
+				if (masterNextEdge.isDotEdge()) {
+					/*
+					 * boolean toContinue = true; if
+					 * (annots.containsKey(masterSt)) { Map<AutoState, Boolean>
+					 * annot = annots.get(masterSt); if
+					 * (annot.containsKey(slaveSt)) { toContinue =
+					 * annot.get(slaveSt); if (!toContinue) continue; // jump to
+					 * the next master } }
+					 */
+
+					// then the slave automaton can move to any of the next
+					// states (because of the .* edge)
+					for (AutoState slaveNxtSt : slaveSt
+							.getOutgoingStatesKeySet()) {
+						// slave automaton makes a move
+						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+
+						// I guess the following two lines of code is not useful
+						// at all
+						// for (AutoEdge slaveNextEdge : slaveSt
+						// .outgoingStatesLookup(slaveNextState)) {
+
+						// check whether the newly generated interAutoState
+						// is existed
+						InterAutoState newInterSt = containMasterandSlaveState(
+								masterNextState, slaveNextState);
+						// if so, just add an edge connecting them
+						if (newInterSt != null) {
+							// create a new interAutoEdge with id to be the
+							// id of two states connected by this edge
+							// new edge : state1 --> state2
+							// id of new edge : (state1.id + $ + state2.id)
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							// update the maps of two end points
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
+						} else {
+							// if not, create a new interAutoState and
+							// create a new interAutoEdge
+							newInterSt = new InterAutoState(
+									masterNextState.getId() + "@"
+											+ slaveNextState.getId(),
+									masterNextState, slaveNextState);
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							if (newInterSt.buildAsFinal()) {
+								newInterSt.setFinalState();
+								addFinalState(newInterSt);
+							}
+							// update the maps of two end points
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
+							states.add(newInterSt);
+							intersect(masterNextState, slaveNextState,
+									newInterSt);
+						}
+					}
+					// }
+
+				} else {
+					// if the edge of master automaton is not a (.*) edge
+					// then the slave automaton cannot move arbitrarily
+					// it should move accordingly by only going along the right
+					// edge
+					Set<AutoState> slaveNextStates = slaveSt
+							.outgoingStatesInvLookup(masterNextEdge);
+					if (slaveNextStates == null)
+						continue; // not have that edge of master automaton
+					// if the edge is found
+					for (AutoState slaveNxtSt : slaveNextStates) {
+						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+						InterAutoState newInterSt = containMasterandSlaveState(
+								masterNextState, slaveNextState);
+						if (newInterSt != null) {
+							// the new state is existed
+							// we just add a new interAutoEdge between them
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
+						} else {
+							// if not existed, we should create a
+							// newInterAutoState and a corresponding new
+							// interAuotEdge
+							newInterSt = new InterAutoState(
+									masterNextState.getId() + "@"
+											+ slaveNextState.getId(),
+									masterNextState, slaveNextState);
+							InterAutoEdge newInterEdge = new InterAutoEdge(
+									interSt.getId() + "$" + newInterSt.getId());
+							if (newInterSt.buildAsFinal()) {
+								newInterSt.setFinalState();
+								addFinalState(newInterSt);
+							}
+							interSt.addOutgoingStates(newInterSt, newInterEdge);
+							newInterSt.addIncomingStates(interSt, newInterEdge);
+							states.add(newInterSt);
+							intersect(masterNextState, slaveNextState,
+									newInterSt);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// this is the currently in-use method for intersection automaton
+	// generation which annotates the states on the fly
+	protected void intersectAnnot(AutoState masterSt, AutoState slaveSt,
+			InterAutoState interSt,
+			Map<AutoState, Map<AutoState, Boolean>> annots) {
 		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
 			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
 			for (AutoEdge masterNextEdge : masterSt
@@ -88,95 +209,7 @@ public class InterAutomaton extends Automaton {
 					for (AutoState slaveNxtSt : slaveSt
 							.getOutgoingStatesKeySet()) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
-						for (AutoEdge slaveNextEdge : slaveSt
-								.outgoingStatesLookup(slaveNextState)) {
-							InterAutoState newInterSt = containMasterandSlaveState(
-									masterNextState, slaveNextState);
-							if (newInterSt != null) {
-								interSt.addOutgoingStates(newInterSt,
-										slaveNextEdge);
-								newInterSt.addIncomingStates(interSt,
-										slaveNextEdge);
-							} else {
-								newInterSt = new InterAutoState(masterNextState
-										.getId().toString()
-										+ slaveNextState.getId().toString(),
-										masterNextState, slaveNextState);
-								if (newInterSt.buildAsFinal()) {
-									newInterSt.setFinalState();
-									addFinalState(newInterSt);
-								}
-								interSt.addOutgoingStates(newInterSt,
-										slaveNextEdge);
-								newInterSt.addIncomingStates(interSt,
-										slaveNextEdge);
-								states.add(newInterSt);
-								intersect(masterNextState, slaveNextState,
-										newInterSt);
-							}
-						}
-					}
 
-				} else {
-					Set<AutoState> slaveNextStates = slaveSt
-							.outgoingStatesInvLookup(masterNextEdge);
-					if (slaveNextStates == null)
-						continue;
-					for (AutoState slaveNxtSt : slaveNextStates) {
-						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
-						InterAutoState newInterSt = containMasterandSlaveState(
-								masterNextState, slaveNextState);
-						if (newInterSt != null) {
-							interSt.addOutgoingStates(newInterSt,
-									masterNextEdge);
-							newInterSt.addIncomingStates(interSt,
-									masterNextEdge);
-						} else {
-							newInterSt = new InterAutoState(masterNextState
-									.getId().toString()
-									+ slaveNextState.getId().toString(),
-									masterNextState, slaveNextState);
-							if (newInterSt.buildAsFinal()) {
-								newInterSt.setFinalState();
-								addFinalState(newInterSt);
-							}
-							interSt.addOutgoingStates(newInterSt,
-									masterNextEdge);
-							newInterSt.addIncomingStates(interSt,
-									masterNextEdge);
-							states.add(newInterSt);
-							intersect(masterNextState, slaveNextState,
-									newInterSt);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	protected void intersectAnnot(AutoState masterSt, AutoState slaveSt,
-			InterAutoState interSt,
-			Map<AutoState, Map<AutoState, Boolean>> annots) {
-		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
-			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
-			for (AutoEdge masterNextEdge : masterSt
-					.outgoingStatesLookup(masterNextState)) {
-				if (masterNextEdge.isDotEdge()) {
-					/*
-					boolean toContinue = true;
-					if (annots.containsKey(masterSt)) {
-						Map<AutoState, Boolean> annot = annots.get(masterSt);
-						if (annot.containsKey(slaveSt)) {
-							toContinue = annot.get(slaveSt);
-							if (!toContinue)
-								continue; // jump to the next master
-						}
-					}
-					*/
-					for (AutoState slaveNxtSt : slaveSt
-							.getOutgoingStatesKeySet()) {
-						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
-						
 						boolean toCreate = true;
 						if (annots.containsKey(masterNextState)) {
 							Map<AutoState, Boolean> annot = annots
@@ -187,7 +220,7 @@ public class InterAutomaton extends Automaton {
 									continue; // jump to the next master
 							}
 						}
-						
+
 						for (AutoEdge slaveNextEdge : slaveSt
 								.outgoingStatesLookup(slaveNextState)) {
 							InterAutoState newInterSt = containMasterandSlaveState(
@@ -232,7 +265,7 @@ public class InterAutomaton extends Automaton {
 							newInterSt.addIncomingStates(interSt,
 									masterNextEdge);
 						} else {
-							
+
 							boolean toCreate = true;
 							if (annots.containsKey(masterNextState)) {
 								Map<AutoState, Boolean> annot = annots
@@ -243,7 +276,7 @@ public class InterAutomaton extends Automaton {
 										continue; // jump to the next master
 								}
 							}
-							
+
 							newInterSt = new InterAutoState(masterNextState
 									.getId().toString()
 									+ slaveNextState.getId().toString(),
@@ -266,6 +299,9 @@ public class InterAutomaton extends Automaton {
 		}
 	}
 
+	// garbage methods
+
+	// this method is an old version which will not be used
 	// intersect method with optimization
 	protected void intersectWithOpt(AutoState masterState,
 			AutoState slaveState, InterAutoState buildState,
@@ -385,6 +421,7 @@ public class InterAutomaton extends Automaton {
 		}
 	}
 
+	// this method is an old version which will not be used
 	// masterState: the current state of master machine, i.e., regular expr fsm
 	// slaveState: the current state of slave machine, i.e., call graph fsm
 	// buildState: the current state of the building machine
