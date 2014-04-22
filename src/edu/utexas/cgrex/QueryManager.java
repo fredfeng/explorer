@@ -6,7 +6,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -104,7 +107,7 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
 			uidToMethMap.put(uid, meth);
-//			System.out.println("********" + uid + " " + meth);
+			System.out.println("********" + uid + " " + meth.getSignature());
 
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getName());
@@ -358,18 +361,45 @@ public class QueryManager {
 	}
 
 	// entry method for the query.
-	public boolean doQuery(String regx) {
-		
-		//ignore user input, run our own batch test.
-		int benchmarkSize = 1000000;
-		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
-		for(int i = 0; i < benchmarkSize; i++) {
-			regx = generator.genRegx();		
-			regx = regx.replaceAll("\\s+","");
-			System.out.println("Random regx------" + regx);
-			buildRegAutomaton(regx);
-			buildInterAutomaton();
+	public boolean doQuery() {
+		String regx = "";
+
+		// ignore user input, run our own batch test.
+		switch (Harness.mode) {
+		case 0://benchmark mode.
+			while (true) {
+				Scanner in = new Scanner(System.in);
+				System.out.println("Please Enter a string:");
+				regx = in.nextLine();
+				// press "q" to exit the program
+				if (regx.equals("q"))
+					System.exit(0);
+				else {
+					System.out.println("You entered string: " + regx);
+					regx = this.getValidExprBySig(regx);
+					System.out.println("Actual expression......" + regx);
+					buildRegAutomaton(regx);
+					buildInterAutomaton();
+				}
+			}
+		case 1://interactive mode.
+			RegularExpGenerator generator = new RegularExpGenerator(
+					methToEdgeMap);
+			for (int i = 0; i < Harness.benchmarkSize; i++) {
+				regx = generator.genRegx();
+				regx = regx.replaceAll("\\s+", "");
+				System.out.println("Random regx------" + regx);
+				buildRegAutomaton(regx);
+				buildInterAutomaton();
+			}
+			break;
+		default:
+			System.exit(0);
+			break;
 		}
+
+//		regx = regx.replaceAll("\\s+","");
+
 		
 		//reg parse error
 //		regx = "(\u0122|\u8128).*\u6417";
@@ -385,6 +415,22 @@ public class QueryManager {
 //		buildInterAutomaton();
 
 		return false;
+	}
+	
+	//return a valid regular expression based on method's signature.
+	private String getValidExprBySig(String sig) {
+		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
+		
+		Matcher matcher = pattern.matcher(sig);
+		while (matcher.find()) {
+		    String subSig = matcher.group(0);
+		    SootMethod meth = Scene.v().getMethod(subSig);
+		    System.out.println("method$$$" + meth);
+		    int offset = 100;
+			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
+		    sig = sig.replace(matcher.group(0), uid);
+		}
+		return sig;
 	}
 
 	//get a list of vars that can invoke method tgt.
