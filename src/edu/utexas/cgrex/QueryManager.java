@@ -32,6 +32,7 @@ import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
+import edu.utexas.cgrex.automaton.InterAutoEdge;
 import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
@@ -95,12 +96,13 @@ public class QueryManager {
 
 		Iterator<MethodOrMethodContext> mIt = Scene.v().getReachableMethods()
 				.listener();
-
+		//this magic number is used to fix the error by invalid unicode such as \u0022
+		int offset = 100;
 		while (mIt.hasNext()) {
 			SootMethod meth = (SootMethod) mIt.next();
 
 			// map each method to a unicode.
-			String uid = "\\u" + String.format("%04d", meth.getNumber());
+			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
 			uidToMethMap.put(uid, meth);
 //			System.out.println("********" + uid + " " + meth);
 
@@ -183,7 +185,7 @@ public class QueryManager {
 		}
 		// dump current result.
 //		System.out.println("dump regular graph.");
-		regAuto.dump();
+//		regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -255,7 +257,7 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
-		cgAuto.dump();
+//		cgAuto.dump();
 		cgAuto.validate();
 	}
 
@@ -322,15 +324,15 @@ public class QueryManager {
 	private boolean doPointsToQuery(CutEntity cut) {
 		
 		// type info.
-		SootMethod calleeMeth = uidToMethMap.get(cut.edge.getId());
-		System.out.println(cut.edge.getId());
+		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
+		System.out.println(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
 		assert(calleeMeth != null);
 		if(calleeMeth.isMain()) return true;
 		
 //		Type declaredType = calleeMeth.getDeclaringClass().getType();
 
 		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
-		SootMethod callerMeth = uidToMethMap.get(inEdge.getId());
+		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
 
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
 		List<Type> typeSet = SootUtils.compatibleTypeList(
@@ -359,21 +361,23 @@ public class QueryManager {
 	public boolean doQuery(String regx) {
 		
 		//ignore user input, run our own batch test.
-//		int benchmarkSize = 10000;
-//		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
-//		for(int i = 0; i < benchmarkSize; i++) {
-//			regx = generator.genRegx();		
-//			regx = regx.replaceAll("\\s+","");
-//			System.out.println("Random regx------" + regx);
-//			buildRegAutomaton(regx);
-//			buildInterAutomaton();
-//		}
+		int benchmarkSize = 10000;
+		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
+		for(int i = 0; i < benchmarkSize; i++) {
+			regx = generator.genRegx();		
+			regx = regx.replaceAll("\\s+","");
+			System.out.println("Random regx------" + regx);
+			buildRegAutomaton(regx);
+			buildInterAutomaton();
+		}
 		
+		//reg parse error
+//		regx = "(\u0122|\u8128).*\u6417";
 		//multiple edges:
-		regx = "(\u6106|\u5085).*\u0109";
-//		regx = "(\u2443|\u6106).*\u6101";
-		buildRegAutomaton(regx);
-		buildInterAutomaton();
+//		regx = "(\u6106|\u5085).*\u0109";
+////		regx = "(\u2443|\u6106).*\u6101";
+//		buildRegAutomaton(regx);
+//		buildInterAutomaton();
 		
 //		regx = regx.replaceAll("\\s+","");
 //

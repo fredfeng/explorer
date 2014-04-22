@@ -115,8 +115,8 @@ public class GraphUtil {
 			residual = genResidualGraph(auto);
 		}
 		
-		System.out.println("Final result, dump cut set:");
-		residual.dump();
+//		System.out.println("Final result, dump cut set:");
+//		residual.dump();
 		
 		// collect all the vertices(As set S) that are reachable from the
 		// initial node
@@ -178,21 +178,17 @@ public class GraphUtil {
 	public static Automaton genResidualGraph(Automaton g) {
 		Automaton residual = cloner.deepClone(g);
 		resetVisited(residual);
-		residual.dump();
 
 		for (AutoState as : residual.getStates())
 			for (Iterator<AutoEdge> cIt = as.outgoingStatesInvIterator(); cIt
 					.hasNext();) {
 				AutoEdge e = cIt.next();
-				System.out.println(as + "mapto->" + as.outgoingStatesInvLookup(e));
-				System.out.println(as.outgoingStatesInvLookup(e).size());
 				assert(as.outgoingStatesInvLookup(e).size() == 1);
 
-				System.out.println(as + "***->" + as.getOutgoingStates() + "|" + e.getWeight());
 				assert (e.getWeight() != 0);
 				int newWt = e.getWeight() - e.getFlow();
-				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
-						+ e.getWeight() + '=' + newWt);
+//				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
+//						+ e.getWeight() + '=' + newWt);
 				e.setResidual(newWt);
 				e.setShortName(e.getWeight() + "");
 				assert (newWt >= 0);
