@@ -57,7 +57,7 @@ public class GraphUtil {
 						.hasNext();) {
 					AutoState tgtState = cIt.next();
 					AutoEdge tgtEdge = cur.outgoingStatesLookup(tgtState).iterator().next();
-					if (tgtEdge.getWeight() != 0) {
+					if (tgtEdge.getResidual() != 0) {
 						queue.push(tgtState);
 					}
 				}
@@ -99,15 +99,14 @@ public class GraphUtil {
 				//no such edge in original graph. modify inverse edge.
 				if(ae == null) {
 					AutoEdge invE = auto.getEdgeBySrc(tgt, src);
-					System.out.println(src + "->" +tgt+ " " + invE.getFlow() + "+" + min + "<=" + invE.getWeight());
-					assert((invE.getFlow() - min) <= invE.getWeight());
+//					System.out.println(src + "->" +tgt+ " " + invE.getFlow() + "+" + min + "<=" + invE.getWeight());
 					invE.setFlow(invE.getFlow() - min);
-					assert(invE.getFlow() >= 0);
 					invE.setShortName(invE.getFlow() + "/" + invE.getWeight());
+					assert(invE.getFlow() >= 0 && invE.getFlow() <= invE.getWeight());
 				} else {
-					assert((ae.getFlow() + min) <= ae.getWeight());
 					ae.setFlow(ae.getFlow() + min);
 					ae.setShortName(ae.getFlow() + "/" + ae.getWeight());
+					assert(ae.getFlow() <= ae.getWeight());
 				}
 
 				src = tgt;
@@ -179,30 +178,41 @@ public class GraphUtil {
 	public static Automaton genResidualGraph(Automaton g) {
 		Automaton residual = cloner.deepClone(g);
 		resetVisited(residual);
+		residual.dump();
 
 		for (AutoState as : residual.getStates())
 			for (Iterator<AutoEdge> cIt = as.outgoingStatesInvIterator(); cIt
 					.hasNext();) {
 				AutoEdge e = cIt.next();
+				System.out.println(as + "mapto->" + as.outgoingStatesInvLookup(e));
+				System.out.println(as.outgoingStatesInvLookup(e).size());
+				assert(as.outgoingStatesInvLookup(e).size() == 1);
+
+				System.out.println(as + "***->" + as.getOutgoingStates() + "|" + e.getWeight());
+				assert (e.getWeight() != 0);
 				int newWt = e.getWeight() - e.getFlow();
-//				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
-//						+ e.getWeight() + '=' + newWt);
-				assert (newWt >= 0);
-				e.setWeight(newWt);
+				System.out.println("weight::" + e + "==>" + e.getFlow() + "/"
+						+ e.getWeight() + '=' + newWt);
+				e.setResidual(newWt);
 				e.setShortName(e.getWeight() + "");
-				if (e.getFlow() != 0) {
+				assert (newWt >= 0);
+				if (e.getFlow() > 0) {
 					// need to create new edge for the first time.
+					assert(as.outgoingStatesInvLookup(e).size() == 1);
 					AutoState tgt = as.outgoingStatesInvLookup(e).iterator()
 							.next();
 					assert(tgt!=null);
 					if (residual.getEdgeBySrc(tgt, as) == null) {
 						AutoEdge revEdge = new AutoEdge(cIt.hashCode(),
 								e.getFlow(), e.getFlow() + "");
+						revEdge.setResidual(e.getFlow());
 						tgt.addOutgoingStates(as, revEdge);
+						as.addIncomingStates(tgt, revEdge);
 					}
 				}
 			}
-
+		
+		residual.validate();
 		return residual;
 	}
 
@@ -232,10 +242,10 @@ public class GraphUtil {
 		for (int i = (path.size() - 2) ; i >= 0; i--) {
 			AutoState pre = path.get(i);
 			AutoEdge edge = auto.getEdgeBySrc(pre, cursor);
-			if(edge != null && (edge.getWeight() > 0)) {
+			if(edge != null && (edge.getResidual() > 0)) {
 				realpath.add(pre);
 				cursor = pre;
-				if (edge.getWeight() < minWt) minWt = edge.getWeight();
+				if (edge.getResidual() < minWt) minWt = edge.getResidual();
 			}
 		}
 

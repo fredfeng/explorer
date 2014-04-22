@@ -181,7 +181,7 @@ public class QueryManager {
 		}
 		// dump current result.
 //		System.out.println("dump regular graph.");
-//		regAuto.dump();
+		regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -253,7 +253,7 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
-//		cgAuto.dump();
+		cgAuto.dump();
 		cgAuto.validate();
 	}
 
@@ -355,15 +355,21 @@ public class QueryManager {
 	public boolean doQuery(String regx) {
 		
 		//ignore user input, run our own batch test.
-		int benchmarkSize = 1000;
-		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
-		for(int i = 0; i < benchmarkSize; i++) {
-			regx = generator.genRegx();		
-			regx = regx.replaceAll("\\s+","");
-			System.out.println("Random regx------" + regx);
-			buildRegAutomaton(regx);
-			buildInterAutomaton();
-		}
+//		int benchmarkSize = 10000;
+//		RegularExpGenerator generator = new RegularExpGenerator(methToEdgeMap);
+//		for(int i = 0; i < benchmarkSize; i++) {
+//			regx = generator.genRegx();		
+//			regx = regx.replaceAll("\\s+","");
+//			System.out.println("Random regx------" + regx);
+//			buildRegAutomaton(regx);
+//			buildInterAutomaton();
+//		}
+		
+		//multiple edges:
+		regx = "(\u6106|\u5085).*\u0109";
+//		regx = "(\u2443|\u6106).*\u6101";
+		buildRegAutomaton(regx);
+		buildInterAutomaton();
 		
 //		regx = regx.replaceAll("\\s+","");
 //

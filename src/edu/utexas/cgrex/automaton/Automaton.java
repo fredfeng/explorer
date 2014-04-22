@@ -121,7 +121,7 @@ public abstract class Automaton {
 					if (outEdge.isDotEdge())
 						b.append(".");
 					else
-						b.append(outEdge.getShortName());
+						b.append(outEdge.getShortName()+outEdge.getId());
 					b.append("\"]\n");
 				}
 

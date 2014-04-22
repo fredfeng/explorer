@@ -16,7 +16,23 @@ public class AutoEdge {
 	
 	protected int weight = 1;
 	
+	protected int residual = 0;
+	
 	protected int flow = 0;
+	
+	/**
+	 * @return the residual
+	 */
+	public int getResidual() {
+		return residual;
+	}
+
+	/**
+	 * @param residual the residual to set
+	 */
+	public void setResidual(int residual) {
+		this.residual = residual;
+	}
 	
 	/**
 	 * @return the flow
@@ -43,6 +59,7 @@ public class AutoEdge {
 	 * @param weight: the weight to set
 	 */
 	public void setWeight(int weight) {
+		assert(weight != 0);
 		this.weight = weight;
 	}
 	
