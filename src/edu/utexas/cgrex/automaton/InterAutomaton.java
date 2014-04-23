@@ -10,6 +10,8 @@ public class InterAutomaton extends Automaton {
 
 	protected Automaton slaveAutomaton;
 
+	protected Map<String, Set<SrcTgtEdgeWrapper>> STEMap = new HashMap<String, Set<SrcTgtEdgeWrapper>>();
+
 	public InterAutomaton(InterAutoOpts options, Automaton masterAutomaton,
 			Automaton slaveAutomaton) {
 		this.options = options;
@@ -43,6 +45,34 @@ public class InterAutomaton extends Automaton {
 			}
 		}
 		return null;
+	}
+
+	// refine an edge in InterAutomaton
+	// by refining all edges in InterAutomaton that share the same
+	// src slave state and tgt slave state
+	public boolean refine(InterAutoEdge edge) {
+		Set<SrcTgtEdgeWrapper> steList = lookup(edge);
+		
+		boolean ret = false;
+		for (SrcTgtEdgeWrapper ste : steList) {
+			InterAutoState srcSt = ste.getSrcState();
+			InterAutoState tgtSt = ste.getTgtState();
+			InterAutoEdge interEdge = ste.getEdge();
+			ret = ret | deleteOneEdge(srcSt, tgtSt, interEdge);
+		}
+		
+		return ret;
+	}
+
+	// just a lookup method
+	// given an edge in InterAutomaton
+	// return all edges in InterAutomaton that share the same src slave state
+	// and the tgt slave state (thinking about the call graph)
+	public Set<SrcTgtEdgeWrapper> lookup(InterAutoEdge edge) {
+		String srcStateId = edge.getSrcCGAutoStateId();
+		String tgtStateId = edge.getTgtCGAutoStateId();
+
+		return STEMap.get(srcStateId + "$" + tgtStateId);
 	}
 
 	public void build() {
@@ -118,6 +148,11 @@ public class InterAutomaton extends Automaton {
 							// update the maps of two end points
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
 							newInterSt.addIncomingStates(interSt, newInterEdge);
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 						} else {
 							// if not, create a new interAutoState and
 							// create a new interAutoEdge
@@ -127,6 +162,11 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
 								addFinalState(newInterSt);
@@ -162,6 +202,11 @@ public class InterAutomaton extends Automaton {
 									interSt.getId() + "$" + newInterSt.getId());
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
 							newInterSt.addIncomingStates(interSt, newInterEdge);
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 						} else {
 							// if not existed, we should create a
 							// newInterAutoState and a corresponding new
@@ -172,6 +217,11 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
 								addFinalState(newInterSt);
@@ -233,6 +283,11 @@ public class InterAutomaton extends Automaton {
 									interSt.getId() + "$" + newInterSt.getId());
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
 							newInterSt.addIncomingStates(interSt, newInterEdge);
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 						} else {
 							newInterSt = new InterAutoState(
 									masterNextState.getId() + "@"
@@ -240,6 +295,11 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
 								addFinalState(newInterSt);
@@ -268,6 +328,11 @@ public class InterAutomaton extends Automaton {
 									interSt.getId() + "$" + newInterSt.getId());
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
 							newInterSt.addIncomingStates(interSt, newInterEdge);
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 						} else {
 
 							boolean toCreate = true;
@@ -287,6 +352,11 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							addToSTEMap(interSt.getSlaveState().getId() + "$"
+									+ newInterSt.getSlaveState().getId(),
+									new SrcTgtEdgeWrapper(interSt, newInterSt,
+											newInterEdge));
+
 							if (newInterSt.buildAsFinal()) {
 								newInterSt.setFinalState();
 								addFinalState(newInterSt);
@@ -301,6 +371,17 @@ public class InterAutomaton extends Automaton {
 				}
 			}
 		}
+	}
+
+	protected boolean addToSTEMap(String srctgt, SrcTgtEdgeWrapper ste) {
+		Set<SrcTgtEdgeWrapper> steList = STEMap.get(srctgt);
+
+		if (steList == null) {
+			// this initial size (4) can be tuned later on
+			STEMap.put(srctgt, steList = new HashSet<SrcTgtEdgeWrapper>(4));
+		}
+
+		return steList.add(ste);
 	}
 
 	// garbage methods

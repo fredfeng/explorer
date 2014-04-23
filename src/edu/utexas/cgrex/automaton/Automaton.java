@@ -45,25 +45,32 @@ public abstract class Automaton {
 	public void addStates(AutoState state) {
 		states.add(state);
 	}
-	
+
+	public void addEdge(AutoState srcState, AutoState tgtState, AutoEdge edge) {
+		srcState.addOutgoingStates(tgtState, edge);
+		tgtState.addIncomingStates(srcState, edge);
+	}
+
 	public AutoEdge getEdgeBySrc(AutoState src, AutoState sink) {
 		AutoEdge e = null;
 		for (AutoState as : getStates()) {
-			if(!as.equals(src)) continue;
-			
+			if (!as.equals(src))
+				continue;
+
 			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
 					.hasNext();) {
 				AutoState tgtState = cIt.next();
-				if(!tgtState.equals(sink)) continue;
+				if (!tgtState.equals(sink))
+					continue;
 				Set<AutoEdge> out = as.outgoingStatesLookup(tgtState);
 				e = out.iterator().next();
 				return e;
 			}
 		}
-	
+
 		return e;
 	}
-	
+
 	// 1. delete the specified state from the states field in Automaton
 	// so that you can never find that state in the states of the Automaton
 	// 2. delete the edges like other --> state so that others can never find
@@ -94,7 +101,7 @@ public abstract class Automaton {
 		StringBuilder b = new StringBuilder("digraph Automaton {\n");
 		b.append("  rankdir = LR;\n");
 		for (AutoState s : states) {
-			b.append("  ").append("\""+ s.id + "\"");
+			b.append("  ").append("\"" + s.id + "\"");
 
 			if (s.isFinalState) {
 				b.append(" [shape=doublecircle,label=\"");
@@ -110,18 +117,20 @@ public abstract class Automaton {
 				b.append("  \"initial\" [shape=plaintext,label=\"");
 				b.append(s.id);
 				b.append("\"];\n");
-				b.append("  \"initial\" -> ").append("\""+ s.id + "\"").append("\n");
+				b.append("  \"initial\" -> ").append("\"" + s.id + "\"")
+						.append("\n");
 			}
 
 			for (AutoState tgt : s.getOutgoingStates().keySet()) {
 				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {
-					b.append("  ").append("\""+ s.id + "\"");
+					b.append("  ").append("\"" + s.id + "\"");
 
-					b.append(" -> ").append("\""+ tgt.id + "\"").append(" [label=\"");
+					b.append(" -> ").append("\"" + tgt.id + "\"")
+							.append(" [label=\"");
 					if (outEdge.isDotEdge())
 						b.append(".");
 					else
-						b.append(outEdge.getShortName()+outEdge.getId());
+						b.append(outEdge.getShortName() + outEdge.getId());
 					b.append("\"]\n");
 				}
 
@@ -130,15 +139,15 @@ public abstract class Automaton {
 		b.append("}\n");
 		System.out.println(b.toString());
 	}
-	
-	//validate whether current automaton is well-formed.
+
+	// validate whether current automaton is well-formed.
 	public void validate() {
 		Set<AutoState> all = new HashSet();
 		all.addAll(this.getStates());
 		all.addAll(this.getFinalStates());
 		all.addAll(this.getInitStates());
 		for (AutoState as : all) {
-			assert(as.getId() != null);
+			assert (as.getId() != null);
 			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
 					.hasNext();) {
 				AutoState tgtState = cIt.next();
@@ -146,5 +155,5 @@ public abstract class Automaton {
 			}
 		}
 	}
-	
+
 }
