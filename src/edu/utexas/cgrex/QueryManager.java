@@ -26,6 +26,7 @@ import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
+import soot.toolkits.scalar.FlowSet;
 import soot.util.Chain;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
@@ -61,8 +62,6 @@ public class QueryManager {
 
 	// default CHA-based call graph.
 	CallGraph cg;
-	
-	Map<Value, Edge> valueToCallEdgeMap = new HashMap<Value, Edge>();
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
 
@@ -110,7 +109,7 @@ public class QueryManager {
 			System.out.println("********" + uid + " " + meth.getSignature());
 
 			AutoEdge inEdge = new AutoEdge(uid);
-			inEdge.setShortName(meth.getName());
+			inEdge.setShortName(meth.getSignature());
 //			CGAutoState st = new CGAutoState(meth.getNumber(), false, true);
 			CGAutoState st = new CGAutoState(uid, false, true);
 
@@ -229,7 +228,7 @@ public class QueryManager {
 					AutoEdge outEdge = methToEdgeMap.get(worker);
 					//need fresh instance for each callsite but share same uid.
 					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
-					outEdgeFresh.setShortName(worker.getName());
+					outEdgeFresh.setShortName(worker.getSignature());
 
 					curState.addOutgoingStates(curState, outEdgeFresh);
 					
@@ -243,7 +242,7 @@ public class QueryManager {
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
 					//need fresh instance for each callsite but share same uid.
 					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
-					outEdgeFresh.setShortName(tgtMeth.getName());
+					outEdgeFresh.setShortName(tgtMeth.getSignature());
 
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdgeFresh);
@@ -260,7 +259,7 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
-//		cgAuto.dump();
+		cgAuto.dump();
 		cgAuto.validate();
 	}
 
@@ -297,8 +296,11 @@ public class QueryManager {
 					e.edge.setInfinityWeight();
 				} else { //e is a false positive.
 					//remove this edge and refine call graph.
+					Edge callEdge = this.getEdgeFromCallgraph(e);
+					System.out.println("---------Refine call edge: " + callEdge);
+					cg.removeEdge(callEdge);
 					//remove this edge from interauto.
-					interAuto.deleteOneEdge(e.state, e.endState, e.edge);
+					interAuto.refine(e.edge);
 				}
 			}
 			
@@ -330,6 +332,7 @@ public class QueryManager {
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
 		System.out.println(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
 		assert(calleeMeth != null);
+		//main method is always reachable.
 		if(calleeMeth.isMain()) return true;
 		
 //		Type declaredType = calleeMeth.getDeclaringClass().getType();
@@ -341,23 +344,40 @@ public class QueryManager {
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
 		
-		//refine call graph with detail info.
-		Map<Value, Boolean> detailMap = autoPAG.insensitiveRefine(varSet, typeSet);
-		for(Value v : detailMap.keySet()) {
-			if(!detailMap.get(v))
-				refineCallgraph(v);
-		}
+		System.out.println("Refine varSet: " + varSet);
 
+		//refine call graph with detail info.
+//		Map<Value, Boolean> detailMap = autoPAG.insensitiveRefine(varSet, typeSet);
+//		for(Value v : detailMap.keySet()) {
+//			if(!detailMap.get(v)) {
+//				System.out.println("Refine var: " + v + varSet);
+//				System.out.println("Caller: " + callerMeth);
+//				System.out.println("Callee: " + calleeMeth);
+//
+//				refineCallgraph(v);
+//			}
+//		}
+
+		//to be conservative.
 		if(varSet.size() == 0) return true;
 		
 		return autoPAG.insensitiveQuery(varSet, typeSet);
 	}
-
-	private void refineCallgraph(Value v) {
-		// FIXME.
-		Edge e = valueToCallEdgeMap.get(v);
-		System.out.println("---------Refine call edge: " + e);
-		cg.removeEdge(e);
+	
+	//return the edge from soot's call graph
+	private Edge getEdgeFromCallgraph(CutEntity cut) {
+		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
+		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
+		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
+		System.out.println("look for an edge from " + callerMeth + " to " + calleeMeth);
+		for (Iterator<Edge> cIt = cg.edgesOutOf(callerMeth); cIt
+				.hasNext();) {
+			Edge outEdge = cIt.next();
+			if(outEdge.getTgt().equals(calleeMeth))
+				return outEdge;
+		}
+		
+		return null;
 	}
 
 	// entry method for the query.
@@ -425,7 +445,8 @@ public class QueryManager {
 		while (matcher.find()) {
 		    String subSig = matcher.group(0);
 		    SootMethod meth = Scene.v().getMethod(subSig);
-		    System.out.println("method$$$" + meth);
+//		    System.out.println("locating method-------" + meth);
+
 		    int offset = 100;
 			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
 		    sig = sig.replace(matcher.group(0), uid);
@@ -452,13 +473,10 @@ public class QueryManager {
                 if( (ie instanceof VirtualInvokeExpr) 
                 		|| (ie instanceof InterfaceInvokeExpr)){
                 	SootMethod callee = ie.getMethod();
-                	if(tgt.equals(callee)) {
+                	if(SootUtils.compatibleWith(tgt, callee)) {
                 		//ie.get
                 		Value var = ie.getUseBoxes().get(0).getValue();
                 		varSet.add(var);
-                		Edge calledge = cg.findEdge(stmt, ie.getMethod());
-                		//FIXME: is this correct to map value to its callsite?
-                		valueToCallEdgeMap.put(var, calledge);
                 	}
                 }
 			}

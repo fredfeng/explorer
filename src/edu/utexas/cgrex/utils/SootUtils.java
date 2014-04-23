@@ -108,6 +108,22 @@ public class SootUtils {
 		}
 		return subTypes;
 	}
+	
+	//src equals tgt, or, tgt is the superclass of src.
+	public static boolean compatibleWith(SootMethod src, SootMethod tgt) {
+		boolean b = false;
+		if(src.equals(tgt)) b = true;
+		SootClass srcClazz = src.getDeclaringClass();
+		while(srcClazz.hasSuperclass()) {
+			SootClass superClazz = srcClazz.getSuperclass();
+			if(superClazz.declaresMethod(tgt.getName(), tgt.getParameterTypes())) 
+				return true;
+			
+			srcClazz = superClazz;
+		}
+		
+		return b;
+	}
 
 	public static String getSootSubsigFor(String chordSubsig) {
 		String name = chordSubsig.substring(0, chordSubsig.indexOf(':'));
