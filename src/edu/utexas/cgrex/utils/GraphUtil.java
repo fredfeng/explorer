@@ -135,7 +135,7 @@ public class GraphUtil {
 				AutoEdge outEdge = cIt.next();
 				AutoState tgt = s.outgoingStatesInvLookup(outEdge).iterator().next();
 				if(tpath.contains(tgt) && (outEdge.getWeight()>0)) {
-					System.out.println(s + "->" + tgt + " " + outEdge.getWeight());
+//					System.out.println(s + "->" + tgt + " " + outEdge.getWeight());
 					cutset.add(new CutEntity(s,outEdge, tgt));
 				}
 			}
@@ -146,7 +146,7 @@ public class GraphUtil {
 				AutoEdge inEdge = cIt.next();
 				AutoState src = s.incomingStatesInvLookup(inEdge).iterator().next();
 				if( tpath.contains(src) && (inEdge.getWeight()>0)) {
-					System.out.println(src + "-*>" + s + " " + inEdge.getWeight());
+//					System.out.println(src + "-*>" + s + " " + inEdge.getWeight());
 					cutset.add(new CutEntity(src,inEdge, s));
 				}
 			}

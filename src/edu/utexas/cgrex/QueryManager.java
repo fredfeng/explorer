@@ -106,7 +106,7 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
 			uidToMethMap.put(uid, meth);
-			System.out.println("********" + uid + " " + meth.getSignature());
+//			System.out.println("********" + uid + " " + meth.getSignature());
 
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getSignature());
@@ -259,7 +259,7 @@ public class QueryManager {
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
-		cgAuto.dump();
+//		cgAuto.dump();
 		cgAuto.validate();
 	}
 
@@ -290,8 +290,6 @@ public class QueryManager {
 			answer = false;
 			for(CutEntity e : cutset){
 				if(doPointsToQuery(e)) {
-					System.out.println("--------VERIFY one Edge.");
-
 					answer = true; 
 					e.edge.setInfinityWeight();
 				} else { //e is a false positive.
@@ -330,16 +328,16 @@ public class QueryManager {
 		
 		// type info.
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
-		System.out.println(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
+
 		assert(calleeMeth != null);
 		//main method is always reachable.
-		if(calleeMeth.isMain()) return true;
-		
-//		Type declaredType = calleeMeth.getDeclaringClass().getType();
+		if (calleeMeth.isMain() || calleeMeth.isStatic()
+				|| calleeMeth.isPrivate())
+			return true;
 
 		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
 		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
-
+		
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
@@ -359,7 +357,8 @@ public class QueryManager {
 //		}
 
 		//to be conservative.
-		if(varSet.size() == 0) return true;
+		if(varSet.size() == 0) 
+			return true;
 		
 		return autoPAG.insensitiveQuery(varSet, typeSet);
 	}
@@ -376,7 +375,7 @@ public class QueryManager {
 			if(outEdge.getTgt().equals(calleeMeth))
 				return outEdge;
 		}
-		
+		assert(false);
 		return null;
 	}
 
