@@ -50,9 +50,13 @@ public class InterAutomaton extends Automaton {
 	// refine an edge in InterAutomaton
 	// by refining all edges in InterAutomaton that share the same
 	// src slave state and tgt slave state
-	public boolean refine(InterAutoEdge edge) {
-		Set<SrcTgtEdgeWrapper> steList = lookup(edge);
-		
+	public boolean refine(AutoEdge edge) {
+		InterAutoEdge e = (InterAutoEdge) edge;
+		Set<SrcTgtEdgeWrapper> steList = lookup(e);
+
+		if (steList == null)
+			return false;
+
 		boolean ret = false;
 		for (SrcTgtEdgeWrapper ste : steList) {
 			InterAutoState srcSt = ste.getSrcState();
@@ -60,7 +64,8 @@ public class InterAutomaton extends Automaton {
 			InterAutoEdge interEdge = ste.getEdge();
 			ret = ret | deleteOneEdge(srcSt, tgtSt, interEdge);
 		}
-		
+		STEMap.remove(e);
+
 		return ret;
 	}
 
