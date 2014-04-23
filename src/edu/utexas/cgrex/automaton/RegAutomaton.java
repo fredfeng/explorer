@@ -67,7 +67,7 @@ public class RegAutomaton extends Automaton {
 			}
 			
 		}
-		System.out.println(opts);
+//		System.out.println(opts);
 		return opts;
 	}
 }

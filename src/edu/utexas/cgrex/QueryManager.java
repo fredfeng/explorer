@@ -308,10 +308,10 @@ public class QueryManager {
 			cutset = GraphUtil.minCut(interAuto);
 		}
 		
-		if(answer)
-			System.out.println("---------query done, answer is: YES");
-		else 
-			System.out.println("---------query done, answer is: NO");
+//		if(answer)
+//			System.out.println("---------query done, answer is: YES");
+//		else 
+//			System.out.println("---------query done, answer is: NO");
 
 //		interAuto.dump();
 		
@@ -342,7 +342,7 @@ public class QueryManager {
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
 		
-		System.out.println("Refine varSet: " + varSet);
+//		System.out.println("Refine varSet: " + varSet);
 
 		//refine call graph with detail info.
 //		Map<Value, Boolean> detailMap = autoPAG.insensitiveRefine(varSet, typeSet);
@@ -368,7 +368,7 @@ public class QueryManager {
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
 		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
 		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
-		System.out.println("look for an edge from " + callerMeth + " to " + calleeMeth);
+//		System.out.println("look for an edge from " + callerMeth + " to " + calleeMeth);
 		for (Iterator<Edge> cIt = cg.edgesOutOf(callerMeth); cIt
 				.hasNext();) {
 			Edge outEdge = cIt.next();
@@ -407,7 +407,7 @@ public class QueryManager {
 			for (int i = 0; i < Harness.benchmarkSize; i++) {
 				regx = generator.genRegx();
 				regx = regx.replaceAll("\\s+", "");
-				System.out.println("Random regx------" + regx);
+//				System.out.println("Random regx------" + regx);
 				buildRegAutomaton(regx);
 				buildInterAutomaton();
 			}
