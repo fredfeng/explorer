@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 import soot.FastHierarchy;
 import soot.G;
@@ -15,6 +16,8 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 
 /**
  * @author Saswat Anand
@@ -185,5 +188,28 @@ public class SootUtils {
 			didone = true;
 		}
 		return params.toString();
+	}
+	
+	//check whether src can reach tgt.
+	public static boolean checkReachable(CallGraph cg, SootMethod src, SootMethod tgt) {		
+		Stack<SootMethod> queue = new Stack<SootMethod>();
+		queue.push(src);
+		LinkedList<SootMethod> visited = new LinkedList<SootMethod>();
+
+		while (!queue.empty()) {
+			SootMethod cur = queue.pop();
+			
+			if (!visited.contains(cur)) {
+				visited.add(cur);
+
+				for (Iterator<Edge> cIt = cg.edgesOutOf(cur); cIt
+						.hasNext();) {
+					Edge tgtEdge = cIt.next();
+					SootMethod tgtMeth = (SootMethod)tgtEdge.getTgt();
+					queue.push(tgtMeth);
+				}
+			}
+		}
+		return visited.contains(tgt);
 	}
 }
