@@ -121,40 +121,41 @@ public class CGAutomaton extends Automaton {
 			System.exit(0);
 		}
 
-		// for (AutoState s : states) {
-		// CGAutoState st = (CGAutoState) s;
-		// if (!st.isBelongsToASCC()) {
-		//
-		// // assert (true == false);
-		// // add st itself in the statesInTheSameSCC
-		// Set<AutoState> statesInTheSameSCC = new HashSet<AutoState>();
-		// statesInTheSameSCC.add(st);
-		// st.setStatesInTheSameSCC(statesInTheSameSCC);
-		//
-		// // add the cycle edge of st (if existed) to the
-		// // edgesInTheSameSCC
-		// Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
-		// Set<AutoEdge> ce = st.getCycleEdge();
-		// if (ce != null)
-		// edgesInTheSameSCC.addAll(ce);
-		// st.setEdgesInTheSameSCC(edgesInTheSameSCC);
-		//
-		// // remove the cycle edge from the outgoingEdgesOfSCC
-		// Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
-		// outgoingEdgesOfSCC.addAll(st.getOutgoingStatesInvKeySet());
-		// Set<AutoEdge> cycle = st.getCycleEdge();
-		// if (cycle != null)
-		// outgoingEdgesOfSCC.removeAll(cycle);
-		// st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
-		//
-		// // remove st state from the outgoingStatesOfSCC
-		// Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
-		// outgoingStatesOfSCC.addAll(st.getOutgoingStatesKeySet());
-		// // if (outgoingStatesOfSCC.contains(st))
-		// outgoingStatesOfSCC.remove(st);
-		// st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
-		// }
-		// }
+		for (AutoState s : states) {
+
+			CGAutoState st = (CGAutoState) s;
+			if (!st.isBelongsToASCC()) {
+
+				// assert (true == false);
+				// add st itself in the statesInTheSameSCC
+				Set<AutoState> statesInTheSameSCC = new HashSet<AutoState>();
+				statesInTheSameSCC.add(st);
+				st.setStatesInTheSameSCC(statesInTheSameSCC);
+
+				// add the cycle edge of st (if existed) to the
+				// edgesInTheSameSCC
+				Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
+				Set<AutoEdge> ce = st.getCycleEdge();
+				if (ce != null)
+					edgesInTheSameSCC.addAll(ce);
+				st.setEdgesInTheSameSCC(edgesInTheSameSCC);
+
+				// remove the cycle edge from the outgoingEdgesOfSCC
+				Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
+				outgoingEdgesOfSCC.addAll(st.getOutgoingStatesInvKeySet());
+				Set<AutoEdge> cycle = st.getCycleEdge();
+				if (cycle != null)
+					outgoingEdgesOfSCC.removeAll(cycle);
+				st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
+
+				// remove st state from the outgoingStatesOfSCC
+				Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
+				outgoingStatesOfSCC.addAll(st.getOutgoingStatesKeySet());
+				// if (outgoingStatesOfSCC.contains(st))
+				outgoingStatesOfSCC.remove(st);
+				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
+			}
+		}
 	}
 
 	// dump the SCC information to check whether updating is correct
