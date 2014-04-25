@@ -272,7 +272,7 @@ public class QueryManager {
 		interAuto.build();
 //		System.out.println("dump interset automaton.....");
 		interAuto.validate();
-//		interAuto.dump();
+		interAuto.dumpFile();
 		
 		//before we do the mincut, we need to exclude some trivial cases
 		//such as special invoke, static invoke and certain virtual invoke.

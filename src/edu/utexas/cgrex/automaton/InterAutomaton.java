@@ -1,6 +1,12 @@
 package edu.utexas.cgrex.automaton;
 
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class InterAutomaton extends Automaton {
 
@@ -92,10 +98,14 @@ public class InterAutomaton extends Automaton {
 				initStates.add(interInitSt);
 				interInitSt.setInitState();
 				if (options.annotated()) {
+					((RegAutomaton) masterAutomaton).buildOneStepAnnot();
 					Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterAutomaton)
-							.find();
+							.getOneStepAnnot();
 					Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
 							.annotate(regExprOpts);
+
+					debugAnnot = annots;
+
 					intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
 							annots);
 				} else {
@@ -103,6 +113,40 @@ public class InterAutomaton extends Automaton {
 				}
 			}
 		}
+
+		// test();
+	}
+
+	protected Map<AutoState, Map<AutoState, Boolean>> debugAnnot = new HashMap<AutoState, Map<AutoState, Boolean>>();
+
+	protected void test() {
+		StringBuilder b = new StringBuilder("info\n");
+
+		for (AutoState s : debugAnnot.keySet()) {
+			if (s.getId().equals(3)) {
+				Map<AutoState, Boolean> annot = debugAnnot.get(s);
+				for (AutoState ss : annot.keySet()) {
+					if (ss.getId().equals("\\u0191")) {
+						b.append(annot.get(ss));
+					}
+				}
+				// b.append(annot);
+			}
+		}
+
+		// b.append(debugAnnot);
+
+		// try {
+		// BufferedWriter bufw = new BufferedWriter(new FileWriter(
+		// "sootOutput/debug"));
+		//
+		// //bufw.write(b.toString());
+		//
+		// bufw.close();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// System.exit(0);
+		// }
 	}
 
 	// this is the currently in-use method which does not do any optimizations
@@ -248,24 +292,43 @@ public class InterAutomaton extends Automaton {
 	protected void intersectAnnot(AutoState masterSt, AutoState slaveSt,
 			InterAutoState interSt,
 			Map<AutoState, Map<AutoState, Boolean>> annots) {
+
+		if (annots.containsKey(masterSt)) {
+			Map<AutoState, Boolean> annot = annots.get(masterSt);
+			if (annot.containsKey(slaveSt)) {
+				if (!annot.get(slaveSt)) {
+					assert (false == true);
+					return;
+				}
+			}
+		}
+
 		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
 			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
 			for (AutoEdge masterNextEdge : masterSt
 					.outgoingStatesLookup(masterNextState)) {
+
 				if (masterNextEdge.isDotEdge()) {
-					/*
-					 * boolean toContinue = true; if
-					 * (annots.containsKey(masterSt)) { Map<AutoState, Boolean>
-					 * annot = annots.get(masterSt); if
-					 * (annot.containsKey(slaveSt)) { toContinue =
-					 * annot.get(slaveSt); if (!toContinue) continue; // jump to
-					 * the next master } }
-					 */
+
+					// if (annots.containsKey(masterSt)) {
+					// Map<AutoState, Boolean> annot = annots.get(masterSt);
+					// if (annot.containsKey(slaveSt)) {
+					// if (!annot.get(slaveSt))
+					// return;
+					// }
+					// }
+
 					for (AutoState slaveNxtSt : slaveSt
 							.getOutgoingStatesKeySet()) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
 
 						boolean toCreate = true;
+
+						// System.out.println("slaveId: " + slaveNxtSt.getId());
+						// System.out.println("masterId: " +
+						// masterNxtSt.getId());
+						// System.out.println();
+
 						if (annots.containsKey(masterNextState)) {
 							Map<AutoState, Boolean> annot = annots
 									.get(masterNextState);

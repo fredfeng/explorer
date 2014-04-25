@@ -22,7 +22,7 @@ public class TestInterAutomatonOpts {
 		AutoEdge expr_edge_baz = new AutoEdge("baz");
 		AutoEdge expr_edge_bar = new AutoEdge("bar");
 		AutoEdge expr_edge_dot = new AutoEdge("dot", true);
-
+		
 		RegAutoState expr_init = new RegAutoState(1, true, false);
 		RegAutoState expr_state_1 = new RegAutoState(2);
 		RegAutoState expr_state_2 = new RegAutoState(3);
@@ -108,7 +108,7 @@ public class TestInterAutomatonOpts {
 		System.out.println(call_state_4.getIncomingStatesKeySet());
 		
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
-		//myoptions.put("annot", true);
+		myoptions.put("annot", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 		
 		InterAutomaton comb_without_opt = new InterAutomaton(myopts, expr, call);
@@ -116,7 +116,8 @@ public class TestInterAutomatonOpts {
 		comb_without_opt.dump();
 		
 		
-		Map<AutoState, Set<AutoEdge>> opts = expr.find();
+		expr.buildOneStepAnnot();
+		Map<AutoState, Set<AutoEdge>> opts = expr.getOneStepAnnot();
 		System.out.println(opts);
 		Map<AutoState, Map<AutoState, Boolean>> annotations = call
 				.annotate(opts);

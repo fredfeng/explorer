@@ -666,6 +666,7 @@ public class AutoPAG {
 		Set<AllocNode> reachable = new HashSet<AllocNode>();
 
 		assert (start != null);
+		
 		if (start.getNumber() == 46) {
 			System.out.println("hellowolrd!");
 		}

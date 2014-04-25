@@ -146,7 +146,7 @@ public class TestBuildCGStateSCC {
 		call.addEdge(state_init, state_z, edge_z);
 		call.addEdge(state_test, state_init, edge_test);
 
-		Set roots = call.getInitStates();
+		Set roots = call.getStates();
 		Map nodeToPreds = new HashMap<Object, Set<Object>>();
 		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
 

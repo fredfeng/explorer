@@ -13,6 +13,8 @@ public class CGAutoState extends AutoState {
 	protected boolean belongsToASCC = false;
 
 	// only when belongsToASCC == true will we update the following sets?
+	// YES, because following 4 maps are only used in InterAutoState
+	// for other AutoStates, they are JUST null to save the space
 	protected Set<AutoState> statesInTheSameSCC;
 
 	protected Set<AutoEdge> edgesInTheSameSCC;

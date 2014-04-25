@@ -1,13 +1,11 @@
 package edu.utexas.cgrex.test;
 
-
-import java.util.List;
+import java.util.Set;
 
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.utils.SCCBuilder;
-
 
 public class TestSCC {
 
@@ -18,14 +16,13 @@ public class TestSCC {
 		// TODO Auto-generated method stub
 		CGAutomaton cg = new TestSCC().gen();
 		SCCBuilder sb = new SCCBuilder(cg, cg.getInitStates());
-		for(List<Object> list : sb.getComponents()) {
+		for (Set<Object> list : sb.getComponents()) {
 			System.out.println(list);
 		}
-		
+
 		cg.dump();
 	}
 
-	
 	public CGAutomaton gen() {
 		CGAutomaton call = new CGAutomaton();
 
@@ -59,20 +56,19 @@ public class TestSCC {
 
 		call_init.addOutgoingStates(call_state_1, call_edge_1);
 		call_init.addOutgoingStates(call_state_2, call_edge_2);
-		
+
 		call_state_1.addOutgoingStates(call_state_3, call_edge_3);
-		
+
 		call_state_2.addOutgoingStates(call_state_1, call_edge_4);
 		call_state_2.addOutgoingStates(call_state_4, call_edge_6);
-		
+
 		call_state_3.addOutgoingStates(call_state_2, call_edge_5);
 		call_state_3.addOutgoingStates(call_final, call_edge_8);
-		
+
 		call_state_4.addOutgoingStates(call_state_3, call_edge_7);
 		call_state_4.addOutgoingStates(call_final, call_edge_9);
 
-
 		return call;
-		
+
 	}
 }

@@ -33,7 +33,7 @@ public abstract class AutoState {
 	public Object getId() {
 		return id;
 	}
-	
+
 	/**
 	 * @return the visited
 	 */
@@ -42,7 +42,8 @@ public abstract class AutoState {
 	}
 
 	/**
-	 * @param visited the visited to set
+	 * @param visited
+	 *            the visited to set
 	 */
 	public void setVisited(boolean visited) {
 		this.visited = visited;
@@ -70,10 +71,10 @@ public abstract class AutoState {
 				&& (id.equals(((AutoState) other).id) ? true : false);
 	}
 
-//	@Override
-//	public int hashCode() {
-//		return super.hashCode();
-//	}
+	// @Override
+	// public int hashCode() {
+	// return super.hashCode();
+	// }
 
 	public abstract Set<AutoState> getIncomingStatesKeySet();
 
@@ -108,11 +109,11 @@ public abstract class AutoState {
 	public abstract boolean deleteOneIncomingState(AutoState state);
 
 	public abstract boolean deleteOneIncomingEdge(AutoEdge edge);
-	
+
 	public abstract boolean deleteOneIncomingEdge(AutoState state, AutoEdge edge);
-	
+
 	public abstract boolean isIsolated(); // self-cycle is not isolated
-	
+
 	// just specify the state
 	public boolean deleteOneOutgoingState(AutoState state) {
 		Set<AutoEdge> edgeList = new HashSet<AutoEdge>();
@@ -158,7 +159,7 @@ public abstract class AutoState {
 	}
 
 	public boolean addOutgoingStates(AutoState state, AutoEdge edge) {
-		assert(state.getId() != null);
+		assert (state.getId() != null);
 		return addToMap(outgoingStates, state, edge)
 				| addToInvMap(outgoingStatesInv, edge, state);
 	}
@@ -214,10 +215,17 @@ public abstract class AutoState {
 
 	// get the cycle edge of this state
 	// if existed, return the cycle edge, else return null
-	public AutoEdge getCycleEdge() {
-		for (AutoEdge e : outgoingStatesInv.keySet()) {
-			if (outgoingStatesInvLookup(e).equals(this))
-				return e;
+	public Set<AutoEdge> getCycleEdge() {
+		// for (AutoEdge e : outgoingStatesInv.keySet()) {
+		// if (outgoingStatesInvLookup(e).equals(this))
+		// return e;
+		// }
+		// return null;
+		
+		for (AutoState s : outgoingStates.keySet()) {
+			if (this.equals(s)) {
+				return outgoingStates.get(s);
+			}
 		}
 		return null;
 	}
@@ -225,9 +233,9 @@ public abstract class AutoState {
 	public Set<AutoEdge> getOutgoingStatesInvKeySetExceptCycleEdge() {
 		Set<AutoEdge> clone = new HashSet<AutoEdge>();
 		clone.addAll(outgoingStatesInv.keySet());
-		AutoEdge cycle = getCycleEdge();
+		Set<AutoEdge> cycle = getCycleEdge();
 		if (cycle != null)
-			clone.remove(cycle);
+			clone.removeAll(cycle);
 		return clone;
 	}
 

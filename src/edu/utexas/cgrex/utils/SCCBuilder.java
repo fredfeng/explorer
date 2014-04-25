@@ -2,6 +2,7 @@ package edu.utexas.cgrex.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.Automaton;
 
 public class SCCBuilder {
-	protected final List<List<Object>> componentList = new ArrayList<List<Object>>();
+	protected final List<Set<Object>> componentList = new ArrayList<Set<Object>>();
 
 	protected int index = 0;
 
@@ -69,7 +70,7 @@ public class SCCBuilder {
 			}
 		}
 		if (lowlinkForNode.get(v).intValue() == indexForNode.get(v).intValue()) {
-			List<Object> scc = new ArrayList<Object>();
+			Set<Object> scc = new HashSet<Object>();
 			Object v2;
 			do {
 				v2 = s.pop();
@@ -82,7 +83,7 @@ public class SCCBuilder {
 	/**
 	 * @return the list of the strongly-connected components
 	 */
-	public List<List<Object>> getComponents() {
+	public List<Set<Object>> getComponents() {
 		return componentList;
 	}
 }
