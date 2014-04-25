@@ -293,11 +293,13 @@ public class InterAutomaton extends Automaton {
 			InterAutoState interSt,
 			Map<AutoState, Map<AutoState, Boolean>> annots) {
 
+		// if the current state is not valid (it cannot reach to the final
+		// state), then SKIP everything
+		// this is just for saving time
 		if (annots.containsKey(masterSt)) {
 			Map<AutoState, Boolean> annot = annots.get(masterSt);
 			if (annot.containsKey(slaveSt)) {
 				if (!annot.get(slaveSt)) {
-					assert (false == true);
 					return;
 				}
 			}
@@ -310,43 +312,28 @@ public class InterAutomaton extends Automaton {
 
 				if (masterNextEdge.isDotEdge()) {
 
-					// if (annots.containsKey(masterSt)) {
-					// Map<AutoState, Boolean> annot = annots.get(masterSt);
-					// if (annot.containsKey(slaveSt)) {
-					// if (!annot.get(slaveSt))
-					// return;
-					// }
-					// }
-
 					for (AutoState slaveNxtSt : slaveSt
 							.getOutgoingStatesKeySet()) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
 
-						boolean toCreate = true;
-
-						// System.out.println("slaveId: " + slaveNxtSt.getId());
-						// System.out.println("masterId: " +
-						// masterNxtSt.getId());
-						// System.out.println();
-
+						// if the next interState to be generated is not valid
+						// (it cannot reach the final state), then continue to
+						// the next possible interState
 						if (annots.containsKey(masterNextState)) {
 							Map<AutoState, Boolean> annot = annots
 									.get(masterNextState);
 							if (annot.containsKey(slaveNextState)) {
-								toCreate = annot.get(slaveNextState);
-								if (!toCreate)
+								if (!annot.get(slaveNextState))
 									continue; // jump to the next master
 							}
 						}
 
-						// I guess the following two lines of code are not
-						// useful at all
-						// for (AutoEdge slaveNextEdge : slaveSt
-						// .outgoingStatesLookup(slaveNextState)) {
-
 						InterAutoState newInterSt = containMasterandSlaveState(
 								masterNextState, slaveNextState);
+
 						if (newInterSt != null) {
+							// the new interState has already existed, just add
+							// an edge from the current one to the new one
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
@@ -355,8 +342,8 @@ public class InterAutomaton extends Automaton {
 									+ newInterSt.getSlaveState().getId(),
 									new SrcTgtEdgeWrapper(interSt, newInterSt,
 											newInterEdge));
-
 						} else {
+							// create the new interState and add an edge
 							newInterSt = new InterAutoState(
 									masterNextState.getId() + "@"
 											+ slaveNextState.getId(),
@@ -378,20 +365,37 @@ public class InterAutomaton extends Automaton {
 							intersectAnnot(masterNextState, slaveNextState,
 									newInterSt, annots);
 						}
-						// }
 					}
 
 				} else {
+
 					Set<AutoState> slaveNextStates = slaveSt
 							.outgoingStatesInvLookup(masterNextEdge);
+
 					if (slaveNextStates == null)
 						continue; // cannot find that edge
+
 					// can find the edge
 					for (AutoState slaveNxtSt : slaveNextStates) {
+
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
+
+						// if the next interState to be generated is not valid,
+						// skip to the next possible interState
+						if (annots.containsKey(masterNextState)) {
+							Map<AutoState, Boolean> annot = annots
+									.get(masterNextState);
+							if (annot.containsKey(slaveNextState)) {
+								if (!annot.get(slaveNextState))
+									continue; // jump to the next master
+							}
+						}
+
 						InterAutoState newInterSt = containMasterandSlaveState(
 								masterNextState, slaveNextState);
+
 						if (newInterSt != null) {
+							// already existed
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
@@ -402,18 +406,7 @@ public class InterAutomaton extends Automaton {
 											newInterEdge));
 
 						} else {
-
-							boolean toCreate = true;
-							if (annots.containsKey(masterNextState)) {
-								Map<AutoState, Boolean> annot = annots
-										.get(masterNextState);
-								if (annot.containsKey(slaveNextState)) {
-									toCreate = annot.get(slaveNextState);
-									if (!toCreate)
-										continue; // jump to the next master
-								}
-							}
-
+							// create a new interState and add edge
 							newInterSt = new InterAutoState(
 									masterNextState.getId() + "@"
 											+ slaveNextState.getId(),

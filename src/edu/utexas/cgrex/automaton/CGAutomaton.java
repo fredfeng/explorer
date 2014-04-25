@@ -17,8 +17,6 @@ public class CGAutomaton extends Automaton {
 
 	public Map<AutoState, Map<AutoState, Boolean>> AnnotTwoSteps = new HashMap<AutoState, Map<AutoState, Boolean>>();
 
-	public List<Set<AutoState>> sccAutoState;
-
 	// this building method fills the SCC-related fields of the states in
 	// the automaton so that we can do some SCC analysis
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -33,13 +31,15 @@ public class CGAutomaton extends Automaton {
 			nodeToPreds.put(s, s.getIncomingStatesKeySet());
 			nodeToSuccs.put(s, s.getOutgoingStatesKeySet());
 		}
+
+		// following commented codes are BUG codes which generates unstable and
+		// non-deterministic behaviors
 		// Object sccListTmp = GraphUtil.doAnalysis(roots, nodeToPreds,
 		// nodeToSuccs);
+
 		SCCBuilder sccB = new SCCBuilder(this, this.initStates);
 		Object sccListTmp = sccB.getComponents();
 		List<Set<AutoState>> sccList = (List<Set<AutoState>>) sccListTmp;
-
-		sccAutoState = sccList;
 
 		StringBuilder b = new StringBuilder("");
 		int count = 0;
@@ -51,17 +51,8 @@ public class CGAutomaton extends Automaton {
 			Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
 			Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
 			for (AutoState s : scc) {
+
 				CGAutoState st = (CGAutoState) s;
-				// find all the edges in the same SCC
-				// for (AutoEdge e : st.getOutgoingStatesInvKeySet()) {
-				// Set<AutoState> lookup = st.outgoingStatesInvLookup(e);
-				// for (AutoState ss : lookup) {
-				// if (scc.contains(ss)) {
-				// edgesInTheSameSCC.add(e);
-				// break;
-				// }
-				// }
-				// }
 
 				// I just commented above one method and following two methods
 				// and combine them into this single one as below
@@ -75,84 +66,16 @@ public class CGAutomaton extends Automaton {
 						outgoingStatesOfSCC.add(ss);
 					}
 				}
-
-				// find all the edges going out of this SCC
-				// for (AutoEdge e : st.getOutgoingStatesInvKeySet()) {
-				// Set<AutoState> lookup = st.outgoingStatesInvLookup(e);
-				// for (AutoState ss : lookup) {
-				// if (!scc.contains(ss)) {
-				// outgoingEdgesOfSCC.add(e);
-				// break;
-				// }
-				// }
-				// }
-
-				// find all the states being neighbors of this SCC
-				// for (AutoState outState : st.getOutgoingStatesKeySet()) {
-				// if (!scc.contains(outState))
-				// outgoingStatesOfSCC.add(outState);
-				// }
 			}
 			// set the related maps
 			for (AutoState s : scc) {
+
 				CGAutoState st = (CGAutoState) s;
 				st.setBelongsToASCC();
 				// scc is statesInTheSameSCC
 				st.setStatesInTheSameSCC(scc);
 				st.setEdgesInTheSameSCC(edgesInTheSameSCC);
 				st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
-				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
-			}
-		}
-
-		b.append("number of sccs: " + sccList.size() + "\n");
-		b.append("number of states in sccList: " + count + "\n");
-		b.append("number of states in cg automaton: " + states.size() + "\n");
-
-		try {
-			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/debug2"));
-
-			bufw.write(b.toString());
-
-			bufw.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
-
-		for (AutoState s : states) {
-
-			CGAutoState st = (CGAutoState) s;
-			if (!st.isBelongsToASCC()) {
-
-				// assert (true == false);
-				// add st itself in the statesInTheSameSCC
-				Set<AutoState> statesInTheSameSCC = new HashSet<AutoState>();
-				statesInTheSameSCC.add(st);
-				st.setStatesInTheSameSCC(statesInTheSameSCC);
-
-				// add the cycle edge of st (if existed) to the
-				// edgesInTheSameSCC
-				Set<AutoEdge> edgesInTheSameSCC = new HashSet<AutoEdge>();
-				Set<AutoEdge> ce = st.getCycleEdge();
-				if (ce != null)
-					edgesInTheSameSCC.addAll(ce);
-				st.setEdgesInTheSameSCC(edgesInTheSameSCC);
-
-				// remove the cycle edge from the outgoingEdgesOfSCC
-				Set<AutoEdge> outgoingEdgesOfSCC = new HashSet<AutoEdge>();
-				outgoingEdgesOfSCC.addAll(st.getOutgoingStatesInvKeySet());
-				Set<AutoEdge> cycle = st.getCycleEdge();
-				if (cycle != null)
-					outgoingEdgesOfSCC.removeAll(cycle);
-				st.setOutgoingEdgesOfSCC(outgoingEdgesOfSCC);
-
-				// remove st state from the outgoingStatesOfSCC
-				Set<AutoState> outgoingStatesOfSCC = new HashSet<AutoState>();
-				outgoingStatesOfSCC.addAll(st.getOutgoingStatesKeySet());
-				// if (outgoingStatesOfSCC.contains(st))
-				outgoingStatesOfSCC.remove(st);
 				st.setOutgoingStatesOfSCC(outgoingStatesOfSCC);
 			}
 		}
@@ -207,16 +130,11 @@ public class CGAutomaton extends Automaton {
 
 		buildCGStatesSCC();
 
-		// Map<AutoState, Map<AutoState, Boolean>> opts = new HashMap<AutoState,
-		// Map<AutoState, Boolean>>();
-
 		for (AutoState stateInReg : regExprAnnots.keySet()) {
 			// I am in some RegState(Master State) of the RegAutomaton
 			Set<AutoEdge> keyEdges = regExprAnnots.get(stateInReg);
-			// System.out.println(stateInReg);
 			AnnotOneStep.put(stateInReg, annotateOneMasterState(keyEdges));
 		}
-		// System.out.println("annotations\n" + opts);
 		return AnnotOneStep;
 	}
 
