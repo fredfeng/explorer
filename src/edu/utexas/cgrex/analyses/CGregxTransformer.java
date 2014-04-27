@@ -10,27 +10,26 @@ import edu.utexas.cgrex.QueryManager;
 
 /**
  * Entry point of the whole analysis.
+ * 
  * @author yufeng
- *
+ * 
  */
 public class CGregxTransformer extends SceneTransformer {
-	
 
-    protected void internalTransform(String phaseName,
-    @SuppressWarnings("rawtypes") Map options) {  
+	protected void internalTransform(String phaseName,
+			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
 		// read default pag from soot.
 		PAG pag = (PAG) Scene.v().getPointsToAnalysis();
 		// build xinyu's AutoPAG
 		AutoPAG me = new AutoPAG(pag);
 		me.build();
-		
-		//test case: (\u6162|\u6155).*\u0097
-		//test case: (\u6162|\u6155).*\u6102
 
-		QueryManager qm = new QueryManager(me);		
+		// test case: (\u6162|\u6155).*\u0097
+		// test case: (\u6162|\u6155).*\u6102
+
+		QueryManager qm = new QueryManager(me);
 		qm.doQuery();
-		
 
-    }
+	}
 }
