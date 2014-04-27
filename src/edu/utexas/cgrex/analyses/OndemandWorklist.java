@@ -186,7 +186,7 @@ public final class OndemandWorklist extends Propagator {
 
 						// my implementation
 						Set<AllocNode> pt = me
-								.insensitivePTAnalysis((VarNode) edgeSrc);
+								.insensitivePTAnalysis((VarNode) Tgt);
 						boolean succ = false;
 						for (AllocNode alc : pt) {
 							succ = succ | edgeTgt.makeP2Set().add(alc);
@@ -271,11 +271,6 @@ public final class OndemandWorklist extends Propagator {
 					for (AllocNode alc : pt) {
 						nDotF.makeP2Set().add(alc);
 					}
-
-					// soot implementation
-					// if (nDotF.makeP2Set().addAll(newP2Set, null)) {
-					// returnValue = true;
-					// }
 				}
 			})
 					| ret;
@@ -339,11 +334,6 @@ public final class OndemandWorklist extends Propagator {
 			}
 			if (succ)
 				ret = true;
-
-			// soot implementation
-			// if (nDotF.makeP2Set().addAll(storeSource.getP2Set(), null)) {
-			// ret = true;
-			// }
 		}
 		for (Node[] p : loadsToPropagate) {
 			AllocDotField nDotF = (AllocDotField) p[0];
