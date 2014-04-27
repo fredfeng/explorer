@@ -24,34 +24,50 @@ import soot.util.queue.QueueReader;
 
 /**
  * Propagating points-to set using xinyu's points-to analysis
+ * 
  * @author yufeng
- *
+ * 
  */
 
 public final class OndemandWorklist extends Propagator {
-	
-	public boolean debug = true;
-    protected final Set<VarNode> varNodeWorkList = new TreeSet<VarNode>();
 
-    public OndemandWorklist( PAG pag ) { this.pag = pag; }
-    /** Actually does the propagation. */
-    public final void propagate() {
-        ofcg = pag.getOnFlyCallGraph();
-        new TopoSorter( pag, false ).sort();
+	public boolean debug = true;
+	protected final Set<VarNode> varNodeWorkList = new TreeSet<VarNode>();
+
+	protected final AutoPAG me;
+
+	public OndemandWorklist(PAG pag) {
+		this.pag = pag;
+		me = new AutoPAG(pag);
+		me.build();
+	}
+
+	public int count = 0;
+
+	/** Actually does the propagation. */
+	public final void propagate() {
+		ofcg = pag.getOnFlyCallGraph();
+		new TopoSorter(pag, false).sort();
 		for (Object object : pag.allocSources()) {
+			// initially add the AllocNode to the VarNodes that are directly
+			// connected to the AllocNodes
 			handleAllocNode((AllocNode) object);
 		}
+
+		pag.dump();
 
 		do {
 			if (debug) {
 				G.v().out.println("Worklist has " + varNodeWorkList.size()
 						+ " nodes.");
 			}
+			System.out.println("***********" + varNodeWorkList.size());
 			while (!varNodeWorkList.isEmpty()) {
 				VarNode src = varNodeWorkList.iterator().next();
 				varNodeWorkList.remove(src);
 				handleVarNode(src);
 			}
+
 			if (debug) {
 				G.v().out.println("Now handling field references");
 			}
@@ -64,7 +80,15 @@ public final class OndemandWorklist extends Propagator {
 						public final void visit(Node n) {
 							AllocDotField nDotF = pag.makeAllocDotField(
 									(AllocNode) n, target.getField());
-							nDotF.makeP2Set().addAll(src.getP2Set(), null);
+
+							// my implementation
+							Set<AllocNode> pt = me.insensitivePTAnalysis(src);
+							for (AllocNode alc : pt) {
+								nDotF.makeP2Set().add(alc);
+							}
+
+							// soot implementation
+							// nDotF.makeP2Set().addAll(src.getP2Set(), null);
 						}
 					});
 				}
@@ -87,26 +111,49 @@ public final class OndemandWorklist extends Propagator {
 				nDotF.flushNew();
 			}
 		} while (!varNodeWorkList.isEmpty());
+
+		System.out.println("***********count: " + count);
 	}
 
-    /* End of public methods. */
-    /* End of package methods. */
+	/* End of public methods. */
+	/* End of package methods. */
 
-    /** Propagates new points-to information of node src to all its
-     * successors. */
+	/**
+	 * Propagates new points-to information of node src to all its successors.
+	 */
+	// given src, propagate src to all VarNodes by pag.allocLookup and add the
+	// VarNodes to the worklist because they might result in some more varNodes'
+	// pt set to be updated
 	protected final boolean handleAllocNode(AllocNode src) {
 		boolean ret = false;
 		Node[] targets = pag.allocLookup(src);
+
 		for (Node element : targets) {
-			if (element.makeP2Set().add(src)) {
+
+			// my implementation
+			Set<AllocNode> pt = me.insensitivePTAnalysis((VarNode) element);
+			boolean succ = false;
+			for (AllocNode alc : pt) {
+				succ = succ | element.makeP2Set().add(alc);
+			}
+			if (succ) {
 				varNodeWorkList.add((VarNode) element);
 				ret = true;
 			}
+
+			// following is soot implementation
+			// if (element.makeP2Set().add(src)) {
+			// varNodeWorkList.add((VarNode) element);
+			// ret = true;
+			// }
+
 		}
 		return ret;
 	}
-    /** Propagates new points-to information of node src to all its
-     * successors. */
+
+	/**
+	 * Propagates new points-to information of node src to all its successors.
+	 */
 	protected final boolean handleVarNode(final VarNode src) {
 		boolean ret = false;
 		boolean flush = true;
@@ -124,6 +171,10 @@ public final class OndemandWorklist extends Propagator {
 			ofcg.updatedNode(src);
 			ofcg.build();
 
+			// update the autopag and then rebuild
+			me.update(pag);
+			me.build();
+
 			while (addedEdges.hasNext()) {
 				Node addedSrc = (Node) addedEdges.next();
 				Node addedTgt = (Node) addedEdges.next();
@@ -133,33 +184,77 @@ public final class OndemandWorklist extends Propagator {
 						VarNode edgeSrc = (VarNode) addedSrc.getReplacement();
 						VarNode edgeTgt = (VarNode) addedTgt.getReplacement();
 
-						if (edgeTgt.makeP2Set()
-								.addAll(edgeSrc.getP2Set(), null)) {
-							varNodeWorkList.add(edgeTgt);
+						// my implementation
+						Set<AllocNode> pt = me
+								.insensitivePTAnalysis((VarNode) edgeSrc);
+						boolean succ = false;
+						for (AllocNode alc : pt) {
+							succ = succ | edgeTgt.makeP2Set().add(alc);
+						}
+						if (succ) {
+							varNodeWorkList.add((VarNode) edgeTgt);
 							if (edgeTgt == src)
 								flush = false;
 						}
+
+						// following is soot implementation
+						// if (edgeTgt.makeP2Set()
+						// .addAll(edgeSrc.getP2Set(), null)) {
+						// varNodeWorkList.add(edgeTgt);
+						// if (edgeTgt == src)
+						// flush = false;
+						// }
 					}
 				} else if (addedSrc instanceof AllocNode) {
 					AllocNode edgeSrc = (AllocNode) addedSrc;
 					VarNode edgeTgt = (VarNode) addedTgt.getReplacement();
-					if (edgeTgt.makeP2Set().add(edgeSrc)) {
-						varNodeWorkList.add(edgeTgt);
+
+					// my implementation
+					Set<AllocNode> pt = me
+							.insensitivePTAnalysis((VarNode) edgeTgt);
+					boolean succ = false;
+					for (AllocNode alc : pt) {
+						succ = succ | edgeTgt.makeP2Set().add(alc);
+					}
+					if (succ) {
+						varNodeWorkList.add((VarNode) edgeTgt);
 						if (edgeTgt == src)
 							flush = false;
 					}
+
+					// soot implementation
+					// if (edgeTgt.makeP2Set().add(edgeSrc)) {
+					// varNodeWorkList.add(edgeTgt);
+					// if (edgeTgt == src)
+					// flush = false;
+					// }
 				}
 			}
 		}
 
 		Node[] simpleTargets = pag.simpleLookup(src);
 		for (Node element : simpleTargets) {
-			if (element.makeP2Set().addAll(newP2Set, null)) {
+
+			// my implementation
+			Set<AllocNode> pt = me.insensitivePTAnalysis((VarNode) element);
+			boolean succ = false;
+			for (AllocNode alc : pt) {
+				succ = succ | element.makeP2Set().add(alc);
+			}
+			if (succ) {
 				varNodeWorkList.add((VarNode) element);
 				if (element == src)
 					flush = false;
 				ret = true;
 			}
+
+			// soot implementation
+			// if (element.makeP2Set().addAll(newP2Set, null)) {
+			// varNodeWorkList.add((VarNode) element);
+			// if (element == src)
+			// flush = false;
+			// ret = true;
+			// }
 		}
 
 		Node[] storeTargets = pag.storeLookup(src);
@@ -170,9 +265,17 @@ public final class OndemandWorklist extends Propagator {
 				public final void visit(Node n) {
 					AllocDotField nDotF = pag.makeAllocDotField((AllocNode) n,
 							f);
-					if (nDotF.makeP2Set().addAll(newP2Set, null)) {
-						returnValue = true;
+
+					// my implementation
+					Set<AllocNode> pt = me.insensitivePTAnalysis(nDotF);
+					for (AllocNode alc : pt) {
+						nDotF.makeP2Set().add(alc);
 					}
+
+					// soot implementation
+					// if (nDotF.makeP2Set().addAll(newP2Set, null)) {
+					// returnValue = true;
+					// }
 				}
 			})
 					| ret;
@@ -189,7 +292,7 @@ public final class OndemandWorklist extends Propagator {
 						AllocDotField nDotF = pag.makeAllocDotField(
 								(AllocNode) n, field);
 						for (Node element : storeSources) {
-							Node[] pair = { element, nDotF.getReplacement() };
+							Node[] pair = { element, nDotF.getReplacement(), fr };
 							storesToPropagate.add(pair);
 						}
 					}
@@ -204,7 +307,8 @@ public final class OndemandWorklist extends Propagator {
 								(AllocNode) n, field);
 						if (nDotF != null) {
 							for (Node element : loadTargets) {
-								Node[] pair = { nDotF.getReplacement(), element };
+								Node[] pair = { nDotF.getReplacement(),
+										element, fr };
 								loadsToPropagate.add(pair);
 							}
 						}
@@ -217,25 +321,55 @@ public final class OndemandWorklist extends Propagator {
 		for (Node[] p : storesToPropagate) {
 			VarNode storeSource = (VarNode) p[0];
 			AllocDotField nDotF = (AllocDotField) p[1];
-			if (nDotF.makeP2Set().addAll(storeSource.getP2Set(), null)) {
-				ret = true;
+			FieldRefNode fr = (FieldRefNode) p[2];
+
+			// my implementation
+			// Set<AllocNode> pt = me.insensitivePTAnalysis(storeSource);
+			// boolean succ = false;
+			// for (AllocNode alc : pt) {
+			// succ = succ | nDotF.makeP2Set().add(alc);
+			// }
+			// if (succ) {
+			// ret = true;
+			// }
+			boolean succ = false;
+			Set<AllocNode> pt = me.insensitivePTAnalysis(nDotF);
+			for (AllocNode alc : pt) {
+				succ = succ | nDotF.makeP2Set().add(alc);
 			}
+			if (succ)
+				ret = true;
+
+			// soot implementation
+			// if (nDotF.makeP2Set().addAll(storeSource.getP2Set(), null)) {
+			// ret = true;
+			// }
 		}
 		for (Node[] p : loadsToPropagate) {
 			AllocDotField nDotF = (AllocDotField) p[0];
 			VarNode loadTarget = (VarNode) p[1];
+			FieldRefNode fr = (FieldRefNode) p[2];
+
+			// soot implementation
+			// I did not find a proper way to use my pointer analysis
+			// and actually I think this should use the soot implementation
+			// because even if using my pointer analysis, I can do it in this
+			// way which is more concise
 			if (loadTarget.makeP2Set().addAll(nDotF.getP2Set(), null)) {
 				varNodeWorkList.add(loadTarget);
 				ret = true;
 			}
 		}
+
 		return ret;
 	}
 
-    /** Propagates new points-to information of node src to all its
-     * successors. */
+	/**
+	 * Propagates new points-to information of node src to all its successors.
+	 */
 	protected final void handleFieldRefNode(FieldRefNode src,
 			final HashSet<Object[]> edgesToPropagate) {
+		count++;
 		final Node[] loadTargets = pag.loadLookup(src);
 		if (loadTargets.length == 0)
 			return;
@@ -258,10 +392,7 @@ public final class OndemandWorklist extends Propagator {
 			}
 		});
 	}
-    
-    protected PAG pag;
-    protected OnFlyCallGraph ofcg;
+
+	protected PAG pag;
+	protected OnFlyCallGraph ofcg;
 }
-
-
-

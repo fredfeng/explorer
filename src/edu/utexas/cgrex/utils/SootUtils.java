@@ -23,6 +23,7 @@ import soot.jimple.toolkits.callgraph.Edge;
  * @author Saswat Anand
  **/
 public class SootUtils {
+
 	private static HashMap<SootClass, Set<SootClass>> classToSubtypes = new HashMap();
 
 	public static void reportTime(String desc, Date start, Date end) {
@@ -30,7 +31,7 @@ public class SootUtils {
 		G.v().out
 				.println("[CGregx] " + desc + " in " + time + " milliseconds.");
 	}
-	
+
 	/*
 	 * Given a sootClass and one of its method, return all sub-types that do not
 	 * override this method
@@ -53,9 +54,9 @@ public class SootUtils {
 						worklist.add(c);
 				}
 			} else {
-//				if (cl.isConcrete()) {
-//					subTypes.add(cl);
-//				}
+				// if (cl.isConcrete()) {
+				// subTypes.add(cl);
+				// }
 				for (Iterator<SootClass> cIt = fh.getSubclassesOf(cl)
 						.iterator(); cIt.hasNext();) {
 					final SootClass c = cIt.next();
@@ -66,7 +67,7 @@ public class SootUtils {
 				}
 			}
 		}
-		
+
 		List<Type> list = new ArrayList();
 		list.addAll(subTypes);
 		return list;
@@ -111,20 +112,22 @@ public class SootUtils {
 		}
 		return subTypes;
 	}
-	
-	//src equals tgt, or, tgt is the superclass of src.
+
+	// src equals tgt, or, tgt is the superclass of src.
 	public static boolean compatibleWith(SootMethod src, SootMethod tgt) {
 		boolean b = false;
-		if(src.equals(tgt)) b = true;
+		if (src.equals(tgt))
+			b = true;
 		SootClass srcClazz = src.getDeclaringClass();
-		while(srcClazz.hasSuperclass()) {
+		while (srcClazz.hasSuperclass()) {
 			SootClass superClazz = srcClazz.getSuperclass();
-			if(superClazz.declaresMethod(tgt.getName(), tgt.getParameterTypes())) 
+			if (superClazz.declaresMethod(tgt.getName(),
+					tgt.getParameterTypes()))
 				return true;
-			
+
 			srcClazz = superClazz;
 		}
-		
+
 		return b;
 	}
 
@@ -189,23 +192,23 @@ public class SootUtils {
 		}
 		return params.toString();
 	}
-	
-	//check whether src can reach tgt.
-	public static boolean checkReachable(CallGraph cg, SootMethod src, SootMethod tgt) {		
+
+	// check whether src can reach tgt.
+	public static boolean checkReachable(CallGraph cg, SootMethod src,
+			SootMethod tgt) {
 		Stack<SootMethod> queue = new Stack<SootMethod>();
 		queue.push(src);
 		LinkedList<SootMethod> visited = new LinkedList<SootMethod>();
 
 		while (!queue.empty()) {
 			SootMethod cur = queue.pop();
-			
+
 			if (!visited.contains(cur)) {
 				visited.add(cur);
 
-				for (Iterator<Edge> cIt = cg.edgesOutOf(cur); cIt
-						.hasNext();) {
+				for (Iterator<Edge> cIt = cg.edgesOutOf(cur); cIt.hasNext();) {
 					Edge tgtEdge = cIt.next();
-					SootMethod tgtMeth = (SootMethod)tgtEdge.getTgt();
+					SootMethod tgtMeth = (SootMethod) tgtEdge.getTgt();
 					queue.push(tgtMeth);
 				}
 			}

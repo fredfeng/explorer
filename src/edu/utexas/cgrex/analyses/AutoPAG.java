@@ -22,6 +22,7 @@ import soot.Value;
 import soot.jimple.FieldRef;
 import soot.jimple.spark.ondemand.DemandCSPointsTo;
 import soot.jimple.spark.ondemand.pautil.ContextSensitiveInfo;
+import soot.jimple.spark.pag.AllocDotField;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.ArrayElement;
 import soot.jimple.spark.pag.FieldRefNode;
@@ -29,7 +30,6 @@ import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
-import soot.jimple.spark.sets.HybridPointsToSet;
 import edu.utexas.cgrex.utils.SootUtils;
 
 public class AutoPAG {
@@ -58,6 +58,10 @@ public class AutoPAG {
 	protected final static Node[] EMPTY_NODE_ARRAY = new Node[0];
 
 	public AutoPAG(PAG pag) {
+		father = pag;
+	}
+
+	public void update(PAG pag) {
 		father = pag;
 	}
 
@@ -127,6 +131,7 @@ public class AutoPAG {
 	}
 
 	public void dumpFlow() {
+		System.out.println("Dumping Flow Graph.....");
 		// maintain a set of all VarNodes
 		Set<Object> allVars = new HashSet<Object>();
 		for (Object obj : flow.keySet())
@@ -212,10 +217,10 @@ public class AutoPAG {
 		Set<Object> allVars = new HashSet<Object>();
 
 		// deal with matchEdges
-		for (Object obj : match.keySet())
-			allVars.add(obj);
-		for (Object obj : matchInv.keySet())
-			allVars.add(obj);
+		// for (Object obj : match.keySet())
+		// allVars.add(obj);
+		// for (Object obj : matchInv.keySet())
+		// allVars.add(obj);
 
 		// simple (assign)
 		Iterator<Object> it = father.simpleSourcesIterator();
@@ -283,28 +288,28 @@ public class AutoPAG {
 		StringBuilder c = new StringBuilder("");
 
 		// draw the graph
-		for (Object ms : match.keySet()) {
-			VarNode matchSrc = (VarNode) ms;
-
-			Set<Object> matchTgts = (Set<Object>) match.get(matchSrc);
-			for (Object obj : matchTgts) {
-				VarNode matchTgt = (VarNode) obj;
-				b.append("  ")
-						.append("\"VarNode" + matchSrc.getNumber() + "\"");
-				b.append(" -> ")
-						.append("\"VarNode" + matchTgt.getNumber() + "\"")
-						.append(" [label=\"");
-				b.append("match");
-				b.append("\"]\n");
-
-				c.append("VarNode: " + matchSrc.getNumber() + "\n"
-						+ " get Variable " + matchSrc.getVariable() + "\n"
-						+ " with type " + matchSrc.getType() + "\n"
-						+ " matchTo VarNode: " + matchTgt.getNumber() + "\n"
-						+ " get Variable " + matchTgt.getVariable() + "\n"
-						+ " with type " + matchTgt.getType() + "\n\n");
-			}
-		}
+		// for (Object ms : match.keySet()) {
+		// VarNode matchSrc = (VarNode) ms;
+		//
+		// Set<Object> matchTgts = (Set<Object>) match.get(matchSrc);
+		// for (Object obj : matchTgts) {
+		// VarNode matchTgt = (VarNode) obj;
+		// b.append("  ")
+		// .append("\"VarNode" + matchSrc.getNumber() + "\"");
+		// b.append(" -> ")
+		// .append("\"VarNode" + matchTgt.getNumber() + "\"")
+		// .append(" [label=\"");
+		// b.append("match");
+		// b.append("\"]\n");
+		//
+		// c.append("VarNode: " + matchSrc.getNumber() + "\n"
+		// + " get Variable " + matchSrc.getVariable() + "\n"
+		// + " with type " + matchSrc.getType() + "\n"
+		// + " matchTo VarNode: " + matchTgt.getNumber() + "\n"
+		// + " get Variable " + matchTgt.getVariable() + "\n"
+		// + " with type " + matchTgt.getType() + "\n\n");
+		// }
+		// }
 
 		it = father.simpleSourcesIterator();
 		while (it.hasNext()) {
@@ -577,15 +582,16 @@ public class AutoPAG {
 		return false;
 	}
 
-	public Map<Value, Boolean> sensitiveRefine(List<Value> vars, List<Type> types) {
+	public Map<Value, Boolean> sensitiveRefine(List<Value> vars,
+			List<Type> types) {
 		Map<Value, Boolean> refine = new HashMap<Value, Boolean>();
-		
+
 		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
 				new ContextSensitiveInfo(father), father);
 		for (Value var : vars) {
-			
+
 			assert (var instanceof Local || var instanceof FieldRef);
-			
+
 			PointsToSet ptSet = null;
 			if (var instanceof Local) {
 				ptSet = ptAnalysis.reachingObjects((Local) var);
@@ -605,6 +611,32 @@ public class AutoPAG {
 		}
 
 		return refine;
+	}
+
+	// used in on-the-fly call graph building in the OndemandWorkList method
+	public Set<AllocNode> insensitivePTAnalysis(VarNode var) {
+		Set<AllocNode> ptAllocSet = searchingObjects(var);
+		return ptAllocSet;
+	}
+
+	public Set<AllocNode> insensitivePTAnalysis(AllocDotField nDotF) {
+		Set<AllocNode> ptAllocSet = new HashSet<AllocNode>();
+		FieldRefNode frn = father.findLocalFieldRefNode(nDotF.getBase(),
+				nDotF.getField());
+		if (frn != null) {
+			Node[] storeSources = father.storeInvLookup(frn);
+			for (Node var : storeSources) {
+				ptAllocSet.addAll(insensitivePTAnalysis((VarNode) var));
+			}
+		}
+		frn = father.findGlobalFieldRefNode(nDotF.getBase(), nDotF.getField());
+		if (frn != null) {
+			Node[] storeSources = father.storeInvLookup(frn);
+			for (Node var : storeSources) {
+				ptAllocSet.addAll(insensitivePTAnalysis((VarNode) var));
+			}
+		}
+		return ptAllocSet;
 	}
 
 	// just for testing
@@ -666,7 +698,7 @@ public class AutoPAG {
 		Set<AllocNode> reachable = new HashSet<AllocNode>();
 
 		assert (start != null);
-		
+
 		if (start.getNumber() == 46) {
 			System.out.println("hellowolrd!");
 		}
