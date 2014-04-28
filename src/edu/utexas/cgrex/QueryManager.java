@@ -1,5 +1,6 @@
 package edu.utexas.cgrex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import soot.Body;
+import soot.EntryPoints;
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootMethod;
@@ -26,7 +28,7 @@ import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
-import soot.toolkits.scalar.FlowSet;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.util.Chain;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
@@ -60,13 +62,23 @@ public class QueryManager {
 
 	private int INFINITY = 9999;
 
-	// default CHA-based call graph.
+	// default CHA-based call graph or on-the-fly.
 	CallGraph cg;
+	
+    private ReachableMethods reachableMethods;
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
 
 	// make sure each method only be visited once.
 	Map<SootMethod, Boolean> visitedMap = new HashMap<SootMethod, Boolean>();
+
+	/**
+	 * @return the methToEdgeMap
+	 * only for the purpose of generating random regx.
+	 */
+	public Map<SootMethod, AutoEdge> getMethToEdgeMap() {
+		return methToEdgeMap;
+	}
 
 	Map<SootMethod, AutoEdge> methToEdgeMap = new HashMap<SootMethod, AutoEdge>();
 
@@ -85,18 +97,28 @@ public class QueryManager {
 	// automaton for intersect graph.
 	InterAutomaton interAuto;
 
-	public QueryManager(AutoPAG autoPAG) {
+	public QueryManager(AutoPAG autoPAG, CallGraph cg) {
 		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();
 		regAuto = new RegAutomaton();
+		this.cg = cg;
 
 		init();
 	}
+	
+    public ReachableMethods getReachableMethods() {
+        if( reachableMethods == null ) {
+            reachableMethods = new ReachableMethods(
+                    cg, new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
+        }
+        reachableMethods.update();
+        System.out.println("Reachable methods--------" + reachableMethods.size());
+        return reachableMethods;
+    }
 
 	private void init() {
-		cg = Scene.v().getCallGraph();
 
-		Iterator<MethodOrMethodContext> mIt = Scene.v().getReachableMethods()
+		Iterator<MethodOrMethodContext> mIt = this.getReachableMethods()
 				.listener();
 		//this magic number is used to fix the error by invalid unicode such as \u0022
 		int offset = 100;
@@ -106,11 +128,9 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
 			uidToMethMap.put(uid, meth);
-//			System.out.println("********" + uid + " " + meth.getSignature());
 
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getSignature());
-//			CGAutoState st = new CGAutoState(meth.getNumber(), false, true);
 			CGAutoState st = new CGAutoState(uid, false, true);
 
 
@@ -187,7 +207,7 @@ public class QueryManager {
 		}
 		// dump current result.
 //		System.out.println("dump regular graph.");
-//		regAuto.dump();
+		regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -263,7 +283,7 @@ public class QueryManager {
 		cgAuto.validate();
 	}
 
-	private void buildInterAutomaton() {
+	private boolean buildInterAutomaton() {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
@@ -276,7 +296,7 @@ public class QueryManager {
 		
 		//before we do the mincut, we need to exclude some trivial cases
 		//such as special invoke, static invoke and certain virtual invoke.
-		if(interAuto.getFinalStates().size() == 0) return;
+		if(interAuto.getFinalStates().size() == 0) return false;
 				
 		//Stop conditions:
 		//1. Refute all edges in current cut set;(Yes)
@@ -307,14 +327,9 @@ public class QueryManager {
 			//modify visited edges and continue.
 			cutset = GraphUtil.minCut(interAuto);
 		}
-		
-//		if(answer)
-//			System.out.println("---------query done, answer is: YES");
-//		else 
-//			System.out.println("---------query done, answer is: NO");
-
 //		interAuto.dump();
-		
+	
+		return answer;
 	}
 	
 	private boolean hasInfinityEdges(Set<CutEntity> set) {
@@ -341,20 +356,6 @@ public class QueryManager {
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
-		
-//		System.out.println("Refine varSet: " + varSet);
-
-		//refine call graph with detail info.
-//		Map<Value, Boolean> detailMap = autoPAG.insensitiveRefine(varSet, typeSet);
-//		for(Value v : detailMap.keySet()) {
-//			if(!detailMap.get(v)) {
-//				System.out.println("Refine var: " + v + varSet);
-//				System.out.println("Caller: " + callerMeth);
-//				System.out.println("Callee: " + calleeMeth);
-//
-//				refineCallgraph(v);
-//			}
-//		}
 
 		//to be conservative.
 		if(varSet.size() == 0) 
@@ -375,11 +376,12 @@ public class QueryManager {
 			if(outEdge.getTgt().equals(calleeMeth))
 				return outEdge;
 		}
-		assert(false);
+//		assert(false);
+		System.err.println("CAN not find the right call edge.------------");
 		return null;
 	}
 
-	// entry method for the query.
+	// entry method for the query. Only for debug purpose.
 	public boolean doQuery() {
 		String regx = "";
 
@@ -402,12 +404,11 @@ public class QueryManager {
 				}
 			}
 		case 1://interactive mode.
-			RegularExpGenerator generator = new RegularExpGenerator(
-					methToEdgeMap);
+			RegularExpGenerator generator = new RegularExpGenerator(this);
 			for (int i = 0; i < Harness.benchmarkSize; i++) {
 				regx = generator.genRegx();
 				regx = regx.replaceAll("\\s+", "");
-//				System.out.println("Random regx------" + regx);
+				System.out.println("Random regx------" + regx);
 				buildRegAutomaton(regx);
 				buildInterAutomaton();
 			}
@@ -417,23 +418,15 @@ public class QueryManager {
 			break;
 		}
 
-//		regx = regx.replaceAll("\\s+","");
-
-		
-		//reg parse error
-//		regx = "(\u0122|\u8128).*\u6417";
-		//multiple edges:
-//		regx = "(\u6106|\u5085).*\u0109";
-////		regx = "(\u2443|\u6106).*\u6101";
-//		buildRegAutomaton(regx);
-//		buildInterAutomaton();
-		
-//		regx = regx.replaceAll("\\s+","");
-//
-//		buildRegAutomaton(regx);
-//		buildInterAutomaton();
-
 		return false;
+	}
+	
+	//interface for query
+	public boolean queryRegx(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+		boolean res = buildInterAutomaton();
+		return res;
 	}
 	
 	//return a valid regular expression based on method's signature.
