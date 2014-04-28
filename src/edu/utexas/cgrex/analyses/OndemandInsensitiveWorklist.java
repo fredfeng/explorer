@@ -108,13 +108,8 @@ public final class OndemandInsensitiveWorklist extends Propagator {
 				nDotF.flushNew();
 			}
 		} while (!varNodeWorkList.isEmpty());
-<<<<<<< HEAD:src/edu/utexas/cgrex/analyses/OndemandInsensitiveWorklist.java
-=======
-
-		System.out.println("***********count: " + count);
 
 
->>>>>>> 7785f1d2984f945a3b59a7df3115a39576a5cbff:src/edu/utexas/cgrex/analyses/OndemandWorklist.java
 	}
 
 	/* End of public methods. */
