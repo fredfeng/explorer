@@ -286,6 +286,7 @@ public class QueryManager {
 	private boolean buildInterAutomaton() {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
+		myoptions.put("one", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);

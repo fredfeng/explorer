@@ -21,20 +21,22 @@ public class TestRegAutomatonTwoStepAnnot {
 		RegAutoState state_init = new RegAutoState(1, true, false);
 		RegAutoState state_2 = new RegAutoState(2);
 		RegAutoState state_3 = new RegAutoState(3);
-		RegAutoState state_4 = new RegAutoState(4);
-		RegAutoState state_5 = new RegAutoState(5, false, true);
+		RegAutoState state_4 = new RegAutoState(4, false, true);
+		// RegAutoState state_5 = new RegAutoState(5, false, true);
 
 		expr.addStates(state_init);
 		expr.addStates(state_2);
 		expr.addStates(state_3);
 		expr.addStates(state_4);
-		expr.addStates(state_5);
+		// expr.addStates(state_5);
 
+		expr.addEdge(state_init, state_init, edge_dot);
 		expr.addEdge(state_init, state_2, edge_bar);
 		expr.addEdge(state_init, state_3, edge_foo);
 		expr.addEdge(state_2, state_3, edge_foo);
+		expr.addEdge(state_3, state_3, edge_dot);
 		expr.addEdge(state_3, state_4, edge_zoo);
-		expr.addEdge(state_4, state_5, edge_goo);
+		// expr.addEdge(state_4, state_5, edge_goo);
 		expr.addEdge(state_4, state_4, edge_dot);
 
 		expr.dump();

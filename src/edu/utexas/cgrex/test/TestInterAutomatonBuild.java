@@ -31,6 +31,7 @@ public class TestInterAutomatonBuild {
 
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
+		myoptions.put("two", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 		InterAutomaton inter = new InterAutomaton(myopts, reg, call);
 		inter.build();

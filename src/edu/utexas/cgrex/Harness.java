@@ -19,7 +19,7 @@ public class Harness {
 		// TODO Auto-generated method stub
 		// String targetLoc = args[0];
 		// System.out.println("begin to run benchmark----------" + targetLoc);
-//		 String targetLoc = "benchmarks/CFLexamples/bin/";
+		// String targetLoc = "benchmarks/CFLexamples/bin/";
 		String targetLoc = "benchmarks/sablecc-3.7/classes/";
 		// 0: interactive mode; 1: benchmark mode
 		try {
@@ -32,17 +32,11 @@ public class Harness {
 							new CGregxTransformer()));
 
 			soot.Main.v().run(
-					new String[] { 
-							"-W", 
-							"-process-dir", targetLoc,
-							"-src-prec", "java", 
-							"-allow-phantom-refs",
-							"-no-bodies-for-excluded", 
-							"-exclude", "java",
-							"-exclude", "javax", 
-							"-output-format", "none",
-							"-p", "jb", "use-original-names:true",
-							});
+					new String[] { "-W", "-process-dir", targetLoc,
+							"-src-prec", "java", "-allow-phantom-refs",
+							"-no-bodies-for-excluded", "-exclude", "java",
+							"-exclude", "javax", "-output-format", "none",
+							"-p", "jb", "use-original-names:true", });
 
 		} catch (CompilationDeathException e) {
 			e.printStackTrace();

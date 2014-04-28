@@ -93,11 +93,12 @@ public class RegAutomaton extends Automaton {
 		// a worklist algorithm to annotate all the other states
 		while (!workList.isEmpty()) {
 			AutoState head = workList.poll();
-			
+
 			// dependency check
 			boolean restart = false;
 			for (AutoState next : head.getOutgoingStatesKeySet()) {
-				if (!annotTwoSteps.containsKey(next)) {
+				if (!next.equals(head) && !annotated.contains(next)) {
+					// if (!annotated.contains(next)) {
 					restart = true;
 					break;
 				}

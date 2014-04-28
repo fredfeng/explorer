@@ -79,7 +79,7 @@ public class OTFTransformer extends SceneTransformer {
 		Date endProp = new Date();
 		reportTime("Propagation", startProp, endProp);
 
-		pag.dump();
+		// pag.dump();
 		// doGC();
 
 		if (debug) {

@@ -352,8 +352,8 @@ public class CGAutomaton extends Automaton {
 
 		if (firstOpts.get(currSlaveState)) {
 			for (AutoState nextState : currSlaveState.getOutgoingStatesKeySet()) {
-				if (nextState.equals(currSlaveState))
-					continue;
+				// if (nextState.equals(currSlaveState))
+				// continue;
 
 				assert (secondOpts.containsKey(nextState));
 
