@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,38 +13,10 @@ import java.util.Set;
 public class RegAutomaton extends Automaton {
 
 	Map<AutoState, Set<AutoEdge>> annotOneStep = new HashMap<AutoState, Set<AutoEdge>>();
-	
-	Map<AutoState, AnnotTwoStepWrapper> annotTwoSteps = new HashMap<AutoState, AnnotTwoStepWrapper>();
-	
-	class AnnotTwoStepWrapper {
-		
-		Set<AutoEdge> firstStep = new HashSet<AutoEdge>();
-		
-		Set<AutoEdge> secondStep = new HashSet<AutoEdge>();
-		
-		public AnnotTwoStepWrapper(Set<AutoEdge> firstStep, Set<AutoEdge> secondStep) {
-			this.firstStep = firstStep;
-			this.secondStep = secondStep;
-		}
-		
-		public void setFirstStep(Set<AutoEdge> firstStep) {
-			this.firstStep = firstStep;
-		}
-		
-		public void setSecondStep(Set<AutoEdge> secondStep) {
-			this.secondStep = secondStep;
-		}
-		
-		public Set<AutoEdge> getFirstStep() {
-			return this.firstStep;
-		}
-		
-		public Set<AutoEdge> getSecondStep() {
-			return this.secondStep;
-		}
-	}
-	
-	// find() method returns a map that maps each state in refsm with a dot edge
+
+	Map<AutoState, AnnotTwoStepsWrapper> annotTwoSteps = new HashMap<AutoState, AnnotTwoStepsWrapper>();
+
+	// this method returns a map that maps each state in refsm with a dot edge
 	// to a set of edges that must be followed to reach the one of the final
 	// state in refsm
 	public void buildOneStepAnnot() {
@@ -53,31 +27,7 @@ public class RegAutomaton extends Automaton {
 			// so we only care about states that have (.*) edge
 			RegAutoState currState = (RegAutoState) s;
 
-			// // we can replace this by hasCycleEdge() if the only possible
-			// // cycle is dot edge
-			// if (currState.hasCycleEdge()) {
-			// // we do not regard final state as a qualified state
-			// // and do not create an keyEdges set for the final state
-			// // but we can change this freely by removing the following two
-			// // LOC
-			// if (currState.isFinalState())
-			// continue;
-			//
-			// Set<AutoEdge> keyEdges = new HashSet<AutoEdge>();
-			// opts.put(currState, keyEdges);
-			//
-			// for (AutoEdge e : currState.getOutgoingStatesInvKeySet()) {
-			// AutoEdge eg = (AutoEdge) e;
-			// if (!eg.isDotEdge())
-			// keyEdges.add(eg);
-			// else if (currState.outgoingStatesInvLookup(eg).equals(
-			// currState)) {
-			// keyEdges.clear();
-			// break;
-			// }
-			// }
-			// }
-
+			// we do not need to annotate final states
 			if (currState.isFinalState())
 				continue;
 
@@ -100,14 +50,103 @@ public class RegAutomaton extends Automaton {
 			}
 
 		}
-//		test();
-		// System.out.println(opts);
 	}
-	
+
+	public void buildTwoStepAnnot() {
+		LinkedList<AutoState> workList = new LinkedList<AutoState>();
+		Set<AutoState> annotated = new HashSet<AutoState>();
+
+		// annotate the last second states (the states right before the final
+		// states)
+		// for these states, we only fill the first step set
+		for (AutoState fs : finalStates) {
+			for (AutoState s : fs.getIncomingStatesKeySet()) {
+				if (s.isFinalState)
+					continue;
+
+				annotated.add(s);
+
+				AnnotTwoStepsWrapper keyEdges = new AnnotTwoStepsWrapper();
+				annotTwoSteps.put(s, keyEdges);
+				// annotate the first step
+				for (AutoEdge eg : s.getOutgoingStatesInvKeySet()) {
+					if (!eg.isDotEdge())
+						keyEdges.addFirstStep(eg);
+					else {
+						Set<AutoState> out = s.outgoingStatesInvLookup(eg);
+						for (AutoState os : out) {
+							if (!os.equals(s)) {
+								keyEdges.clearFirstStep();
+								break;
+							}
+						}
+					}
+				}
+				// add more elements in the worklist
+				for (AutoState prev : s.getIncomingStatesKeySet()) {
+					if (!annotated.contains(prev))
+						workList.add(prev);
+				}
+			}
+		}
+
+		// a worklist algorithm to annotate all the other states
+		while (!workList.isEmpty()) {
+			AutoState head = workList.poll();
+			
+			// dependency check
+			boolean restart = false;
+			for (AutoState next : head.getOutgoingStatesKeySet()) {
+				if (!annotTwoSteps.containsKey(next)) {
+					restart = true;
+					break;
+				}
+			}
+			if (restart) {
+				workList.add(head);
+				continue;
+			}
+
+			if (head.isFinalState)
+				continue;
+
+			annotated.add(head);
+
+			AnnotTwoStepsWrapper keyEdges = new AnnotTwoStepsWrapper();
+			annotTwoSteps.put(head, keyEdges);
+			// annotate the first step
+			for (AutoEdge eg : head.getOutgoingStatesInvKeySet()) {
+				if (!eg.isDotEdge())
+					keyEdges.addFirstStep(eg);
+				else {
+					Set<AutoState> out = head.outgoingStatesInvLookup(eg);
+					for (AutoState os : out) {
+						if (!os.equals(head)) {
+							keyEdges.clearFirstStep();
+							break;
+						}
+					}
+				}
+			}
+			// annotate the second step
+			for (AutoState next : head.getOutgoingStatesKeySet()) {
+				assert (annotTwoSteps.containsKey(next));
+				System.out.println("head: " + head);
+				System.out.println("next: " + next);
+				keyEdges.addSecondStep(annotTwoSteps.get(next).getFirstStep());
+			}
+			// add more elements in the worklist
+			for (AutoState prev : head.getIncomingStatesKeySet()) {
+				if (!annotated.contains(prev))
+					workList.add(prev);
+			}
+		}
+
+	}
+
 	protected void test() {
 		StringBuilder b = new StringBuilder("info\n");
 		b.append(annotOneStep);
-		
 
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
@@ -121,21 +160,44 @@ public class RegAutomaton extends Automaton {
 			System.exit(0);
 		}
 	}
-	
+
 	public Map<AutoState, Set<AutoEdge>> getOneStepAnnot() {
 		return annotOneStep;
 	}
-	
+
+	public Map<AutoState, AnnotTwoStepsWrapper> getTwoStepAnnot() {
+		return annotTwoSteps;
+	}
+
 	public void dumpFindOneStep() {
-		for (AutoState s: states) {
+		for (AutoState s : states) {
 			System.out.println("STATE: " + s.getId());
 			Set<AutoEdge> keyEdges = annotOneStep.get(s);
 			if (keyEdges == null) {
-				assert(s.isFinalState() == true);
+				assert (s.isFinalState() == true);
 				System.out.println("This is FINAL state!!");
 			} else {
-				System.out.println("One step must go through following edges: ");
+				System.out
+						.println("One step must go through following edges: ");
 				System.out.println(keyEdges);
+			}
+		}
+	}
+
+	public void dumpFindTwoStep() {
+		for (AutoState s : states) {
+			System.out.println("STATE: " + s.getId());
+			AnnotTwoStepsWrapper keyEdges = annotTwoSteps.get(s);
+			if (keyEdges == null) {
+				assert (s.isFinalState() == true);
+				System.out.println("This is FINAL state!!");
+			} else {
+				System.out
+						.println("One step must go through following edges: ");
+				System.out.println("The first step is: ");
+				System.out.println(keyEdges.getFirstStep());
+				System.out.println("The second step is: ");
+				System.out.println(keyEdges.getSecondStep());
 			}
 		}
 	}

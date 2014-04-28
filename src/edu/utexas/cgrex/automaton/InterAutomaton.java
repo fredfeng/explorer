@@ -98,16 +98,29 @@ public class InterAutomaton extends Automaton {
 				initStates.add(interInitSt);
 				interInitSt.setInitState();
 				if (options.annotated()) {
-					((RegAutomaton) masterAutomaton).buildOneStepAnnot();
-					Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterAutomaton)
-							.getOneStepAnnot();
-					Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
-							.annotate(regExprOpts);
+					if (options.oneStep()) {
+						((RegAutomaton) masterAutomaton).buildOneStepAnnot();
+						Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterAutomaton)
+								.getOneStepAnnot();
+						Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
+								.annotateOneStep(regExprOpts);
 
-					debugAnnot = annots;
+						debugAnnot = annots;
 
-					intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
-							annots);
+						intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
+								annots);
+					} else if (options.twoStep()) {
+						((RegAutomaton) masterAutomaton).buildTwoStepAnnot();
+						Map<AutoState, AnnotTwoStepsWrapper> regExprOpts = ((RegAutomaton) masterAutomaton)
+								.getTwoStepAnnot();
+						Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
+								.annotateTwoSteps(regExprOpts);
+
+						debugAnnot = annots;
+
+						intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
+								annots);
+					}
 				} else {
 					intersect(masterInitSt, slaveInitSt, interInitSt);
 				}

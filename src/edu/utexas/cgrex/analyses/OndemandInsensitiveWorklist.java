@@ -1,12 +1,10 @@
 package edu.utexas.cgrex.analyses;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
 import soot.G;
-import soot.MethodOrMethodContext;
 import soot.jimple.spark.pag.AllocDotField;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.FieldRefNode;
@@ -14,6 +12,7 @@ import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
+import soot.jimple.spark.sets.HybridPointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
 import soot.jimple.spark.sets.PointsToSetInternal;
 import soot.jimple.spark.solver.OnFlyCallGraph;
@@ -29,20 +28,18 @@ import soot.util.queue.QueueReader;
  * 
  */
 
-public final class OndemandWorklist extends Propagator {
+public final class OndemandInsensitiveWorklist extends Propagator {
 
 	public boolean debug = true;
 	protected final Set<VarNode> varNodeWorkList = new TreeSet<VarNode>();
 
 	protected final AutoPAG me;
 
-	public OndemandWorklist(PAG pag) {
+	public OndemandInsensitiveWorklist(PAG pag) {
 		this.pag = pag;
 		me = new AutoPAG(pag);
 		me.build();
 	}
-
-	public int count = 0;
 
 	/** Actually does the propagation. */
 	public final void propagate() {
@@ -61,7 +58,6 @@ public final class OndemandWorklist extends Propagator {
 				G.v().out.println("Worklist has " + varNodeWorkList.size()
 						+ " nodes.");
 			}
-			System.out.println("***********" + varNodeWorkList.size());
 			while (!varNodeWorkList.isEmpty()) {
 				VarNode src = varNodeWorkList.iterator().next();
 				varNodeWorkList.remove(src);
@@ -82,6 +78,7 @@ public final class OndemandWorklist extends Propagator {
 									(AllocNode) n, target.getField());
 
 							// my implementation
+							// this is 100% correct
 							Set<AllocNode> pt = me.insensitivePTAnalysis(src);
 							for (AllocNode alc : pt) {
 								nDotF.makeP2Set().add(alc);
@@ -111,8 +108,6 @@ public final class OndemandWorklist extends Propagator {
 				nDotF.flushNew();
 			}
 		} while (!varNodeWorkList.isEmpty());
-
-		System.out.println("***********count: " + count);
 	}
 
 	/* End of public methods. */
@@ -131,6 +126,7 @@ public final class OndemandWorklist extends Propagator {
 		for (Node element : targets) {
 
 			// my implementation
+			// this is 100% correct
 			Set<AllocNode> pt = me.insensitivePTAnalysis((VarNode) element);
 			boolean succ = false;
 			for (AllocNode alc : pt) {
@@ -185,8 +181,10 @@ public final class OndemandWorklist extends Propagator {
 						VarNode edgeTgt = (VarNode) addedTgt.getReplacement();
 
 						// my implementation
+						// can analyze edgeTgt or edgeSrc and here we use
+						// edgeSrc to conform to the soot implementation
 						Set<AllocNode> pt = me
-								.insensitivePTAnalysis((VarNode) Tgt);
+								.insensitivePTAnalysis((VarNode) edgeTgt);
 						boolean succ = false;
 						for (AllocNode alc : pt) {
 							succ = succ | edgeTgt.makeP2Set().add(alc);
@@ -210,6 +208,7 @@ public final class OndemandWorklist extends Propagator {
 					VarNode edgeTgt = (VarNode) addedTgt.getReplacement();
 
 					// my implementation
+					// to do pt analysis, we should analyze edgeTgt
 					Set<AllocNode> pt = me
 							.insensitivePTAnalysis((VarNode) edgeTgt);
 					boolean succ = false;
@@ -236,6 +235,7 @@ public final class OndemandWorklist extends Propagator {
 		for (Node element : simpleTargets) {
 
 			// my implementation
+			// directly analyze element's pt set
 			Set<AllocNode> pt = me.insensitivePTAnalysis((VarNode) element);
 			boolean succ = false;
 			for (AllocNode alc : pt) {
@@ -267,6 +267,7 @@ public final class OndemandWorklist extends Propagator {
 							f);
 
 					// my implementation
+					// analyze nDotF's pt set
 					Set<AllocNode> pt = me.insensitivePTAnalysis(nDotF);
 					for (AllocNode alc : pt) {
 						nDotF.makeP2Set().add(alc);
@@ -276,6 +277,9 @@ public final class OndemandWorklist extends Propagator {
 					| ret;
 		}
 
+		// for the following, a half is using my pt analysis, the other half is
+		// just using soot implementation to do the propagation which is also
+		// acceptable and reasonable
 		final HashSet<Node[]> storesToPropagate = new HashSet<Node[]>();
 		final HashSet<Node[]> loadsToPropagate = new HashSet<Node[]>();
 		for (final FieldRefNode fr : src.getAllFieldRefs()) {
@@ -359,7 +363,6 @@ public final class OndemandWorklist extends Propagator {
 	 */
 	protected final void handleFieldRefNode(FieldRefNode src,
 			final HashSet<Object[]> edgesToPropagate) {
-		count++;
 		final Node[] loadTargets = pag.loadLookup(src);
 		if (loadTargets.length == 0)
 			return;
@@ -371,6 +374,19 @@ public final class OndemandWorklist extends Propagator {
 				AllocDotField nDotF = pag.makeAllocDotField((AllocNode) n,
 						field);
 				if (nDotF != null) {
+					// my implementation
+					// this can NOT work maybe because the p2Set of nDotF has
+					// not been updated in the pag so we cannot simply analyze
+					// the pt set of nDotF by pag
+
+					// PointsToSetInternal p2Set = new HybridPointsToSet(nDotF
+					// .getType(), pag);
+					// Set<AllocNode> pt = me.insensitivePTAnalysis(nDotF);
+					// for (AllocNode alc : pt) {
+					// p2Set.add(alc);
+					// }
+
+					// this is soot implementation
 					PointsToSetInternal p2Set = nDotF.getP2Set();
 					if (!p2Set.getNewSet().isEmpty()) {
 						for (Node element : loadTargets) {

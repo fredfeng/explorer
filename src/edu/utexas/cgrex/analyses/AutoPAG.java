@@ -21,6 +21,8 @@ import soot.Type;
 import soot.Value;
 import soot.jimple.FieldRef;
 import soot.jimple.spark.ondemand.DemandCSPointsTo;
+import soot.jimple.spark.ondemand.LazyContextSensitivePointsToSet;
+import soot.jimple.spark.ondemand.WrappedPointsToSet;
 import soot.jimple.spark.ondemand.pautil.ContextSensitiveInfo;
 import soot.jimple.spark.pag.AllocDotField;
 import soot.jimple.spark.pag.AllocNode;
@@ -30,6 +32,9 @@ import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
+import soot.jimple.spark.sets.EqualsSupportingPointsToSet;
+import soot.jimple.spark.sets.P2SetVisitor;
+import soot.jimple.spark.sets.PointsToSetInternal;
 import edu.utexas.cgrex.utils.SootUtils;
 
 public class AutoPAG {
@@ -613,7 +618,8 @@ public class AutoPAG {
 		return refine;
 	}
 
-	// used in on-the-fly call graph building in the OndemandWorkList method
+	// used in on-the-fly call graph building in the OndemandInsensitiveWorkList
+	// method
 	public Set<AllocNode> insensitivePTAnalysis(VarNode var) {
 		Set<AllocNode> ptAllocSet = searchingObjects(var);
 		return ptAllocSet;
@@ -642,6 +648,59 @@ public class AutoPAG {
 	// just for testing
 	public Set<AllocNode> insensitiveQueryTest(VarNode var) {
 		Set<AllocNode> ptAllocSet = searchingObjects(var);
+		return ptAllocSet;
+	}
+
+	// used in on-the-fly call graph building in the OndemandSensitiveWorkList
+	// method
+	public Set<AllocNode> sensitivePTAnalysis(VarNode v) {
+		Object var = v.getVariable();
+		DemandCSPointsTo ptAnalysis = new DemandCSPointsTo(
+				new ContextSensitiveInfo(father), father);
+
+		System.out.println(var.getClass());
+		assert (var instanceof Local || var instanceof FieldRef);
+
+		PointsToSet ptSet = null;
+		if (var instanceof Local) {
+			ptSet = ptAnalysis.reachingObjects((Local) var);
+		}
+		assert (ptSet instanceof LazyContextSensitivePointsToSet);
+
+		EqualsSupportingPointsToSet p2Set = ((LazyContextSensitivePointsToSet) ptSet)
+				.getDelegate();
+		// System.out.println(p2Set.getClass());
+		assert (p2Set instanceof WrappedPointsToSet);
+
+		final Set<AllocNode> allocSet = new HashSet<AllocNode>();
+
+		(((WrappedPointsToSet) p2Set).getWrapped()).forall(new P2SetVisitor() {
+			public final void visit(Node n) {
+				assert (n instanceof AllocNode);
+				allocSet.add((AllocNode) n);
+			}
+		});
+
+		return allocSet;
+	}
+
+	public Set<AllocNode> sensitivePTAnalysis(AllocDotField nDotF) {
+		Set<AllocNode> ptAllocSet = new HashSet<AllocNode>();
+		FieldRefNode frn = father.findLocalFieldRefNode(nDotF.getBase(),
+				nDotF.getField());
+		if (frn != null) {
+			Node[] storeSources = father.storeInvLookup(frn);
+			for (Node var : storeSources) {
+				ptAllocSet.addAll(sensitivePTAnalysis((VarNode) var));
+			}
+		}
+		frn = father.findGlobalFieldRefNode(nDotF.getBase(), nDotF.getField());
+		if (frn != null) {
+			Node[] storeSources = father.storeInvLookup(frn);
+			for (Node var : storeSources) {
+				ptAllocSet.addAll(sensitivePTAnalysis((VarNode) var));
+			}
+		}
 		return ptAllocSet;
 	}
 

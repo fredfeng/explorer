@@ -72,12 +72,12 @@ public class TestBuildCGStateSCC {
 		AutoEdge edge_main = new AutoEdge("main");
 		AutoEdge edge_x = new AutoEdge("x");
 		AutoEdge edge_y = new AutoEdge("y");
-		AutoEdge edge_z = new AutoEdge("z");
+		AutoEdge edge_goo = new AutoEdge("goo");
 
 		CGAutoState state_init = new CGAutoState(1, true, false);
 		CGAutoState state_x = new CGAutoState(2, false, true);
 		CGAutoState state_y = new CGAutoState(3, false, true);
-		CGAutoState state_z = new CGAutoState(4, false, true);
+		CGAutoState state_goo = new CGAutoState(4, false, true);
 		CGAutoState state_main = new CGAutoState(5, false, true);
 		CGAutoState state_zoo_final = new CGAutoState(6, false, true);
 		CGAutoState state_bar = new CGAutoState(7, false, true);
@@ -85,7 +85,7 @@ public class TestBuildCGStateSCC {
 		call.addStates(state_init);
 		call.addStates(state_x);
 		call.addStates(state_y);
-		call.addStates(state_z);
+		call.addStates(state_goo);
 		call.addStates(state_main);
 		call.addStates(state_bar);
 		call.addStates(state_zoo_final);
@@ -93,8 +93,8 @@ public class TestBuildCGStateSCC {
 		call.addEdge(state_init, state_bar, edge_bar);
 		call.addEdge(state_bar, state_x, edge_x);
 		call.addEdge(state_bar, state_x, edge_x);
-		call.addEdge(state_x, state_z, edge_z);
-		call.addEdge(state_z, state_zoo_final, edge_zoo);
+		call.addEdge(state_x, state_goo, edge_goo);
+		call.addEdge(state_goo, state_zoo_final, edge_zoo);
 		call.addEdge(state_bar, state_main, edge_main);
 		call.addEdge(state_main, state_main, edge_main);
 		call.addEdge(state_main, state_y, edge_y);

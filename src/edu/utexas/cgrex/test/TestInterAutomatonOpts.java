@@ -120,7 +120,7 @@ public class TestInterAutomatonOpts {
 		Map<AutoState, Set<AutoEdge>> opts = expr.getOneStepAnnot();
 		System.out.println(opts);
 		Map<AutoState, Map<AutoState, Boolean>> annotations = call
-				.annotate(opts);
+				.annotateOneStep(opts);
 		System.out.println(annotations);
 
 		InterAutomaton comb_with_opt = new InterAutomaton(myopts, expr, call);

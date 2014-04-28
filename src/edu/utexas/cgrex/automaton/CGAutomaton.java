@@ -116,6 +116,17 @@ public class CGAutomaton extends Automaton {
 		}
 	}
 
+	public void dumpAnnot2Info() {
+		for (AutoState s : AnnotTwoSteps.keySet()) {
+			System.out.println("Reg Automaton State: " + s.getId());
+			Map<AutoState, Boolean> annot = AnnotTwoSteps.get(s);
+			for (AutoState slave : annot.keySet()) {
+				System.out.println("	For CG Automaton State: " + slave.getId());
+				System.out.println("	Annotation is: " + annot.get(slave));
+			}
+		}
+	}
+
 	// the first state in return value is the state in refsm
 	// the second state in return value is the state in cgfsm
 	// i.e.,
@@ -125,7 +136,7 @@ public class CGAutomaton extends Automaton {
 	// foreach masterState, "annotate" method annotates each slaveState
 	// to be true or false, denoting whether we should create the statePair
 	// in the intersection machine and whether we should go ahead
-	public Map<AutoState, Map<AutoState, Boolean>> annotate(
+	public Map<AutoState, Map<AutoState, Boolean>> annotateOneStep(
 			Map<AutoState, Set<AutoEdge>> regExprAnnots) {
 
 		buildCGStatesSCC();
@@ -171,14 +182,7 @@ public class CGAutomaton extends Automaton {
 		if (keyEdges.isEmpty()) {
 			outEdgsOfSCCAnnot = true;
 		} else {
-			// for (AutoEdge e : keyEdges) {
-			// Set<AutoEdge> out = ((CGAutoState) currSlaveState)
-			// .getOutgoingEdgesOfSCC();
-			// if (out != null && out.contains(e)) {
-			// outEdgsOfSCCAnnot = true;
-			// break;
-			// }
-			// }
+
 			Set<AutoEdge> out = ((CGAutoState) currSlaveState)
 					.getOutgoingEdgesOfSCC();
 
@@ -209,14 +213,7 @@ public class CGAutomaton extends Automaton {
 		if (keyEdges.isEmpty()) {
 			edgsInSCCAnnot = true;
 		} else {
-			// for (AutoEdge e : keyEdges) {
-			// Set<AutoEdge> in = ((CGAutoState) currSlaveState)
-			// .getEdgesInTheSameSCC();
-			// if (in != null && in.contains(e)) {
-			// edgsInSCCAnnot = true;
-			// break;
-			// }
-			// }
+
 			Set<AutoEdge> in = ((CGAutoState) currSlaveState)
 					.getEdgesInTheSameSCC();
 
@@ -243,6 +240,138 @@ public class CGAutomaton extends Automaton {
 
 		return SCCAnnot;
 	}
+
+	public Map<AutoState, Map<AutoState, Boolean>> annotateTwoSteps(
+			Map<AutoState, AnnotTwoStepsWrapper> regExprAnnots) {
+
+		buildCGStatesSCC();
+
+		for (AutoState stateInReg : regExprAnnots.keySet()) {
+			// I am in some RegState(Master State) of the RegAutomaton
+			AnnotTwoStepsWrapper keyEdges = regExprAnnots.get(stateInReg);
+			AnnotTwoSteps.put(stateInReg, annotateOneMasterState2(keyEdges));
+		}
+		return AnnotTwoSteps;
+	}
+
+	protected Map<AutoState, Boolean> annotateOneMasterState2(
+			AnnotTwoStepsWrapper keyEdges) {
+
+		Map<AutoState, Boolean> opts = new HashMap<AutoState, Boolean>();
+		Map<AutoState, Boolean> firstOpts = new HashMap<AutoState, Boolean>();
+		Map<AutoState, Boolean> secondOpts = new HashMap<AutoState, Boolean>();
+		// first annotate the second step
+		for (AutoState s : initStates) {
+			annotSlaveMasterSCC2Edges(s, keyEdges.getFirstStep(), firstOpts);
+			annotSlaveMasterSCC2Edges(s, keyEdges.getSecondStep(), secondOpts);
+		}
+		for (AutoState s : states) {
+			// annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
+			annotSlaveMasterSCC2(s, firstOpts, secondOpts, opts);
+		}
+		return opts;
+	}
+
+	protected boolean annotSlaveMasterSCC2Edges(AutoState currSlaveState,
+			Set<AutoEdge> keyEdges, Map<AutoState, Boolean> opts) {
+		// annotate each slave state in call graph automaton in terms of the
+		// second steps that the previous states should make in the current
+		// master state given by keyEdges (keyEdges.getSecondStep())
+		if (opts.containsKey(currSlaveState))
+			return opts.get(currSlaveState);
+
+		// 1. annotate according to the outgoingEdgesOfSCC
+		boolean outEdgsOfSCCAnnot = false;
+		if (keyEdges.isEmpty()) {
+			outEdgsOfSCCAnnot = true;
+		} else {
+
+			Set<AutoEdge> out = ((CGAutoState) currSlaveState)
+					.getOutgoingEdgesOfSCC();
+
+			assert (out != null);
+
+			for (AutoEdge e : keyEdges) {
+				if (out.contains(e)) {
+					outEdgsOfSCCAnnot = true;
+					break;
+				}
+			}
+		}
+
+		// 2. annotate according to the outgoingStatesOfSCC
+		// also recursively update the outgoingStates of this SCC (no cycles)
+		boolean outStsOfSCCAnnot = false;
+
+		// System.out.println(((CGAutoState) currSlaveState)
+		// .getOutgoingStatesOfSCC());
+		for (AutoState s : ((CGAutoState) currSlaveState)
+				.getOutgoingStatesOfSCC()) {
+			outStsOfSCCAnnot = annotSlaveMasterSCC2Edges(s, keyEdges, opts)
+					| outStsOfSCCAnnot;
+		}
+
+		// 3. annotate according to the edgesInTheSameSCC
+		boolean edgsInSCCAnnot = false;
+		if (keyEdges.isEmpty()) {
+			edgsInSCCAnnot = true;
+		} else {
+
+			Set<AutoEdge> in = ((CGAutoState) currSlaveState)
+					.getEdgesInTheSameSCC();
+
+			assert (in != null);
+
+			for (AutoEdge e : keyEdges) {
+				if (in.contains(e)) {
+					edgsInSCCAnnot = true;
+					break;
+				}
+			}
+		}
+
+		// 4. get the final annotation and annotate the states in this SCC
+		boolean SCCAnnot = outEdgsOfSCCAnnot || outStsOfSCCAnnot
+				|| edgsInSCCAnnot;
+		for (AutoState s : ((CGAutoState) currSlaveState)
+				.getStatesInTheSameSCC()) {
+
+			assert (!opts.containsKey(s));
+
+			opts.put(s, SCCAnnot);
+		}
+
+		return SCCAnnot;
+	}
+
+	protected boolean annotSlaveMasterSCC2(AutoState currSlaveState,
+			Map<AutoState, Boolean> firstOpts,
+			Map<AutoState, Boolean> secondOpts, Map<AutoState, Boolean> opts) {
+
+		assert (firstOpts.containsKey(currSlaveState));
+
+		if (firstOpts.get(currSlaveState)) {
+			for (AutoState nextState : currSlaveState.getOutgoingStatesKeySet()) {
+				if (nextState.equals(currSlaveState))
+					continue;
+
+				assert (secondOpts.containsKey(nextState));
+
+				if (secondOpts.get(nextState)) {
+					opts.put(currSlaveState, true);
+					break;
+				}
+			}
+		}
+
+		if (!opts.containsKey(currSlaveState))
+			opts.put(currSlaveState, false);
+
+		return opts.get(currSlaveState);
+	}
+
+	// the following method is used for graph without cycles, which is no longer
+	// used now and maintained, and can be discarded
 
 	// for each master state in regular expr fsm
 	// then for each slave state in call graph fsm

@@ -17,4 +17,12 @@ public class InterAutoOpts {
 		return options.containsKey("annot")
 				&& options.get("annot").equals(true);
 	}
+
+	public boolean oneStep() {
+		return options.containsKey("one") && options.get("one").equals(true);
+	}
+	
+	public boolean twoStep() {
+		return options.containsKey("two") && options.get("two").equals(true);
+	}
 }

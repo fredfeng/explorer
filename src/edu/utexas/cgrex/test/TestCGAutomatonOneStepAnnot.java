@@ -11,7 +11,7 @@ import edu.utexas.cgrex.automaton.RegAutomaton;
 public class TestCGAutomatonOneStepAnnot {
 	public static void main(String[] args) {
 
-		RegAutomaton reg = TestRegAutomatonFind.test();
+		RegAutomaton reg = TestRegAutomatonOneStepAnnot.test();
 		CGAutomaton call = TestBuildCGStateSCC.test();
 
 		reg.buildOneStepAnnot(); // annotate reg automaton
@@ -19,11 +19,11 @@ public class TestCGAutomatonOneStepAnnot {
 		Map<AutoState, Set<AutoEdge>> regAnnots = reg.getOneStepAnnot();
 
 		call.buildCGStatesSCC(); // consider scc
-		call.annotate(regAnnots); // annotate call automaton
+		call.annotateOneStep(regAnnots); // annotate call automaton
 		// get the annotations
 		Map<AutoState, Map<AutoState, Boolean>> callAnnots = call
 				.getAnnotOneStep();
-		
+
 		reg.dump();
 		call.dump();
 		call.dumpSCCInfo();

@@ -4,7 +4,7 @@ import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
 
-public class TestRegAutomatonFind {
+public class TestRegAutomatonOneStepAnnot {
 	
 	// construct a regular expression automaton and test the correctness of the
 	// annotation method of RegAutomaton
@@ -59,6 +59,7 @@ public class TestRegAutomatonFind {
 		expr.addEdge(state_init, state_2, edge_bar);
 		expr.addEdge(state_2, state_2, edge_dot);
 		expr.addEdge(state_2, state_3, edge_zoo);
+		expr.addEdge(state_2, state_3, edge_dot);
 		
 		return expr;
 	}
