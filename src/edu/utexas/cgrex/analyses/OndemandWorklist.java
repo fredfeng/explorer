@@ -54,7 +54,7 @@ public final class OndemandWorklist extends Propagator {
 			handleAllocNode((AllocNode) object);
 		}
 
-		pag.dump();
+//		pag.dump();
 
 		do {
 			if (debug) {
@@ -113,6 +113,8 @@ public final class OndemandWorklist extends Propagator {
 		} while (!varNodeWorkList.isEmpty());
 
 		System.out.println("***********count: " + count);
+
+
 	}
 
 	/* End of public methods. */
@@ -186,7 +188,7 @@ public final class OndemandWorklist extends Propagator {
 
 						// my implementation
 						Set<AllocNode> pt = me
-								.insensitivePTAnalysis((VarNode) Tgt);
+								.insensitivePTAnalysis((VarNode) edgeTgt);
 						boolean succ = false;
 						for (AllocNode alc : pt) {
 							succ = succ | edgeTgt.makeP2Set().add(alc);
