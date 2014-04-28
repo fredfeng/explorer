@@ -2,8 +2,9 @@ package edu.utexas.cgrex.test;
 
 
 import edu.utexas.cgrex.automaton.AutoEdge;
-import edu.utexas.cgrex.automaton.CGAutoState;
-import edu.utexas.cgrex.automaton.CGAutomaton;
+import edu.utexas.cgrex.automaton.AutoState;
+import edu.utexas.cgrex.automaton.RegAutoState;
+import edu.utexas.cgrex.automaton.RegAutomaton;
 import edu.utexas.cgrex.utils.GraphUtil;
 
 
@@ -14,14 +15,15 @@ public class TestMincut {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		CGAutomaton cg = new TestMincut().gen();
+		RegAutomaton cg = new TestMincut().gen();
 		cg.dump();
-		GraphUtil.minCut(cg);
+		System.out.println(GraphUtil.minCut(cg));
+	
 	}
 
 	
-	public CGAutomaton gen() {
-		CGAutomaton call = new CGAutomaton();
+	public RegAutomaton gen() {
+		RegAutomaton call = new RegAutomaton();
 
 		/** construct a simulated call graph fsm */
 		AutoEdge call_edge_1 = new AutoEdge("1", 16, "16");
@@ -34,12 +36,12 @@ public class TestMincut {
 		AutoEdge call_edge_8 = new AutoEdge("8", 20, "20");
 		AutoEdge call_edge_9 = new AutoEdge("9", 4, "4");
 
-		CGAutoState call_init = new CGAutoState("s", true, false);
-		CGAutoState call_state_1 = new CGAutoState("v1", false, false);
-		CGAutoState call_state_2 = new CGAutoState("v2", false, false);
-		CGAutoState call_state_3 = new CGAutoState("v3", false, false);
-		CGAutoState call_state_4 = new CGAutoState("v4", false, false);
-		CGAutoState call_final = new CGAutoState("t", false, true);
+		AutoState call_init = new RegAutoState("s", true, false);
+		AutoState call_state_1 = new RegAutoState("v1", false, false);
+		AutoState call_state_2 = new RegAutoState("v2", false, false);
+		AutoState call_state_3 = new RegAutoState("v3", false, false);
+		AutoState call_state_4 = new RegAutoState("v4", false, false);
+		AutoState call_final = new RegAutoState("t", false, true);
 
 		call.addStates(call_init);
 		call.addStates(call_state_1);
@@ -52,18 +54,36 @@ public class TestMincut {
 		call.addFinalState(call_final);
 
 		call_init.addOutgoingStates(call_state_1, call_edge_1);
+		call_state_1.addIncomingStates(call_init, call_edge_1);
+
+		
 		call_init.addOutgoingStates(call_state_2, call_edge_2);
+		call_state_2.addIncomingStates(call_init, call_edge_2);
 		
 		call_state_1.addOutgoingStates(call_state_3, call_edge_3);
+		call_state_3.addIncomingStates(call_state_1, call_edge_3);
+
 		
 		call_state_2.addOutgoingStates(call_state_1, call_edge_4);
+		call_state_1.addIncomingStates(call_state_2, call_edge_4);
+
 		call_state_2.addOutgoingStates(call_state_4, call_edge_6);
+		call_state_4.addIncomingStates(call_state_2, call_edge_6);
+
 		
 		call_state_3.addOutgoingStates(call_state_2, call_edge_5);
+		call_state_2.addIncomingStates(call_state_3, call_edge_5);
+
 		call_state_3.addOutgoingStates(call_final, call_edge_8);
+		call_final.addIncomingStates(call_state_3, call_edge_8);
+
 		
 		call_state_4.addOutgoingStates(call_state_3, call_edge_7);
+		call_state_3.addIncomingStates(call_state_4, call_edge_7);
+
+		
 		call_state_4.addOutgoingStates(call_final, call_edge_9);
+		call_final.addIncomingStates(call_state_4, call_edge_9);
 
 
 		return call;

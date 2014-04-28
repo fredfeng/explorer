@@ -1,5 +1,9 @@
 package edu.utexas.cgrex.utils;
 
+import java.util.Date;
+
+import soot.G;
+
 public class StringUtil {
 	public static String appendChar(char c, StringBuilder b) {
 		if (c >= 0x21 && c <= 0x7e && c != '\\' && c != '"')
@@ -18,4 +22,11 @@ public class StringUtil {
 		}
 		return b.toString();
 	}
+	
+	public static void reportTime(String desc, Date start, Date end) {
+		long time = end.getTime() - start.getTime();
+		G.v().out.println("[CGrex] " + desc + " in " + time / 1000 + "."
+				+ (time / 100) % 10 + " seconds.");
+	}
+
 }
