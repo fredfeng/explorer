@@ -356,26 +356,26 @@ public class CGAutomaton extends Automaton {
 		assert (firstOpts.containsKey(currSlaveState));
 		assert (secondOpts.containsKey(currSlaveState));
 
-		// if (firstOpts.get(currSlaveState)) {
-		// for (AutoState nextState : currSlaveState.getOutgoingStatesKeySet())
-		// {
-		// // if (nextState.equals(currSlaveState))
-		// // continue;
-		//
-		// assert (secondOpts.containsKey(nextState));
-		//
-		// if (secondOpts.get(nextState)) {
-		// opts.put(currSlaveState, true);
-		// break;
-		// }
-		// }
-		// }
-		//
-		// if (!opts.containsKey(currSlaveState))
-		// opts.put(currSlaveState, false);
+		 if (firstOpts.get(currSlaveState)) {
+		 for (AutoState nextState : currSlaveState.getOutgoingStatesKeySet())
+		 {
+		 // if (nextState.equals(currSlaveState))
+		 // continue;
+		
+		 assert (secondOpts.containsKey(nextState));
+		
+		 if (secondOpts.get(nextState)) {
+		 opts.put(currSlaveState, true);
+		 break;
+		 }
+		 }
+		 }
+		
+		 if (!opts.containsKey(currSlaveState))
+		 opts.put(currSlaveState, false);
 
-		opts.put(currSlaveState,
-				firstOpts.get(currSlaveState) && secondOpts.get(currSlaveState));
+//		opts.put(currSlaveState,
+//				firstOpts.get(currSlaveState) && secondOpts.get(currSlaveState));
 
 		return opts.get(currSlaveState);
 	}
