@@ -112,7 +112,7 @@ public class QueryManager {
                     cg, new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
         }
         reachableMethods.update();
-        System.out.println("Reachable methods--------" + reachableMethods.size());
+//        System.out.println("Reachable methods--------" + reachableMethods.size());
         return reachableMethods;
     }
 
@@ -316,7 +316,7 @@ public class QueryManager {
 				} else { //e is a false positive.
 					//remove this edge and refine call graph.
 					Edge callEdge = this.getEdgeFromCallgraph(e);
-					System.out.println("---------Refine call edge: " + callEdge);
+//					System.out.println("---------Refine call edge: " + callEdge);
 					cg.removeEdge(callEdge);
 					//remove this edge from interauto.
 					interAuto.refine(e.edge);
@@ -390,7 +390,7 @@ public class QueryManager {
 				return outEdge;
 		}
 //		assert(false);
-		System.err.println("CAN not find the right call edge.------------");
+//		System.err.println("CAN not find the right call edge.------------");
 		return null;
 	}
 
