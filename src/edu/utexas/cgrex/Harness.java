@@ -7,7 +7,7 @@ import edu.utexas.cgrex.analyses.CGregxTransformer;
 
 public class Harness {
 
-	public static int benchmarkSize = 1000;
+	public static int benchmarkSize = 500;
 
 	// 0: interactive mode; 1: benchmark mode
 	public static int mode = 1;
