@@ -97,9 +97,9 @@ public class RegAutomaton extends Automaton {
 
 		// to be sure all states are considered, we can uncomment this
 		// however, this might degrade the performance
-		// for (AutoState s: states) {
-		// workList.add(s);
-		// }
+		for (AutoState s : states) {
+			workList.add(s);
+		}
 
 		// a worklist algorithm to annotate all the other states
 		while (!workList.isEmpty()) {
