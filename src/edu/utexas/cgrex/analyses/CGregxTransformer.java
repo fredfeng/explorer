@@ -132,7 +132,7 @@ public class CGregxTransformer extends SceneTransformer {
 
 //			System.out.println("CHA------" + res1);
 //			System.out.println("OTF------" + res2);
-			System.out.println("--------------------------------------");
+//			System.out.println("--------------------------------------");
 			if(res1 == res2) 
 				correctQueries++;
 			else {
