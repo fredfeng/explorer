@@ -23,6 +23,11 @@ public class StringUtil {
 		return b.toString();
 	}
 	
+	public static void reportSec(String desc, long start, long end) {
+		double difference = (end - start)/1e6;
+		G.v().out.println("[CGrex] " + desc + " in " + difference + " ms.");
+	}
+	
 	public static void reportTime(String desc, Date start, Date end) {
 		long time = end.getTime() - start.getTime();
 		G.v().out.println("[CGrex] " + desc + " in " + time / 1000 + "."
@@ -32,6 +37,10 @@ public class StringUtil {
 	public static void reportRefineFail(String desc) {
 		G.v().out.println("[CGrex] "
 				+ "Regular expression causes Refinement failure:" + desc);
+	}
+	
+	public static void reportInfo(String desc) {
+		G.v().out.println("[CGrex] " + desc);
 	}
 
 }
