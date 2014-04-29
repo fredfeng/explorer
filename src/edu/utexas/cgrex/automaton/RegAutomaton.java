@@ -92,6 +92,7 @@ public class RegAutomaton extends Automaton {
 
 		// a worklist algorithm to annotate all the other states
 		while (!workList.isEmpty()) {
+
 			AutoState head = workList.poll();
 
 			// dependency check
@@ -107,6 +108,8 @@ public class RegAutomaton extends Automaton {
 				workList.add(head);
 				continue;
 			}
+			
+			System.out.println("******Annotating state " + head);
 
 			if (head.isFinalState)
 				continue;
@@ -115,6 +118,7 @@ public class RegAutomaton extends Automaton {
 
 			AnnotTwoStepsWrapper keyEdges = new AnnotTwoStepsWrapper();
 			annotTwoSteps.put(head, keyEdges);
+			System.out.println("*****Before annotating first steps " + keyEdges.getFirstStep());
 			// annotate the first step
 			for (AutoEdge eg : head.getOutgoingStatesInvKeySet()) {
 				if (!eg.isDotEdge())
@@ -129,13 +133,18 @@ public class RegAutomaton extends Automaton {
 					}
 				}
 			}
+			System.out.println("*****After annotating first steps: " + keyEdges.getFirstStep());
+			System.out.println("*****Before annotating second steps: " + keyEdges.getSecondStep());
 			// annotate the second step
 			for (AutoState next : head.getOutgoingStatesKeySet()) {
+				if (next.equals(head))
+					continue;
 				assert (annotTwoSteps.containsKey(next));
-				System.out.println("head: " + head);
-				System.out.println("next: " + next);
+				// System.out.println("head: " + head);
+				// System.out.println("next: " + next);
 				keyEdges.addSecondStep(annotTwoSteps.get(next).getFirstStep());
 			}
+			System.out.println("*****After annotating second steps " + keyEdges.getSecondStep());
 			// add more elements in the worklist
 			for (AutoState prev : head.getIncomingStatesKeySet()) {
 				if (!annotated.contains(prev))

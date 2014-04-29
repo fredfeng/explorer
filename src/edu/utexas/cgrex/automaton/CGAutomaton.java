@@ -249,6 +249,7 @@ public class CGAutomaton extends Automaton {
 		for (AutoState stateInReg : regExprAnnots.keySet()) {
 			// I am in some RegState(Master State) of the RegAutomaton
 			AnnotTwoStepsWrapper keyEdges = regExprAnnots.get(stateInReg);
+			System.out.println("RegAutoState: " + stateInReg);
 			AnnotTwoSteps.put(stateInReg, annotateOneMasterState2(keyEdges));
 		}
 		return AnnotTwoSteps;
@@ -269,6 +270,10 @@ public class CGAutomaton extends Automaton {
 			// annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
 			annotSlaveMasterSCC2(s, firstOpts, secondOpts, opts);
 		}
+		System.out.println(keyEdges.getFirstStep());
+		System.out.println(keyEdges.getSecondStep());
+		System.out.println(firstOpts);
+		System.out.println(secondOpts);
 		return opts;
 	}
 
@@ -349,23 +354,28 @@ public class CGAutomaton extends Automaton {
 			Map<AutoState, Boolean> secondOpts, Map<AutoState, Boolean> opts) {
 
 		assert (firstOpts.containsKey(currSlaveState));
+		assert (secondOpts.containsKey(currSlaveState));
 
-		if (firstOpts.get(currSlaveState)) {
-			for (AutoState nextState : currSlaveState.getOutgoingStatesKeySet()) {
-				// if (nextState.equals(currSlaveState))
-				// continue;
+		// if (firstOpts.get(currSlaveState)) {
+		// for (AutoState nextState : currSlaveState.getOutgoingStatesKeySet())
+		// {
+		// // if (nextState.equals(currSlaveState))
+		// // continue;
+		//
+		// assert (secondOpts.containsKey(nextState));
+		//
+		// if (secondOpts.get(nextState)) {
+		// opts.put(currSlaveState, true);
+		// break;
+		// }
+		// }
+		// }
+		//
+		// if (!opts.containsKey(currSlaveState))
+		// opts.put(currSlaveState, false);
 
-				assert (secondOpts.containsKey(nextState));
-
-				if (secondOpts.get(nextState)) {
-					opts.put(currSlaveState, true);
-					break;
-				}
-			}
-		}
-
-		if (!opts.containsKey(currSlaveState))
-			opts.put(currSlaveState, false);
+		opts.put(currSlaveState,
+				firstOpts.get(currSlaveState) && secondOpts.get(currSlaveState));
 
 		return opts.get(currSlaveState);
 	}
