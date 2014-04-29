@@ -249,7 +249,7 @@ public class CGAutomaton extends Automaton {
 		for (AutoState stateInReg : regExprAnnots.keySet()) {
 			// I am in some RegState(Master State) of the RegAutomaton
 			AnnotTwoStepsWrapper keyEdges = regExprAnnots.get(stateInReg);
-			System.out.println("RegAutoState: " + stateInReg);
+//			System.out.println("RegAutoState: " + stateInReg);
 			AnnotTwoSteps.put(stateInReg, annotateOneMasterState2(keyEdges));
 		}
 		return AnnotTwoSteps;
@@ -270,10 +270,10 @@ public class CGAutomaton extends Automaton {
 			// annotateOneSlaveStateOneMasterState(s, keyEdges, opts);
 			annotSlaveMasterSCC2(s, firstOpts, secondOpts, opts);
 		}
-		System.out.println(keyEdges.getFirstStep());
-		System.out.println(keyEdges.getSecondStep());
-		System.out.println(firstOpts);
-		System.out.println(secondOpts);
+//		System.out.println(keyEdges.getFirstStep());
+//		System.out.println(keyEdges.getSecondStep());
+//		System.out.println(firstOpts);
+//		System.out.println(secondOpts);
 		return opts;
 	}
 
