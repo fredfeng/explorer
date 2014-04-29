@@ -51,7 +51,7 @@ public final class OndemandInsensitiveWorklist extends Propagator {
 			handleAllocNode((AllocNode) object);
 		}
 
-//		pag.dump();
+		// pag.dump();
 
 		do {
 			if (debug) {
@@ -108,7 +108,6 @@ public final class OndemandInsensitiveWorklist extends Propagator {
 				nDotF.flushNew();
 			}
 		} while (!varNodeWorkList.isEmpty());
-
 
 	}
 
@@ -383,13 +382,17 @@ public final class OndemandInsensitiveWorklist extends Propagator {
 
 					// PointsToSetInternal p2Set = new HybridPointsToSet(nDotF
 					// .getType(), pag);
-					// Set<AllocNode> pt = me.insensitivePTAnalysis(nDotF);
-					// for (AllocNode alc : pt) {
-					// p2Set.add(alc);
-					// }
+					// successful
+					PointsToSetInternal p2Set = nDotF.getP2Set();
+					Set<AllocNode> pt = me.insensitivePTAnalysis(nDotF);
+					for (AllocNode alc : pt) {
+						p2Set.add(alc);
+					}
+					nDotF.makeP2Set().addAll(p2Set, null);
 
 					// this is soot implementation
-					PointsToSetInternal p2Set = nDotF.getP2Set();
+					// PointsToSetInternal p2Set = nDotF.getP2Set();
+
 					if (!p2Set.getNewSet().isEmpty()) {
 						for (Node element : loadTargets) {
 							Object[] pair = { p2Set, element };

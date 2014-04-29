@@ -73,13 +73,13 @@ public class OTFTransformer extends SceneTransformer {
 		Date startProp = new Date();
 
 		// new PropWorklist(pag).propagate();
-		// new OndemandInsensitiveWorklist(pag).propagate();
-		new OndemandSensitiveWorklist(pag).propagate();
+		new OndemandInsensitiveWorklist(pag).propagate();
+		// new OndemandSensitiveWorklist(pag).propagate();
 
 		Date endProp = new Date();
 		reportTime("Propagation", startProp, endProp);
 
-		// pag.dump();
+		pag.dump();
 		// doGC();
 
 		if (debug) {
