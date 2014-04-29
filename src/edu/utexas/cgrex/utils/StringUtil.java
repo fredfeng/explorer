@@ -28,5 +28,10 @@ public class StringUtil {
 		G.v().out.println("[CGrex] " + desc + " in " + time / 1000 + "."
 				+ (time / 100) % 10 + " seconds.");
 	}
+	
+	public static void reportRefineFail(String desc) {
+		G.v().out.println("[CGrex] "
+				+ "Regular expression causes Refinement failure:" + desc);
+	}
 
 }

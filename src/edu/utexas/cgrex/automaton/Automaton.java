@@ -2,7 +2,11 @@ package edu.utexas.cgrex.automaton;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public abstract class Automaton {
 
@@ -59,18 +63,11 @@ public abstract class Automaton {
 
 	public AutoEdge getEdgeBySrc(AutoState src, AutoState sink) {
 		AutoEdge e = null;
-		for (AutoState as : getStates()) {
-			if (!as.equals(src))
-				continue;
 
-			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
-					.hasNext();) {
-				AutoState tgtState = cIt.next();
-				if (!tgtState.equals(sink))
-					continue;
-				Set<AutoEdge> out = as.outgoingStatesLookup(tgtState);
-				e = out.iterator().next();
-				return e;
+		for (AutoState s : src.getOutgoingStatesKeySet()) {
+			if (s.equals(sink)) {
+				e = src.outgoingStatesLookup(s).iterator().next();
+				break;
 			}
 		}
 
@@ -136,7 +133,7 @@ public abstract class Automaton {
 					if (outEdge.isDotEdge())
 						b.append(".");
 					else
-						b.append(outEdge.getShortName() + outEdge.getId());
+						b.append(outEdge.getShortName());
 					b.append("\"]\n");
 				}
 
@@ -213,6 +210,55 @@ public abstract class Automaton {
 				assert (tgtState.incomingStatesLookup(as).size() > 0);
 			}
 		}
+	}
+		
+	//init necessary inverse edges for residual graph.
+	public void initResidualEdges() {
+		//need to create new edges and nodes.
+		
+		for(AutoState s : this.states) {
+			List<AutoEdge> tempList = new LinkedList(s.getOutgoingStatesInvKeySet());
+			for(AutoEdge e : tempList) {
+				//how about self loop.
+				AutoState tgtState = s.outgoingStatesInvLookup(e).iterator()
+						.next();
+				if(e.isInvEdge() || getEdgeBySrc(tgtState, s)!=null) continue;
+
+				AutoEdge augEdge = new AutoEdge("inv" + e.getId(), e.getFlow(),
+						e.getFlow() + "");
+				augEdge.setResidual(e.getFlow());
+				augEdge.setInvEdge(true);
+				this.addEdge(tgtState, s, augEdge);
+			}
+		}
+	}
+	
+	public void genResidualGraph() {
+		for (AutoState as : this.states)
+			for (Iterator<AutoEdge> it = as.outgoingStatesInvIterator(); it
+					.hasNext();) {
+				AutoEdge e = it.next();
+				// normal edges.
+				if (!e.isInvEdge()) {
+					assert (e.getWeight() != 0);
+					int newWt = e.getWeight() - e.getFlow();
+					// System.out.println("weight::" + e + "==>" + e.getFlow() +
+					// "/"
+					// + e.getWeight() + '=' + newWt);
+					e.setResidual(newWt);
+					e.setShortName(e.getWeight() + "");
+					assert (newWt >= 0);
+					// need to take care of inverse edge.
+					assert (as.outgoingStatesInvLookup(e).size() == 1);
+					AutoState tgt = as.outgoingStatesInvLookup(e).iterator()
+							.next();
+					assert (tgt != null);
+					AutoEdge revEdge = this.getEdgeBySrc(tgt, as);
+					//FIXME: there can be loop between two nodes.
+					if(revEdge.isInvEdge())
+						revEdge.setResidual(e.getFlow());
+				}
+			}
 	}
 
 }

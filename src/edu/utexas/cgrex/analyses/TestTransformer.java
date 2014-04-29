@@ -1,9 +1,14 @@
 package edu.utexas.cgrex.analyses;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
+import soot.G;
+import soot.Scene;
 import soot.SceneTransformer;
+import soot.SourceLocator;
 import soot.jimple.spark.builder.ContextInsensitiveBuilder;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -13,15 +18,14 @@ import soot.options.SparkOptions;
 import edu.utexas.cgrex.Harness;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.test.RegularExpGenerator;
-import edu.utexas.cgrex.utils.StringUtil;
 
 /**
- * Entry point of the whole analysis.
+ * Transformer for interactive debugging.
  * 
  * @author yufeng
  * 
  */
-public class CGregxTransformer extends SceneTransformer {
+public class TestTransformer extends SceneTransformer {
 
 	public boolean debug = true;
 
@@ -60,44 +64,14 @@ public class CGregxTransformer extends SceneTransformer {
 		AutoPAG ddAutoPAG = new AutoPAG(pag);
 		ddAutoPAG.build();	
 		/* END: CHA-based demand-driven CALL graph*/
-		
-		/* BEGIN: on-the-fly eager CALL graph*/
-		HashMap<String, String> opt2 = new HashMap<String, String>(options);
-		opt2.put("enabled", "true");
-		opt2.put("verbose", "true");
-		opt2.put("field-based", "false");
-		opt2.put("on-fly-cg", "true");
-		opt2.put("set-impl", "double");
-		opt2.put("double-set-old", "hybrid");
-		opt2.put("double-set-new", "hybrid");
-
-		SparkOptions opts2 = new SparkOptions(opt2);
-
-		// Build pointer assignment graph
-		ContextInsensitiveBuilder b2 = new ContextInsensitiveBuilder();
-
-		final PAG otfPag = b2.setup(opts2);
-		b2.build();
-
-		// Build type masks
-		otfPag.getTypeManager().makeTypeMask();
-
-		//no need to Propagate. This will run our actual points-to analysis.
-		AutoPAG otfAutoPAG = new AutoPAG(otfPag);
-		otfAutoPAG.build();	
-		/* END: on-the-fly eager CALL graph*/
-
 		qm = new QueryManager(ddAutoPAG, this.buildCallGraph());
+		qm.doQuery();
 		
-		otfQm = new QueryManager(otfAutoPAG, otfAutoPAG.getFather()
-				.getOnFlyCallGraph().callGraph());
-		
-		this.runBenchmark();
 	}
 	
 	private void runBenchmark() {
 		//picking up samples from CHA-based version.
-		RegularExpGenerator generator = new RegularExpGenerator(otfQm);
+		RegularExpGenerator generator = new RegularExpGenerator(qm);
 		int correctQueries = 0;
 		for (int i = 0; i < Harness.benchmarkSize; i++) {
 			String regx = generator.genRegx();
@@ -108,17 +82,10 @@ public class CGregxTransformer extends SceneTransformer {
 			System.out.println("CHA------" + res1);
 			System.out.println("OTF------" + res2);
 			System.out.println("--------------------------------------");
-			if(res1 == res2) 
-				correctQueries++;
-			else {
-				assert(res1 == true);//make sure CHA is always sound.
-				//record the error.
-				StringUtil.reportRefineFail(regx);
-			}
+			if(res1 == res2) correctQueries++;
 		}
 		
-		System.out.println("benchmark result-------" + correctQueries + "/"
-				+ Harness.benchmarkSize);
+		System.out.println("benchmark result-------" + correctQueries + "/" + Harness.benchmarkSize);
 	}
 	
 	//build a CHA-based call graph 

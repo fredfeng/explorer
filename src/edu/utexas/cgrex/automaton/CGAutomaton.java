@@ -12,6 +12,8 @@ import edu.utexas.cgrex.utils.SCCBuilder;
 
 // cgfsm is the slave fsm
 public class CGAutomaton extends Automaton {
+	
+	private boolean debug = false;
 
 	public Map<AutoState, Map<AutoState, Boolean>> AnnotOneStep = new HashMap<AutoState, Map<AutoState, Boolean>>();
 
@@ -243,7 +245,8 @@ public class CGAutomaton extends Automaton {
 
 	public Map<AutoState, Map<AutoState, Boolean>> annotateTwoSteps(
 			Map<AutoState, AnnotTwoStepsWrapper> regExprAnnots) {
-		System.out.println("In CGAutomaton annotateTwoSteps method...");
+		if(debug)
+			System.out.println("In CGAutomaton annotateTwoSteps method...");
 		buildCGStatesSCC();
 
 		for (AutoState stateInReg : regExprAnnots.keySet()) {
@@ -257,7 +260,8 @@ public class CGAutomaton extends Automaton {
 
 	protected Map<AutoState, Boolean> annotateOneMasterState2(
 			AnnotTwoStepsWrapper keyEdges) {
-		System.out.println("In CGAutomaton annotateOneMasterState2 method....");
+		if(debug)
+			System.out.println("In CGAutomaton annotateOneMasterState2 method....");
 
 		Map<AutoState, Boolean> opts = new HashMap<AutoState, Boolean>();
 		Map<AutoState, Boolean> firstOpts = new HashMap<AutoState, Boolean>();
@@ -281,7 +285,8 @@ public class CGAutomaton extends Automaton {
 	protected boolean annotSlaveMasterSCC2Edges(AutoState currSlaveState,
 			Set<AutoEdge> keyEdges, Map<AutoState, Boolean> opts) {
 		
-		System.out.println("In CGAutomaton annotSlaveMasterSCC2Edges method.....");
+		if(debug)
+			System.out.println("In CGAutomaton annotSlaveMasterSCC2Edges method.....");
 		// annotate each slave state in call graph automaton in terms of the
 		// second steps that the previous states should make in the current
 		// master state given by keyEdges (keyEdges.getSecondStep())
@@ -356,7 +361,8 @@ public class CGAutomaton extends Automaton {
 			Map<AutoState, Boolean> firstOpts,
 			Map<AutoState, Boolean> secondOpts, Map<AutoState, Boolean> opts) {
 
-		System.out.println("In CGAutomaton annotSlaveMasterSCC2 method....");
+		if(debug)
+			System.out.println("In CGAutomaton annotSlaveMasterSCC2 method....");
 		assert (firstOpts.containsKey(currSlaveState));
 		assert (secondOpts.containsKey(currSlaveState));
 

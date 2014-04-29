@@ -207,7 +207,7 @@ public class QueryManager {
 		}
 		// dump current result.
 //		System.out.println("dump regular graph.");
-		regAuto.dump();
+//		regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -351,7 +351,13 @@ public class QueryManager {
 				|| calleeMeth.isPrivate())
 			return true;
 
-		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
+		AutoEdge inEdge = null;
+		for(AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
+			if(!e.isInvEdge()) {
+				inEdge = e;
+				break;
+			}
+		}
 		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
 		
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
@@ -368,7 +374,13 @@ public class QueryManager {
 	//return the edge from soot's call graph
 	private Edge getEdgeFromCallgraph(CutEntity cut) {
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
-		AutoEdge inEdge = cut.state.getIncomingStatesInvKeySet().iterator().next();
+		AutoEdge inEdge = null;
+		for(AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
+			if(!e.isInvEdge()) {
+				inEdge = e;
+				break;
+			}
+		}
 		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
 //		System.out.println("look for an edge from " + callerMeth + " to " + calleeMeth);
 		for (Iterator<Edge> cIt = cg.edgesOutOf(callerMeth); cIt

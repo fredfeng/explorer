@@ -20,6 +20,17 @@ public class AutoEdge {
 	
 	protected int flow = 0;
 	
+	//if it's true, then it belongs to edge in residual graph.
+	private boolean isInvEdge = false;
+	
+	public boolean isInvEdge() {
+		return isInvEdge;
+	}
+
+	public void setInvEdge(boolean isInvEdge) {
+		this.isInvEdge = isInvEdge;
+	}
+
 	/**
 	 * @return the residual
 	 */
