@@ -6,6 +6,7 @@ import java.util.Map;
 import soot.SceneTransformer;
 import soot.jimple.spark.builder.ContextInsensitiveBuilder;
 import soot.jimple.spark.pag.PAG;
+import soot.jimple.spark.solver.PropWorklist;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
@@ -58,7 +59,8 @@ public class CGregxTransformer extends SceneTransformer {
 		otfPag.getTypeManager().makeTypeMask();
 
 		//no need to Propagate. This will run our actual points-to analysis.
-		new OndemandInsensitiveWorklist(otfPag).propagate();
+//		new OndemandInsensitiveWorklist(otfPag).propagate();
+		new PropWorklist(otfPag).propagate();
 		AutoPAG otfAutoPAG = new AutoPAG(otfPag);
 		otfAutoPAG.build();	
 		long endOTF = System.nanoTime();
