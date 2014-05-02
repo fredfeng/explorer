@@ -106,6 +106,10 @@ public class QueryManager {
 		init();
 	}
 	
+	public AutoPAG getAutoPAG() {
+		return this.autoPAG;
+	}
+	
     public ReachableMethods getReachableMethods() {
         if( reachableMethods == null ) {
             reachableMethods = new ReachableMethods(

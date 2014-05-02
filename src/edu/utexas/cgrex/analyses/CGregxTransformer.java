@@ -1,9 +1,24 @@
 package edu.utexas.cgrex.analyses;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import soot.Body;
+import soot.Local;
+import soot.MethodOrMethodContext;
+import soot.Scene;
 import soot.SceneTransformer;
+import soot.SootMethod;
+import soot.Unit;
+import soot.Value;
+import soot.jimple.InterfaceInvokeExpr;
+import soot.jimple.InvokeExpr;
+import soot.jimple.Stmt;
+import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.spark.builder.ContextInsensitiveBuilder;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.solver.PropWorklist;
@@ -11,6 +26,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.options.SparkOptions;
+import soot.util.Chain;
 import edu.utexas.cgrex.Harness;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.test.RegularExpGenerator;
@@ -102,7 +118,8 @@ public class CGregxTransformer extends SceneTransformer {
 		otfQm = new QueryManager(otfAutoPAG, otfAutoPAG.getFather()
 				.getOnFlyCallGraph().callGraph());
 		
-		this.runBenchmark();
+//		this.runBenchmark();
+		this.checkSoundness();
 	}
 	
 	private void runBenchmark() {
@@ -155,5 +172,49 @@ public class CGregxTransformer extends SceneTransformer {
 		cg.build();
 		
 		return cg.getCallGraph();
+	}
+	
+	//comparing the points-to set of soot and our version.
+	public void checkSoundness() {
+		qm.getAutoPAG().dump();
+		//for all reachable methods in current project.
+		Iterator<MethodOrMethodContext> it = Scene.v().getReachableMethods().listener();
+		while(it.hasNext()) {
+			SootMethod method = (SootMethod)it.next();
+			if (!method.isConcrete())
+				continue;
+
+			Body body = method.retrieveActiveBody();
+
+			Chain<Unit> units = body.getUnits();
+			Iterator<Unit> uit = units.snapshotIterator();
+			while (uit.hasNext()) {
+				Stmt stmt = (Stmt) uit.next();
+
+				// invocation statements
+				if (stmt.containsInvokeExpr()) {
+					InvokeExpr ie = stmt.getInvokeExpr();
+	                if( (ie instanceof VirtualInvokeExpr) 
+	                		|| (ie instanceof InterfaceInvokeExpr)){
+	                	Value var = ie.getUseBoxes().get(0).getValue();
+	                	if(var instanceof Local) {
+	                		Local l = (Local) var;
+	                		List list = new ArrayList();
+	                		list.add(l);
+	                	//ask for xinyu's points-to set
+	                		Set pts = qm.getAutoPAG().insensitiveQueryTest(list);
+	                	//ask for soot's point-to set.
+	                		Set pts2 = otfQm.getAutoPAG().insensitiveQueryTest(list);
+	                		System.out.println("check------------------------ ");
+	                		System.out.println("CHA------- " +pts);
+	                		System.out.println("OTF------- " + pts2);
+
+	                	}
+	                	
+	                }
+				}
+			}
+		}
+		
 	}
 }
