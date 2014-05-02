@@ -58,9 +58,8 @@ public class RegAutomaton extends Automaton {
 	public void buildTwoStepAnnot() {
 		if (debug)
 			System.out.println("In RegAutomaton buildTwoStepAnnot method....");
-		LinkedList<AutoState> workList = new LinkedList<AutoState>();
-		Set<AutoState> annotated = new HashSet<AutoState>();
-		
+		// LinkedList<AutoState> workList = new LinkedList<AutoState>();
+
 		// this is annotating the first step
 		for (AutoState s : states) {
 			// we want to optimize for the states with cycle
@@ -92,6 +91,7 @@ public class RegAutomaton extends Automaton {
 
 		// this is annotating the second step
 		long count = 0;
+		Set<AutoState> annotated = new HashSet<AutoState>();
 		for (AutoState s : states) {
 			count++;
 			assert (count < 1000);
