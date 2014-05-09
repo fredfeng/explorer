@@ -95,7 +95,7 @@ public class QueryGenTransformer extends SceneTransformer {
 		
 		int cur = 0;
 		//how many queries do we need?
-		while (cur < Harness.benchmarkSize) {
+		while (cur < GenRegxHarness.benchmarkSize) {
 			String regx = generator.genRegx();
 			regx = regx.replaceAll("\\s+", "");
 			
