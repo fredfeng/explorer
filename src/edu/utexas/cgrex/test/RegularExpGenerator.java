@@ -21,6 +21,10 @@ import edu.utexas.cgrex.automaton.AutoEdge;
  */
 public class RegularExpGenerator {
 	
+	//only generate query that contains methods in application,
+	//excluding all library's methods.
+	private boolean isApp = true;
+	
 	//total templates we can choose
 	private int templateNum = 3;
 	
@@ -138,6 +142,11 @@ public class RegularExpGenerator {
 		
 		SootMethod ranMethod = reachableMethods.get(randomizer
 				.nextInt(reachableMethods.size()));
+		
+		while (isApp && ranMethod.getDeclaringClass().getName().contains("java.lang")) {
+			ranMethod = reachableMethods.get(randomizer
+					.nextInt(reachableMethods.size()));
+		}
 		
 		meths.add(ranMethod.getSignature().replace("$", "\\$"));
 		return ranMethod;
