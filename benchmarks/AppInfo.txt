@@ -1,9 +1,11 @@
-sablecc-j: SableCC
+Benchmark folder: benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks
 
-gj: gjc.Main
+sablecc-j:  main method: SableCC
 
-jpat-p: JPATTest
+gj: main method: gjc.Main
 
-rhino-a: org.mozilla.javascript.tools.shell.Main
+jpat-p: main method: JPATTest
 
-soot-j:  ca.mcgill.sable.soot.jimple.Main
+rhino-a: main method: org.mozilla.javascript.tools.shell.Main
+
+soot-j: main method:  ca.mcgill.sable.soot.jimple.Main
