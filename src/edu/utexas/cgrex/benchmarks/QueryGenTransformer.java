@@ -116,7 +116,7 @@ public class QueryGenTransformer extends SceneTransformer {
 		
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/regx.txt"));
+					"sootOutput/myregx.txt"));
 			bufw.write(sb.toString());
 			bufw.close();
 		} catch (Exception e) {

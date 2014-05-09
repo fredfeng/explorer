@@ -66,7 +66,7 @@ public class RegularExpGenerator {
 	
 	//Template 2: .*(_|__).*_, replace _ with random methods.
 	private String template3() {
-		this.sigRegx = ".*(_|__).*_";
+		this.sigRegx = ".*(#|##).*#";
 		SootMethod meth1 = pickupMethod();
 		String uid1 = (String)methToEdgeMap.get(meth1).getId();
 		
@@ -88,7 +88,7 @@ public class RegularExpGenerator {
 	
 	//Template 3: .*_.*_.*(_|_), replace _ with random methods.
 	private String template2() {
-		this.sigRegx = ".*_.*_.*(_|_)";
+		this.sigRegx = ".*#.*#.*(#|#)";
 		SootMethod meth1 = pickupMethod();
 		String uid1 = (String)methToEdgeMap.get(meth1).getId();
 		
@@ -110,7 +110,7 @@ public class RegularExpGenerator {
 	
 	//Template 1: (_|_).*_, replace _ with random methods.
 	private String template1() {
-		this.sigRegx = "(_|_).*_";
+		this.sigRegx = "(#|#).*#";
 		SootMethod meth1 = pickupMethod();
 		String uid1 = (String)methToEdgeMap.get(meth1).getId();
 		
@@ -127,7 +127,7 @@ public class RegularExpGenerator {
 	
 	private void repSig() {
 		for(String sig : this.meths) {
-			this.sigRegx = this.sigRegx.replaceFirst("_", sig);
+			this.sigRegx = this.sigRegx.replaceFirst("#", sig);
 		}
 	}
 	
@@ -153,7 +153,7 @@ public class RegularExpGenerator {
 	}
 	
 	public String getSigRegx() {
-		assert(!this.sigRegx.contains("_"));
+		assert(!this.sigRegx.contains("#"));
 		return sigRegx;
 	}
 
