@@ -99,7 +99,7 @@ public class QueryGenTransformer extends SceneTransformer {
 			String regx = generator.genRegx();
 			regx = regx.replaceAll("\\s+", "");
 			
-			boolean res = qm.queryRegx(regx);
+			boolean res = qm.queryWithoutRefine(regx);
 			
 			//only need valid regx.
 			if(res) {
