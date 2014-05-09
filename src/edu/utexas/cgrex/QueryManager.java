@@ -481,6 +481,8 @@ public class QueryManager {
 		while (matcher.find()) {
 		    String subSig = matcher.group(0);
 		    SootMethod meth = Scene.v().getMethod(subSig);
+		    //each method should be reachable.
+		    assert(this.reachableMethods.contains(meth));
 //		    System.out.println("locating method-------" + meth);
 
 		    int offset = 100;
