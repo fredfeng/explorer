@@ -67,7 +67,28 @@ public class OnTheFlyTransformer extends SceneTransformer {
 
 		qm = new QueryManager(otfAutoPAG, this.buildCallGraph());
 		
-		runBenchmark();
+		runBenchmarkWithoutRefine();
+	}
+	
+	private void runBenchmarkWithoutRefine() {
+		String regxSource = BenchmarkHarness.queryLoc;
+		
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(regxSource));
+			String line;
+			while ((line = br.readLine()) != null) {
+			   // process the line.
+				String regx = qm.getValidExprBySig(line);
+				boolean res1 = qm.queryWithoutRefine(regx);
+				System.out.println(line + ": " + res1);
+			}
+			br.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	//get regular expressions from sootOutput/regx.txt

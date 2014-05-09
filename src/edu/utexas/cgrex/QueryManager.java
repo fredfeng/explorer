@@ -452,6 +452,27 @@ public class QueryManager {
 		return res;
 	}
 	
+	public boolean queryWithoutRefine(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+		
+		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
+		myoptions.put("annot", true);
+		myoptions.put("two", true);
+		InterAutoOpts myopts = new InterAutoOpts(myoptions);
+
+		long startInter = System.nanoTime();
+		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
+		interAuto.build();
+		long endInter = System.nanoTime();
+		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
+		
+		//before we do the mincut, we need to exclude some trivial cases
+		//such as special invoke, static invoke and certain virtual invoke.
+		if(interAuto.getFinalStates().size() == 0) return false;
+		return true;
+	}
+	
 	//return a valid regular expression based on method's signature.
 	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
