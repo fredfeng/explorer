@@ -447,7 +447,7 @@ public class QueryManager {
 	}
 	
 	//return a valid regular expression based on method's signature.
-	private String getValidExprBySig(String sig) {
+	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
 		
 		Matcher matcher = pattern.matcher(sig);
