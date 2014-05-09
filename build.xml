@@ -2,13 +2,21 @@
 <project name="CFLTest" default="analyze">
 
   <dirname property="this.dir" file="${ant.file}"/>
+  <!-- class folder of target benchmark.-->
   <property name="target.loc" location="${target}"/>
+  <!-- main class of target benchmark.-->
+  <property name="target.main" value="${main}"/>
+  <!-- Location of regular expression.-->
+  <property name="query.loc" location="${query}"/>
+  <!-- CHA or OTF?-->
+  <property name="alg" location="${alg}"/>
 
   <target name="analyze" depends="jar">
-	<java classname="edu.utexas.cgrex.Harness"
-          maxmemory="32g"
+    <java classname="edu.utexas.cgrex.benchmarks.GenRegxHarness"
+          maxmemory="8g"
           fork="true"
           failonerror="true">
+          <jvmarg value="-ea" />
       <classpath>
 		<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
 		<pathelement location="lib/heros-nightly.jar"/>
@@ -20,9 +28,11 @@
 		<pathelement location="lib/objenesis-1.2.jar"/>
       </classpath>
       <arg value="${target.loc}"/>
+      <arg value="${target.main}"/>
+      <arg value="${query.loc}"/>
+      <arg value="${alg}"/>
 	</java>
   </target>
-
 
   <target name="init">
     <mkdir dir="build"/>
