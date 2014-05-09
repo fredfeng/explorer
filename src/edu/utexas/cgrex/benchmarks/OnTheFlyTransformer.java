@@ -65,7 +65,8 @@ public class OnTheFlyTransformer extends SceneTransformer {
 
 		/* END: on-the-fly eager CALL graph*/
 
-		qm = new QueryManager(otfAutoPAG, this.buildCallGraph());
+		qm = new QueryManager(otfAutoPAG, otfAutoPAG.getFather()
+				.getOnFlyCallGraph().callGraph());
 		
 		runBenchmarkWithoutRefine();
 	}
@@ -111,15 +112,6 @@ public class OnTheFlyTransformer extends SceneTransformer {
 			e.printStackTrace();
 		}
 
-	}
-	
-	//build a CHA-based call graph 
-	public CallGraph buildCallGraph()
-	{
-		CallGraphBuilder cg = new CallGraphBuilder(DumbPointerAnalysis.v());
-		cg.build();
-		
-		return cg.getCallGraph();
 	}
 	
 }
