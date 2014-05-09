@@ -69,7 +69,7 @@ public class CHATransformer extends SceneTransformer {
 	
 	//get regular expressions from sootOutput/regx.txt
 	private void runBenchmark() {
-		String regxSource = "sootOutput/regx.txt";
+		String regxSource = BenchmarkHarness.queryLoc;
 		
 		BufferedReader br;
 		try {
@@ -77,10 +77,9 @@ public class CHATransformer extends SceneTransformer {
 			String line;
 			while ((line = br.readLine()) != null) {
 			   // process the line.
-				System.out.println("read---" + line);
 				String regx = qm.getValidExprBySig(line);
 				boolean res1 = qm.queryRegx(regx);
-				assert(res1 == true);
+				System.out.println(line + ": " + res1);
 			}
 			br.close();
 		} catch (Exception e) {

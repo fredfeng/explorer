@@ -19,6 +19,8 @@ public class BenchmarkHarness {
 
 	// 0: interactive mode; 1: benchmark mode
 	public static int mode = 1;
+	
+	public static String queryLoc = "";
 
 	/**
 	 * @param args
@@ -27,13 +29,12 @@ public class BenchmarkHarness {
 		// TODO Auto-generated method stub
 		String targetLoc = args[0];
 		String targetMain = args[1];
-		String queryLoc = args[2];
+		queryLoc = args[2];
 		String alg = args[3];
 
 		System.out.println("benchmark----------" + targetLoc);
 		try {
 
-			StringBuilder options = new StringBuilder();
 			if(alg.equals("cha"))
 				PackManager
 						.v()
@@ -50,6 +51,7 @@ public class BenchmarkHarness {
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-src-prec", "java", "-allow-phantom-refs",
+							"-main-class", targetMain,
 							/*"-no-bodies-for-excluded", 
 							"-exclude", "java",
 							"-exclude", "javax", 
