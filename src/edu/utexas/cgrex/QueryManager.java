@@ -284,7 +284,7 @@ public class QueryManager {
 
 		// dump automaton of the call graph.
 //		cgAuto.dump();
-		cgAuto.validate();
+//		cgAuto.validate();
 	}
 
 	private boolean buildInterAutomaton() {
@@ -293,11 +293,14 @@ public class QueryManager {
 		myoptions.put("two", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 
+		long startInter = System.nanoTime();
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-//		System.out.println("dump interset automaton.....");
-		interAuto.validate();
-		interAuto.dumpFile();
+		long endInter = System.nanoTime();
+		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
+
+//		interAuto.validate();
+//		interAuto.dumpFile();
 		
 		//before we do the mincut, we need to exclude some trivial cases
 		//such as special invoke, static invoke and certain virtual invoke.
@@ -306,6 +309,7 @@ public class QueryManager {
 		//Stop conditions:
 		//1. Refute all edges in current cut set;(Yes)
 		//2. Can not find a mincut without infinity anymore.(No)
+		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
 
 		boolean answer = false;
@@ -333,6 +337,8 @@ public class QueryManager {
 			cutset = GraphUtil.minCut(interAuto);
 		}
 //		interAuto.dump();
+		long endRefine = System.nanoTime();
+		StringUtil.reportSec("Building refine:", startRefine, endRefine);
 	
 		return answer;
 	}
