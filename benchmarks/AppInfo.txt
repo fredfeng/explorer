@@ -1,0 +1,9 @@
+sablecc-j: SableCC
+
+gj: gjc.Main
+
+jpat-p: JPATTest
+
+rhino-a: org.mozilla.javascript.tools.shell.Main
+
+soot-j:  ca.mcgill.sable.soot.jimple.Main
