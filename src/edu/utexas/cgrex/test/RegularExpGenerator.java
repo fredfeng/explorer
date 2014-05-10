@@ -56,7 +56,9 @@ public class RegularExpGenerator {
 		Random randomizer = new Random();
 		int ran = randomizer.nextInt(templateNum);
 		
-		switch(ran) {
+		return template4();
+		
+		/*switch(ran) {
 		case 0:
 			return template1();
 		case 1:
@@ -65,7 +67,7 @@ public class RegularExpGenerator {
 			return template3();
 		default:
 			return template2();
-		}
+		}*/
 	}
 	
 	//Template 2: .*(_|__).*_, replace _ with random methods.
@@ -126,6 +128,22 @@ public class RegularExpGenerator {
 		String template = "(" + uid1 + "|" +uid2 +").*" +uid3;
 		
 		repSig();
+		return template;
+	}
+	
+	//Template 4: .*##.*, replace _ with random methods.
+	private String template4() {
+		this.sigRegx = ".*##.*";
+		SootMethod meth1 = pickupMethod();
+		String uid1 = (String)methToEdgeMap.get(meth1).getId();
+		
+		SootMethod meth2 = pickupMethod();
+		String uid2 = (String)methToEdgeMap.get(meth2).getId();
+
+		String template = ".*" + uid1 + uid2 + ".*";
+
+		repSig();
+
 		return template;
 	}
 	
