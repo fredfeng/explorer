@@ -131,7 +131,7 @@ public class QueryManager {
 			SootMethod meth = (SootMethod) mIt.next();
 
 			// map each method to a unicode.
-			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
+			String uid = "\\u" + String.format("%04x", meth.getNumber() + offset);
 			uidToMethMap.put(uid, meth);
 
 			AutoEdge inEdge = new AutoEdge(uid);
@@ -148,10 +148,12 @@ public class QueryManager {
 	}
 
 	private void buildRegAutomaton(String regx) {
+        //System.out.println("Regx:------" + regx);
 		regx = StringEscapeUtils.unescapeJava(regx);
 		// step 1. Constructing a reg without .*
 		RegExp r = new RegExp(regx);
 		Automaton auto = r.toAutomaton();
+        //System.out.println(auto.toDot());
 		regAuto = new RegAutomaton();
 		// Set<RegAutoState> finiteStates = new HashSet<RegAutoState>();
 		Set<State> states = auto.getStates();
@@ -194,15 +196,18 @@ public class QueryManager {
 				// using edge label as id.
 				String unicode = StringUtil.appendChar(t.getMin(),
 						new StringBuilder(""));
-				String shortName = ".";
+				String shortName = "xxxxx";
 				AutoEdge outEdge = new AutoEdge(unicode);
+				outEdge.setShortName(shortName);
 
 				if (uidToMethMap.get(unicode) != null) {
 					shortName = uidToMethMap.get(unicode).getName();
-				} else {
+				    outEdge.setShortName(shortName);
+				} else if(tgtState.equals(s)){
+                    assert(false);
 					outEdge.setDotEdge();
-				}
-				outEdge.setShortName(shortName);
+				    outEdge.setShortName(".");
+				} 
 
 				fsmState.addOutgoingStates(tgtState, outEdge);
 				tgtState.addIncomingStates(fsmState, outEdge);
@@ -212,7 +217,7 @@ public class QueryManager {
 		}
 		// dump current result.
 //		System.out.println("dump regular graph.");
-//		regAuto.dump();
+		//regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -494,11 +499,11 @@ public class QueryManager {
                 }
 
                 int offset = 100;
-                String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
-                assert(uidToMethMap.get(uid)!=null);
+                String uid = "\\u" + String.format("%04x", meth.getNumber() + offset);
+                //assert(uidToMethMap.get(uid)!=null);
                 sig = sig.replace(matcher.group(0), uid);
             } else {
-                String unknown = "\\u9999";
+                String unknown = "\\uffff";
                 sig = sig.replace(matcher.group(0), unknown);
             }
 		}

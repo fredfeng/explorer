@@ -11,8 +11,33 @@
   <!-- CHA or OTF?-->
   <property name="alg" location="${alg}"/>
 
+
   <target name="analyze" depends="jar">
-    <java classname="edu.utexas.cgrex.benchmarks.GenRegxHarness"
+    <java classname="edu.utexas.cgrex.benchmarks.BenchmarkHarness"
+          maxmemory="8g"
+          fork="true"
+          failonerror="true">
+          <jvmarg value="-ea" />
+      <classpath>
+		<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
+		<pathelement location="lib/heros-nightly.jar"/>
+		<pathelement location="lib/automaton.jar"/>
+		<pathelement location="lib/chord.jar"/>
+		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+		<pathelement location="lib/cloning-1.9.0.jar"/>
+		<pathelement location="lib/soot-nightly.jar"/>
+		<pathelement location="lib/objenesis-1.2.jar"/>
+      </classpath>
+      <arg value="${target.loc}"/>
+      <arg value="${target.main}"/>
+      <arg value="${query.loc}"/>
+      <arg value="${alg}"/>
+	</java>
+  </target>
+
+
+  <target name="gen" depends="jar">
+      <java classname="edu.utexas.cgrex.benchmarks.GenRegxHarness"
           maxmemory="8g"
           fork="true"
           failonerror="true">
