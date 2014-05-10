@@ -56,9 +56,9 @@ public class RegularExpGenerator {
 		Random randomizer = new Random();
 		int ran = randomizer.nextInt(templateNum);
 		
-		return template4();
+//		return template4();
 		
-		/*switch(ran) {
+		switch(ran) {
 		case 0:
 			return template1();
 		case 1:
@@ -67,7 +67,7 @@ public class RegularExpGenerator {
 			return template3();
 		default:
 			return template2();
-		}*/
+		}
 	}
 	
 	//Template 2: .*(_|__).*_, replace _ with random methods.

@@ -201,16 +201,15 @@ public class QueryManager {
 						new StringBuilder(""));
 				String shortName = "xxxxx";
 				AutoEdge outEdge = new AutoEdge(unicode);
-				outEdge.setShortName(shortName);
 
 				if (uidToMethMap.get(unicode) != null) {
 					shortName = uidToMethMap.get(unicode).getName();
-				    outEdge.setShortName(shortName);
-				} else if(tgtState.equals(s)){
-                    assert(false);
+				} else if(t.getDest().equals(s)){
 					outEdge.setDotEdge();
-				    outEdge.setShortName(".");
+					shortName = ".";
 				} 
+				outEdge.setShortName(shortName);
+
 
 				fsmState.addOutgoingStates(tgtState, outEdge);
 				tgtState.addIncomingStates(fsmState, outEdge);
