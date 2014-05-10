@@ -116,7 +116,7 @@ public class QueryManager {
                     cg, new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
         }
         reachableMethods.update();
-//        System.out.println("Reachable methods--------" + reachableMethods.size());
+        System.out.println("Reachable *** methods--------" + reachableMethods.size());
         return reachableMethods;
     }
 
@@ -124,6 +124,7 @@ public class QueryManager {
 
 		Iterator<MethodOrMethodContext> mIt = this.getReachableMethods()
 				.listener();
+        System.out.println("init reachables: " + this.getReachableMethods().size());
 		//this magic number is used to fix the error by invalid unicode such as \u0022
 		int offset = 100;
 		while (mIt.hasNext()) {
@@ -281,6 +282,8 @@ public class QueryManager {
 		// only add reachable methods.
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
+
+        System.out.println("Total States*******" + cgAuto.getStates().size());
 
 		// dump automaton of the call graph.
 //		cgAuto.dump();
@@ -473,22 +476,33 @@ public class QueryManager {
 		return true;
 	}
 	
+
+    private int miss = 0;
 	//return a valid regular expression based on method's signature.
 	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
 		
 		Matcher matcher = pattern.matcher(sig);
+        boolean flag = true;
 		while (matcher.find()) {
 		    String subSig = matcher.group(0);
-		    SootMethod meth = Scene.v().getMethod(subSig);
-		    //each method should be reachable.
-		    assert(this.reachableMethods.contains(meth));
-//		    System.out.println("locating method-------" + meth);
+            if(Scene.v().containsMethod(subSig)) {
+                SootMethod meth = Scene.v().getMethod(subSig);
+                if(!this.reachableMethods.contains(meth) && flag) { 
+                    flag = false;
+                    miss++;
+                }
 
-		    int offset = 100;
-			String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
-		    sig = sig.replace(matcher.group(0), uid);
+                int offset = 100;
+                String uid = "\\u" + String.format("%04d", meth.getNumber() + offset);
+                assert(uidToMethMap.get(uid)!=null);
+                sig = sig.replace(matcher.group(0), uid);
+            } else {
+                String unknown = "\\u9999";
+                sig = sig.replace(matcher.group(0), unknown);
+            }
 		}
+        System.out.println("dump miss----------" + miss);
 		return sig;
 	}
 

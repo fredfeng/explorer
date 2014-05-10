@@ -33,6 +33,7 @@ public class OnTheFlyTransformer extends SceneTransformer {
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
 		
+        System.out.println("Running OnTheFlyTransformer------------");
 		/* BEGIN: on-the-fly eager CALL graph*/
 		long startOTF = System.nanoTime();
 		HashMap<String, String> opt2 = new HashMap<String, String>(options);
@@ -67,6 +68,8 @@ public class OnTheFlyTransformer extends SceneTransformer {
 
 		qm = new QueryManager(otfAutoPAG, otfAutoPAG.getFather()
 				.getOnFlyCallGraph().callGraph());
+
+        System.out.println("Reachable Methods: " + qm.getReachableMethods().size());
 		
 		runBenchmarkWithoutRefine();
 	}
@@ -89,7 +92,7 @@ public class OnTheFlyTransformer extends SceneTransformer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+        System.exit(0);
 	}
 	
 	//get regular expressions from sootOutput/regx.txt
