@@ -126,6 +126,10 @@ public class QueryManager {
 				.listener();
 		// this magic number is used to fix the error by invalid unicode such as
 		// \u0022
+		System.out.println("init reachables: "
+				+ this.getReachableMethods().size());
+		// this magic number is used to fix the error by invalid unicode such as
+		// \u0022
 		int offset = 100;
 		while (mIt.hasNext()) {
 			SootMethod meth = (SootMethod) mIt.next();
@@ -282,6 +286,8 @@ public class QueryManager {
 		// only add reachable methods.
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
+
+		System.out.println("Total States*******" + cgAuto.getStates().size());
 
 		// dump automaton of the call graph.
 		// cgAuto.dump();
@@ -475,7 +481,7 @@ public class QueryManager {
 		interAuto.build();
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
-		
+
 		interAuto.dumpFile();
 
 		// before we do the mincut, we need to exclude some trivial cases
@@ -486,10 +492,15 @@ public class QueryManager {
 	}
 
 	// return a valid regular expression based on method's signature.
+
+	private int miss = 0;
+
+	// return a valid regular expression based on method's signature.
 	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
 
 		Matcher matcher = pattern.matcher(sig);
+		boolean flag = true;
 		while (matcher.find()) {
 			String subSig = matcher.group(0);
 			SootMethod meth = Scene.v().getMethod(subSig);
@@ -499,7 +510,9 @@ public class QueryManager {
 			String uid = "\\u"
 					+ String.format("%04d", meth.getNumber() + offset);
 			sig = sig.replace(matcher.group(0), uid);
+
 		}
+		System.out.println("dump miss----------" + miss);
 		return sig;
 	}
 

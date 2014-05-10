@@ -25,6 +25,10 @@ public class RegularExpGenerator {
 	//excluding all library's methods.
 	private boolean isApp = true;
 	
+	//only generate virtual method.
+	private boolean onlyVirtual = true;
+
+	
 	//total templates we can choose
 	private int templateNum = 3;
 	
@@ -52,7 +56,9 @@ public class RegularExpGenerator {
 		Random randomizer = new Random();
 		int ran = randomizer.nextInt(templateNum);
 		
-		switch(ran) {
+		return template4();
+		
+		/*switch(ran) {
 		case 0:
 			return template1();
 		case 1:
@@ -61,12 +67,12 @@ public class RegularExpGenerator {
 			return template3();
 		default:
 			return template2();
-		}
+		}*/
 	}
 	
 	//Template 2: .*(_|__).*_, replace _ with random methods.
 	private String template3() {
-		this.sigRegx = ".*(_|__).*_";
+		this.sigRegx = ".*(#|##).*#";
 		SootMethod meth1 = pickupMethod();
 		String uid1 = (String)methToEdgeMap.get(meth1).getId();
 		
@@ -88,7 +94,7 @@ public class RegularExpGenerator {
 	
 	//Template 3: .*_.*_.*(_|_), replace _ with random methods.
 	private String template2() {
-		this.sigRegx = ".*_.*_.*(_|_)";
+		this.sigRegx = ".*#.*#.*(#|#)";
 		SootMethod meth1 = pickupMethod();
 		String uid1 = (String)methToEdgeMap.get(meth1).getId();
 		
@@ -110,7 +116,7 @@ public class RegularExpGenerator {
 	
 	//Template 1: (_|_).*_, replace _ with random methods.
 	private String template1() {
-		this.sigRegx = "(_|_).*_";
+		this.sigRegx = "(#|#).*#";
 		SootMethod meth1 = pickupMethod();
 		String uid1 = (String)methToEdgeMap.get(meth1).getId();
 		
@@ -125,9 +131,25 @@ public class RegularExpGenerator {
 		return template;
 	}
 	
+	//Template 4: .*##.*, replace _ with random methods.
+	private String template4() {
+		this.sigRegx = ".*##.*";
+		SootMethod meth1 = pickupMethod();
+		String uid1 = (String)methToEdgeMap.get(meth1).getId();
+		
+		SootMethod meth2 = pickupMethod();
+		String uid2 = (String)methToEdgeMap.get(meth2).getId();
+
+		String template = ".*" + uid1 + uid2 + ".*";
+
+		repSig();
+
+		return template;
+	}
+	
 	private void repSig() {
 		for(String sig : this.meths) {
-			this.sigRegx = this.sigRegx.replaceFirst("_", sig);
+			this.sigRegx = this.sigRegx.replaceFirst("#", sig);
 		}
 	}
 	
@@ -143,7 +165,9 @@ public class RegularExpGenerator {
 		SootMethod ranMethod = reachableMethods.get(randomizer
 				.nextInt(reachableMethods.size()));
 		
-		while (isApp && ranMethod.getDeclaringClass().getName().contains("java.lang")) {
+		while (ranMethod.getDeclaringClass().getName()
+						.contains("java.lang") || (ranMethod.isPrivate()
+				|| ranMethod.isStatic() || ranMethod.isFinal())) {
 			ranMethod = reachableMethods.get(randomizer
 					.nextInt(reachableMethods.size()));
 		}
@@ -153,7 +177,7 @@ public class RegularExpGenerator {
 	}
 	
 	public String getSigRegx() {
-		assert(!this.sigRegx.contains("_"));
+		assert(!this.sigRegx.contains("#"));
 		return sigRegx;
 	}
 
