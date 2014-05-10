@@ -25,6 +25,10 @@ public class RegularExpGenerator {
 	//excluding all library's methods.
 	private boolean isApp = true;
 	
+	//only generate virtual method.
+	private boolean onlyVirtual = true;
+
+	
 	//total templates we can choose
 	private int templateNum = 3;
 	
@@ -143,7 +147,9 @@ public class RegularExpGenerator {
 		SootMethod ranMethod = reachableMethods.get(randomizer
 				.nextInt(reachableMethods.size()));
 		
-		while (isApp && ranMethod.getDeclaringClass().getName().contains("java.lang")) {
+		while (ranMethod.getDeclaringClass().getName()
+						.contains("java.lang") || (ranMethod.isPrivate()
+				|| ranMethod.isStatic() || ranMethod.isFinal())) {
 			ranMethod = reachableMethods.get(randomizer
 					.nextInt(reachableMethods.size()));
 		}
