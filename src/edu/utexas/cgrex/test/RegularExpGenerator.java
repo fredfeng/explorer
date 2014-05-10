@@ -165,9 +165,11 @@ public class RegularExpGenerator {
 		SootMethod ranMethod = reachableMethods.get(randomizer
 				.nextInt(reachableMethods.size()));
 		
-		while (ranMethod.getDeclaringClass().getName()
+		/*while (ranMethod.getDeclaringClass().getName()
 						.contains("java.lang") || (ranMethod.isPrivate()
-				|| ranMethod.isStatic() || ranMethod.isFinal())) {
+				|| ranMethod.isStatic() || ranMethod.isFinal())) {*/
+			
+		while (ranMethod.getDeclaringClass().getName().contains("java.lang")) {
 			ranMethod = reachableMethods.get(randomizer
 					.nextInt(reachableMethods.size()));
 		}

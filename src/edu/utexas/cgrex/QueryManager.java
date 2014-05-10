@@ -64,6 +64,10 @@ public class QueryManager {
 
 	// default CHA-based call graph or on-the-fly.
 	CallGraph cg;
+	
+	// this magic number is used to fix the error by invalid unicode such as
+	// \u0022
+	private int offset = 100;
 
 	private ReachableMethods reachableMethods;
 
@@ -115,8 +119,6 @@ public class QueryManager {
 					new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
 		}
 		reachableMethods.update();
-		// System.out.println("Reachable methods--------" +
-		// reachableMethods.size());
 		return reachableMethods;
 	}
 
@@ -130,7 +132,6 @@ public class QueryManager {
 				+ this.getReachableMethods().size());
 		// this magic number is used to fix the error by invalid unicode such as
 		// \u0022
-		int offset = 100;
 		while (mIt.hasNext()) {
 			SootMethod meth = (SootMethod) mIt.next();
 
@@ -151,12 +152,10 @@ public class QueryManager {
 	}
 
 	private void buildRegAutomaton(String regx) {
-        //System.out.println("Regx:------" + regx);
 		regx = StringEscapeUtils.unescapeJava(regx);
 		// step 1. Constructing a reg without .*
 		RegExp r = new RegExp(regx);
 		Automaton auto = r.toAutomaton();
-        //System.out.println(auto.toDot());
 		regAuto = new RegAutomaton();
 		// Set<RegAutoState> finiteStates = new HashSet<RegAutoState>();
 		Set<State> states = auto.getStates();
@@ -495,25 +494,15 @@ public class QueryManager {
 	}
 
 	// return a valid regular expression based on method's signature.
-
-	private int miss = 0;
-
-	// return a valid regular expression based on method's signature.
 	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
 
 		Matcher matcher = pattern.matcher(sig);
-		boolean flag = true;
 		while (matcher.find()) {
 		    String subSig = matcher.group(0);
             if(Scene.v().containsMethod(subSig)) {
                 SootMethod meth = Scene.v().getMethod(subSig);
-                if(!this.reachableMethods.contains(meth) && flag) { 
-                    flag = false;
-                    miss++;
-                }
 
-                int offset = 100;
                 String uid = "\\u" + String.format("%04x", meth.getNumber() + offset);
                 //assert(uidToMethMap.get(uid)!=null);
                 sig = sig.replace(matcher.group(0), uid);
@@ -522,7 +511,6 @@ public class QueryManager {
                 sig = sig.replace(matcher.group(0), unknown);
             }
 		}
-		System.out.println("dump miss----------" + miss);
 		return sig;
 	}
 
