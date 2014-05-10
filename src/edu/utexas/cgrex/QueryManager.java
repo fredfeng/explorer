@@ -57,15 +57,15 @@ import edu.utexas.cgrex.utils.StringUtil;
  */
 
 public class QueryManager {
-	
+
 	AutoPAG autoPAG;
 
 	private int INFINITY = 9999;
 
 	// default CHA-based call graph or on-the-fly.
 	CallGraph cg;
-	
-    private ReachableMethods reachableMethods;
+
+	private ReachableMethods reachableMethods;
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
 
@@ -73,8 +73,7 @@ public class QueryManager {
 	Map<SootMethod, Boolean> visitedMap = new HashMap<SootMethod, Boolean>();
 
 	/**
-	 * @return the methToEdgeMap
-	 * only for the purpose of generating random regx.
+	 * @return the methToEdgeMap only for the purpose of generating random regx.
 	 */
 	public Map<SootMethod, AutoEdge> getMethToEdgeMap() {
 		return methToEdgeMap;
@@ -105,27 +104,32 @@ public class QueryManager {
 
 		init();
 	}
-	
+
 	public AutoPAG getAutoPAG() {
 		return this.autoPAG;
 	}
-	
-    public ReachableMethods getReachableMethods() {
-        if( reachableMethods == null ) {
-            reachableMethods = new ReachableMethods(
-                    cg, new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
-        }
-        reachableMethods.update();
-        System.out.println("Reachable *** methods--------" + reachableMethods.size());
-        return reachableMethods;
-    }
+
+	public ReachableMethods getReachableMethods() {
+		if (reachableMethods == null) {
+			reachableMethods = new ReachableMethods(cg,
+					new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
+		}
+		reachableMethods.update();
+		// System.out.println("Reachable methods--------" +
+		// reachableMethods.size());
+		return reachableMethods;
+	}
 
 	private void init() {
 
 		Iterator<MethodOrMethodContext> mIt = this.getReachableMethods()
 				.listener();
-        System.out.println("init reachables: " + this.getReachableMethods().size());
-		//this magic number is used to fix the error by invalid unicode such as \u0022
+		// this magic number is used to fix the error by invalid unicode such as
+		// \u0022
+		System.out.println("init reachables: "
+				+ this.getReachableMethods().size());
+		// this magic number is used to fix the error by invalid unicode such as
+		// \u0022
 		int offset = 100;
 		while (mIt.hasNext()) {
 			SootMethod meth = (SootMethod) mIt.next();
@@ -137,7 +141,6 @@ public class QueryManager {
 			AutoEdge inEdge = new AutoEdge(uid);
 			inEdge.setShortName(meth.getSignature());
 			CGAutoState st = new CGAutoState(uid, false, true);
-
 
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
@@ -217,7 +220,7 @@ public class QueryManager {
 		}
 		// dump current result.
 //		System.out.println("dump regular graph.");
-		//regAuto.dump();
+		// regAuto.dump();
 	}
 
 	private void buildCGAutomaton() {
@@ -237,7 +240,7 @@ public class QueryManager {
 		cgAuto.addInitState(initState);
 		cgAuto.addStates(initState);
 
-		//FIXME: should not use list.
+		// FIXME: should not use list.
 		List<SootMethod> worklist = new LinkedList<SootMethod>();
 		worklist.add(mainMeth);
 
@@ -256,12 +259,12 @@ public class QueryManager {
 				// how about SCC? FIXME!!
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
-					//need fresh instance for each callsite but share same uid.
+					// need fresh instance for each callsite but share same uid.
 					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
 					outEdgeFresh.setShortName(worker.getSignature());
 
 					curState.addOutgoingStates(curState, outEdgeFresh);
-					
+
 					curState.addIncomingStates(curState, outEdgeFresh);
 
 				} else {
@@ -270,14 +273,14 @@ public class QueryManager {
 						worklist.add(tgtMeth);
 
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
-					//need fresh instance for each callsite but share same uid.
+					// need fresh instance for each callsite but share same uid.
 					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
 					outEdgeFresh.setShortName(tgtMeth.getSignature());
 
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdgeFresh);
-					
-					//add incoming state.
+
+					// add incoming state.
 					tgtState.addIncomingStates(curState, outEdgeFresh);
 				}
 			}
@@ -288,11 +291,11 @@ public class QueryManager {
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
 
-        System.out.println("Total States*******" + cgAuto.getStates().size());
+		System.out.println("Total States*******" + cgAuto.getStates().size());
 
 		// dump automaton of the call graph.
-//		cgAuto.dump();
-//		cgAuto.validate();
+		// cgAuto.dump();
+		// cgAuto.validate();
 	}
 
 	private boolean buildInterAutomaton() {
@@ -307,108 +310,116 @@ public class QueryManager {
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
 
-//		interAuto.validate();
-//		interAuto.dumpFile();
-		
-		//before we do the mincut, we need to exclude some trivial cases
-		//such as special invoke, static invoke and certain virtual invoke.
-		if(interAuto.getFinalStates().size() == 0) return false;
-				
-		//Stop conditions:
-		//1. Refute all edges in current cut set;(Yes)
-		//2. Can not find a mincut without infinity anymore.(No)
+		// interAuto.validate();
+		// interAuto.dump();
+
+		// before we do the mincut, we need to exclude some trivial cases
+		// such as special invoke, static invoke and certain virtual invoke.
+		if (interAuto.getFinalStates().size() == 0)
+			return false;
+
+		// Stop conditions:
+		// 1. Refute all edges in current cut set;(Yes)
+		// 2. Can not find a mincut without infinity anymore.(No)
 		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
 
 		boolean answer = false;
-		//contains infinity edge?
-		while(!hasInfinityEdges(cutset)) {
-	
+		// contains infinity edge?
+		while (!hasInfinityEdges(cutset)) {
+
 			answer = false;
-			for(CutEntity e : cutset){
-				if(doPointsToQuery(e)) {
-					answer = true; 
+			for (CutEntity e : cutset) {
+				if (doPointsToQuery(e)) {
+					answer = true;
 					e.edge.setInfinityWeight();
-				} else { //e is a false positive.
-					//remove this edge and refine call graph.
+				} else { // e is a false positive.
+					// remove this edge and refine call graph.
 					Edge callEdge = this.getEdgeFromCallgraph(e);
-//					System.out.println("---------Refine call edge: " + callEdge);
+					// System.out.println("---------Refine call edge: " +
+					// callEdge);
 					cg.removeEdge(callEdge);
-					//remove this edge from interauto.
+					// remove this edge from interauto.
 					interAuto.refine(e.edge);
 				}
 			}
-			
-			//all edges are refute, stop.
-			if(!answer) break;
-			//modify visited edges and continue.
+
+			// all edges are refute, stop.
+			if (!answer)
+				break;
+			// modify visited edges and continue.
 			cutset = GraphUtil.minCut(interAuto);
 		}
-//		interAuto.dump();
+		// interAuto.dump();
 		long endRefine = System.nanoTime();
 		StringUtil.reportSec("Building refine:", startRefine, endRefine);
-	
+
 		return answer;
 	}
-	
+
 	private boolean hasInfinityEdges(Set<CutEntity> set) {
-		for(CutEntity e : set)
-			if(e.edge.getWeight() == INFINITY) return true;
-		
+		for (CutEntity e : set)
+			if (e.edge.getWeight() == INFINITY)
+				return true;
+
 		return false;
 	}
 
 	private boolean doPointsToQuery(CutEntity cut) {
-		
-		// type info.
-		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
 
-		assert(calleeMeth != null);
-		//main method is always reachable.
+		// type info.
+		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
+				.getTgtCGAutoStateId());
+
+		assert (calleeMeth != null);
+		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
 				|| calleeMeth.isPrivate())
 			return true;
 
 		AutoEdge inEdge = null;
-		for(AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
-			if(!e.isInvEdge()) {
+		for (AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
+			if (!e.isInvEdge()) {
 				inEdge = e;
 				break;
 			}
 		}
-		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
-		
+		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge) inEdge)
+				.getTgtCGAutoStateId());
+
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
 
-		//to be conservative.
-		if(varSet.size() == 0) 
+		// to be conservative.
+		if (varSet.size() == 0)
 			return true;
-		
+
 		return autoPAG.insensitiveQuery(varSet, typeSet);
 	}
-	
-	//return the edge from soot's call graph
+
+	// return the edge from soot's call graph
 	private Edge getEdgeFromCallgraph(CutEntity cut) {
-		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge)cut.edge).getTgtCGAutoStateId());
+		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
+				.getTgtCGAutoStateId());
 		AutoEdge inEdge = null;
-		for(AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
-			if(!e.isInvEdge()) {
+		for (AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
+			if (!e.isInvEdge()) {
 				inEdge = e;
 				break;
 			}
 		}
-		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge)inEdge).getTgtCGAutoStateId());
-//		System.out.println("look for an edge from " + callerMeth + " to " + calleeMeth);
-		for (Iterator<Edge> cIt = cg.edgesOutOf(callerMeth); cIt
-				.hasNext();) {
+		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge) inEdge)
+				.getTgtCGAutoStateId());
+		// System.out.println("look for an edge from " + callerMeth + " to " +
+		// calleeMeth);
+		for (Iterator<Edge> cIt = cg.edgesOutOf(callerMeth); cIt.hasNext();) {
 			Edge outEdge = cIt.next();
-			if(outEdge.getTgt().equals(calleeMeth))
+			if (outEdge.getTgt().equals(calleeMeth))
 				return outEdge;
 		}
-//		assert(false);
-//		System.err.println("CAN not find the right call edge.------------");
+		// assert(false);
+		// System.err.println("CAN not find the right call edge.------------");
 		return null;
 	}
 
@@ -418,7 +429,7 @@ public class QueryManager {
 
 		// ignore user input, run our own batch test.
 		switch (Harness.mode) {
-		case 0://benchmark mode.
+		case 0:// benchmark mode.
 			while (true) {
 				Scanner in = new Scanner(System.in);
 				System.out.println("Please Enter a string:");
@@ -434,7 +445,7 @@ public class QueryManager {
 					buildInterAutomaton();
 				}
 			}
-		case 1://interactive mode.
+		case 1:// interactive mode.
 			RegularExpGenerator generator = new RegularExpGenerator(this);
 			for (int i = 0; i < Harness.benchmarkSize; i++) {
 				regx = generator.genRegx();
@@ -451,19 +462,19 @@ public class QueryManager {
 
 		return false;
 	}
-	
-	//interface for query
+
+	// interface for query
 	public boolean queryRegx(String regx) {
 		regx = regx.replaceAll("\\s+", "");
 		buildRegAutomaton(regx);
 		boolean res = buildInterAutomaton();
 		return res;
 	}
-	
+
 	public boolean queryWithoutRefine(String regx) {
 		regx = regx.replaceAll("\\s+", "");
 		buildRegAutomaton(regx);
-		
+
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
 		myoptions.put("two", true);
@@ -474,21 +485,26 @@ public class QueryManager {
 		interAuto.build();
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
-		
-		//before we do the mincut, we need to exclude some trivial cases
-		//such as special invoke, static invoke and certain virtual invoke.
-		if(interAuto.getFinalStates().size() == 0) return false;
+
+		interAuto.dumpFile();
+
+		// before we do the mincut, we need to exclude some trivial cases
+		// such as special invoke, static invoke and certain virtual invoke.
+		if (interAuto.getFinalStates().size() == 0)
+			return false;
 		return true;
 	}
-	
 
-    private int miss = 0;
-	//return a valid regular expression based on method's signature.
+	// return a valid regular expression based on method's signature.
+
+	private int miss = 0;
+
+	// return a valid regular expression based on method's signature.
 	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");
-		
+
 		Matcher matcher = pattern.matcher(sig);
-        boolean flag = true;
+		boolean flag = true;
 		while (matcher.find()) {
 		    String subSig = matcher.group(0);
             if(Scene.v().containsMethod(subSig)) {
@@ -507,11 +523,11 @@ public class QueryManager {
                 sig = sig.replace(matcher.group(0), unknown);
             }
 		}
-        System.out.println("dump miss----------" + miss);
+		System.out.println("dump miss----------" + miss);
 		return sig;
 	}
 
-	//get a list of vars that can invoke method tgt.
+	// get a list of vars that can invoke method tgt.
 	private List<Value> getVarList(SootMethod method, SootMethod tgt) {
 		List<Value> varSet = new LinkedList<Value>();
 		if (!method.isConcrete())
@@ -527,15 +543,15 @@ public class QueryManager {
 			// invocation statements
 			if (stmt.containsInvokeExpr()) {
 				InvokeExpr ie = stmt.getInvokeExpr();
-                if( (ie instanceof VirtualInvokeExpr) 
-                		|| (ie instanceof InterfaceInvokeExpr)){
-                	SootMethod callee = ie.getMethod();
-                	if(SootUtils.compatibleWith(tgt, callee)) {
-                		//ie.get
-                		Value var = ie.getUseBoxes().get(0).getValue();
-                		varSet.add(var);
-                	}
-                }
+				if ((ie instanceof VirtualInvokeExpr)
+						|| (ie instanceof InterfaceInvokeExpr)) {
+					SootMethod callee = ie.getMethod();
+					if (SootUtils.compatibleWith(tgt, callee)) {
+						// ie.get
+						Value var = ie.getUseBoxes().get(0).getValue();
+						varSet.add(var);
+					}
+				}
 			}
 		}
 		return varSet;
