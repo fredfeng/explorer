@@ -36,4 +36,4 @@ text(1+x,t,'x','FontSize',25);
 text(2+x,t,'x','FontSize',25);
 text(3+x,t,'x','FontSize',25);
 str = 'inf';
-text(0.34,t,str,'FontName','Times New Roman','FontSize',16);
+text(0.24,t,str,'FontName','Times New Roman','FontSize',16);
