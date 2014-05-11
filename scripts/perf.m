@@ -36,7 +36,7 @@ legend('soot-j CHA', 'soot-j On-the-fly', 'rhino CHA', 'rhino On-the-fly', 'Loca
 % axis setting
 set(gca,'FontName','Times New Roman','FontSize',10);
 % title setting
-title('Runtime for queries','FontName','Times New Roman','FontSize',18);
+title('Run time for different number of queries','FontName','Times New Roman','FontSize',18);
 % gtext('21976.49');
 % gtext('209.46');
 grid on;

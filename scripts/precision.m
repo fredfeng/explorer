@@ -4,7 +4,7 @@ cha = [63;64;22;44];
 otf = [t;t;t;t] - cha;
 mydata = [cha, otf];
 bar_h=bar(mydata, 0.5,'stack');
-mycolor=[1 0.6 1; 1 1 1; 1 1 1; 0.4 1 0.8];
+mycolor=[1 0.6 1; 0.4 1 0.8; 0.4 1 0.8; 0.4 1 0.8];
 colormap(mycolor);
 bar_child=cell2mat(get(bar_h,'Children'));
 for i=1:size(bar_child,1)    
@@ -12,7 +12,6 @@ for i=1:size(bar_child,1)
     set(bar_child(i),'CDataMapping','direct');
 end
 set(bar_child(1), 'CData',[0,0.2,0.3,0.4]);
-set(bar_child(1), 'CData',[0,1,0,1]);
 
 axis([0.5,4.5,0,t + 10]);
 % lable setting
