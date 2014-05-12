@@ -1,20 +1,13 @@
-test
-CallsiteResolver
+CGregx
 ================
 
 Demand-Driven Call Graph construction. 
 
-FullFS:
-Heintze, Nevin, and Olivier Tardieu. "Demand-driven pointer analysis." ACM SIGPLAN Notices. Vol. 36. No. 5. ACM, 2001.
-
-RegularPT:
-Sridharan, Manu, et al. "Demand-driven points-to analysis for Java." ACM SIGPLAN Notices. Vol. 40. No. 10. ACM, 2005.
-
-UltraCG: Our algorithm for call graph construction.
-
-
 How to run?
 Make sure you have ant and java installed.
 
-To analyze CFLexample, run:
-ant -Dtarget=benchmarks/CFLexamples/bin/
+First you need to generate queries for a specific benchmark:
+ant gen -Dtarget=benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks/kawa-c/classes/ -Dmain=kawa.repl -Dalg=cha
+
+To run queries on a specific benchmark such as kawa-c, run:
+ant -Dtarget=benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks/kawa-c/classes/ -Dmain=kawa.repl -Dalg=otf -Dquery=scripts/kawa_regx.txt
