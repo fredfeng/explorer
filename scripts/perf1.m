@@ -23,7 +23,7 @@ xlabel('Benchmark','FontName','Times New Roman','FontSize',16);
 ylabel('Run time (seconds)','FontName','Times New Roman','FontSize',16);
 % legend setting
 % legend('On-the-fly','CHA', 'Location','NorthEast');
-legend('CHA', 'Location','NorthEast');
+legend('CGregx', 'Location','NorthEast');
 
 % axis setting
 set(gca,'FontName','Times New Roman','FontSize',16);

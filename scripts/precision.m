@@ -18,7 +18,7 @@ axis([0.5,4.5,0,t + 10]);
 xlabel('Benchmark','FontName','Times New Roman','FontSize',16);
 ylabel('Number of Yes Answers','FontName','Times New Roman','FontSize',16);
 % legend setting
-legend('On-the-fly','CHA', 'Location','SouthWest');
+legend('on-the-fly','CGregx', 'Location','SouthWest');
 % axis setting
 set(gca,'FontName','Times New Roman','FontSize',16);
 % title setting

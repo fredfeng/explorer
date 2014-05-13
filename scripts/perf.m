@@ -32,7 +32,7 @@ axis([-10,2010,0,600]);
 xlabel('Number of queries','FontName','Times New Roman','FontSize',14);
 ylabel('Run time (seconds)','FontName','Times New Roman','FontSize',14);
 % legend setting
-legend('soot-j CHA', 'soot-j On-the-fly', 'rhino CHA', 'rhino On-the-fly', 'Location','NorthWest');
+legend('soot-j CGregx', 'soot-j on-the-fly', 'rhino CGregx', 'rhino on-the-fly', 'Location','NorthWest');
 % axis setting
 set(gca,'FontName','Times New Roman','FontSize',10);
 % title setting
