@@ -1,0 +1,159 @@
+digraph AutoPAG {
+  rankdir = LR;
+  "AllocNode1" [shape=triangle,label="edu.utexas.cflexamples.Apple"];
+  "FieldRefNode1" [shape=square,label="7.1(ArrayElement) | STRING_ARRAY_NODE_LOCAL"];
+  "VarNode1" [shape=circle,label="1 | Pair <edu.utexas.cflexamples.Driver: void main(java.lang.String[])>,0"];
+  "AllocNode2" [shape=triangle,label="edu.utexas.cflexamples.Peach"];
+  "FieldRefNode2" [shape=square,label="11.2(group) | r0"];
+  "VarNode2" [shape=circle,label="2 | r0"];
+  "AllocNode3" [shape=triangle,label="java.lang.String[]"];
+  "VarNode3" [shape=circle,label="3 | $r1"];
+  "AllocNode4" [shape=triangle,label="java.lang.String"];
+  "VarNode4" [shape=circle,label="4 | r2"];
+  "AllocNode5" [shape=triangle,label="java.lang.Thread"];
+  "VarNode5" [shape=circle,label="5 | $r5"];
+  "VarNode6" [shape=circle,label="6 | r3"];
+  "AllocNode7" [shape=triangle,label="java.lang.String"];
+  "VarNode7" [shape=circle,label="7 | STRING_ARRAY_NODE_LOCAL"];
+  "AllocNode8" [shape=triangle,label="Any_subtype_of_java.security.PrivilegedActionException"];
+  "VarNode8" [shape=circle,label="8 | STRING_NODE_LOCAL"];
+  "AllocNode9" [shape=triangle,label="java.lang.Object"];
+  "AllocNode10" [shape=triangle,label="java.lang.StringBuilder"];
+  "VarNode10" [shape=circle,label="10 | Pair <java.lang.Thread: void exit()>,THIS_NODE"];
+  "AllocNode11" [shape=triangle,label="java.lang.Object"];
+  "FieldRefNode11" [shape=square,label="47.11(blockerLock) | r0"];
+  "VarNode11" [shape=circle,label="11 | r0"];
+  "AllocNode12" [shape=triangle,label="java.lang.ThreadGroup"];
+  "VarNode12" [shape=circle,label="12 | $r1"];
+  "AllocNode13" [shape=triangle,label="java.lang.ref.ReferenceQueue"];
+  "VarNode13" [shape=circle,label="13 | $r2"];
+  "AllocNode14" [shape=triangle,label="java.lang.Object"];
+  "FieldRefNode14" [shape=square,label="55.14(blockerLock) | r0"];
+  "VarNode14" [shape=circle,label="14 | MAIN_THREAD_NODE_LOCAL"];
+  "AllocNode15" [shape=triangle,label="java.lang.ref.Finalizer$FinalizerThread"];
+  "AllocNode17" [shape=triangle,label="java.lang.RuntimePermission"];
+  "AllocNode16" [shape=triangle,label="java.lang.StackTraceElement[]"];
+  "VarNode19" [shape=circle,label="19 | DEFAULT_CLASS_LOADER_LOCAL"];
+  "AllocNode18" [shape=triangle,label="sun.misc.SoftCache"];
+  "VarNode18" [shape=circle,label="18 | Pair <java.lang.ClassLoader: void <init>()>,THIS_NODE"];
+  "VarNode21" [shape=circle,label="21 | Pair <java.lang.ClassLoader: java.lang.Class loadClassInternal(java.lang.String)>,0"];
+  "VarNode20" [shape=circle,label="20 | Pair <java.lang.ClassLoader: java.lang.Class loadClassInternal(java.lang.String)>,THIS_NODE"];
+  "VarNode23" [shape=circle,label="23 | MAIN_CLASS_NAME_STRING_LOCAL"];
+  "VarNode25" [shape=circle,label="25 | Pair <java.lang.ClassLoader: void checkPackageAccess(java.lang.Class,java.security.ProtectionDomain)>,0"];
+  "VarNode24" [shape=circle,label="24 | Pair <java.lang.ClassLoader: void checkPackageAccess(java.lang.Class,java.security.ProtectionDomain)>,THIS_NODE"];
+  "VarNode27" [shape=circle,label="27 | Pair <java.lang.ClassLoader: void addClass(java.lang.Class)>,THIS_NODE"];
+  "VarNode29" [shape=circle,label="29 | Pair <java.lang.ClassLoader: long findNative(java.lang.ClassLoader,java.lang.String)>,0"];
+  "VarNode28" [shape=circle,label="28 | Pair <java.lang.ClassLoader: void addClass(java.lang.Class)>,0"];
+  "VarNode31" [shape=circle,label="31 | Pair <java.lang.ClassLoader: long findNative(java.lang.ClassLoader,java.lang.String)>,THIS_NODE"];
+  "VarNode34" [shape=circle,label="34 | EXCEPTION_NODE"];
+  "VarNode35" [shape=circle,label="35 | PRIVILEGED_ACTION_EXCEPTION_LOCAL"];
+  "VarNode32" [shape=circle,label="32 | Pair <java.security.PrivilegedActionException: void <init>(java.lang.Exception)>,THIS_NODE"];
+  "VarNode33" [shape=circle,label="33 | Pair <java.security.PrivilegedActionException: void <init>(java.lang.Exception)>,0"];
+  "VarNode38" [shape=circle,label="38 | r2"];
+  "VarNode39" [shape=circle,label="39 | $r4"];
+  "VarNode36" [shape=circle,label="36 | Pair <java.lang.ref.Finalizer: void runFinalizer()>,THIS_NODE"];
+  "VarNode37" [shape=circle,label="37 | r0"];
+  "VarNode42" [shape=circle,label="42 | r7"];
+  "VarNode43" [shape=circle,label="43 | FINALIZE_QUEUE"];
+  "VarNode40" [shape=circle,label="40 | r3"];
+  "VarNode41" [shape=circle,label="41 | $r6"];
+  "VarNode46" [shape=circle,label="46 | Pair <java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.Runnable)>,1"];
+  "VarNode47" [shape=circle,label="47 | r0"];
+  "VarNode44" [shape=circle,label="44 | Pair <java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.Runnable)>,THIS_NODE"];
+  "VarNode45" [shape=circle,label="45 | Pair <java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.Runnable)>,0"];
+  "VarNode51" [shape=circle,label="51 | $r3"];
+  "VarNode50" [shape=circle,label="50 | $r4"];
+  "VarNode49" [shape=circle,label="49 | r2"];
+  "VarNode48" [shape=circle,label="48 | r1"];
+  "VarNode55" [shape=circle,label="55 | r0"];
+  "VarNode54" [shape=circle,label="54 | Pair <java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.String)>,1"];
+  "VarNode53" [shape=circle,label="53 | Pair <java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.String)>,0"];
+  "VarNode52" [shape=circle,label="52 | Pair <java.lang.Thread: void <init>(java.lang.ThreadGroup,java.lang.String)>,THIS_NODE"];
+  "VarNode59" [shape=circle,label="59 | MAIN_THREAD_GROUP_NODE_LOCAL"];
+  "VarNode58" [shape=circle,label="58 | $r3"];
+  "VarNode57" [shape=circle,label="57 | r2"];
+  "VarNode56" [shape=circle,label="56 | r1"];
+  "VarNode63" [shape=circle,label="63 | $r3"];
+  "VarNode61" [shape=circle,label="61 | <java.lang.ref.Finalizer: java.lang.ref.ReferenceQueue queue>"];
+  "VarNode60" [shape=circle,label="60 | $r0"];
+  "VarNode68" [shape=circle,label="68 | r6"];
+  "VarNode69" [shape=circle,label="69 | Pair <java.lang.ref.Finalizer: void invokeFinalizeMethod(java.lang.Object)>,0"];
+  "VarNode70" [shape=circle,label="70 | $r0"];
+  "VarNode71" [shape=circle,label="71 | <java.lang.Thread: java.lang.StackTraceElement[] EMPTY_STACK_TRACE>"];
+  "VarNode64" [shape=circle,label="64 | <java.lang.ref.Finalizer: java.lang.Object lock>"];
+  "VarNode65" [shape=circle,label="65 | r2"];
+  "VarNode66" [shape=circle,label="66 | r1"];
+  "VarNode67" [shape=circle,label="67 | $r5"];
+  "VarNode76" [shape=circle,label="76 | Parm -2 to <java.lang.Thread: java.lang.Thread currentThread()>"];
+  "VarNode77" [shape=circle,label="77 | r5"];
+  "VarNode78" [shape=circle,label="78 | $r4"];
+  "VarNode72" [shape=circle,label="72 | $r1"];
+  "VarNode73" [shape=circle,label="73 | <java.lang.Thread: java.lang.RuntimePermission SUBCLASS_IMPLEMENTATION_PERMISSION>"];
+  "VarNode74" [shape=circle,label="74 | $r2"];
+  "VarNode75" [shape=circle,label="75 | <java.lang.Thread: sun.misc.SoftCache subclassAudits>"];
+  "VarNode1" -> "VarNode2" [label="assign"]
+  "VarNode70" -> "VarNode71" [label="assign"]
+  "VarNode3" -> "VarNode4" [label="assign"]
+  "VarNode65" -> "VarNode66" [label="assign"]
+  "VarNode5" -> "VarNode6" [label="assign"]
+  "VarNode66" -> "VarNode65" [label="assign"]
+  "VarNode67" -> "VarNode68" [label="assign"]
+  "VarNode7" -> "VarNode1" [label="assign"]
+  "VarNode76" -> "VarNode78" [label="assign"]
+  "VarNode77" -> "VarNode69" [label="assign"]
+  "VarNode10" -> "VarNode11" [label="assign"]
+  "VarNode72" -> "VarNode73" [label="assign"]
+  "VarNode74" -> "VarNode75" [label="assign"]
+  "VarNode14" -> "VarNode10" [label="assign"]
+  "VarNode14" -> "VarNode52" [label="assign"]
+  "VarNode19" -> "VarNode24" [label="assign"]
+  "VarNode19" -> "VarNode27" [label="assign"]
+  "VarNode19" -> "VarNode18" [label="assign"]
+  "VarNode19" -> "VarNode20" [label="assign"]
+  "VarNode19" -> "VarNode31" [label="assign"]
+  "VarNode23" -> "VarNode25" [label="assign"]
+  "VarNode23" -> "VarNode21" [label="assign"]
+  "VarNode23" -> "VarNode29" [label="assign"]
+  "VarNode23" -> "VarNode28" [label="assign"]
+  "VarNode34" -> "VarNode39" [label="assign"]
+  "VarNode34" -> "VarNode41" [label="assign"]
+  "VarNode34" -> "VarNode33" [label="assign"]
+  "VarNode35" -> "VarNode32" [label="assign"]
+  "VarNode39" -> "VarNode40" [label="assign"]
+  "VarNode36" -> "VarNode37" [label="assign"]
+  "VarNode37" -> "VarNode38" [label="assign"]
+  "VarNode43" -> "VarNode36" [label="assign"]
+  "VarNode40" -> "VarNode34" [label="assign"]
+  "VarNode41" -> "VarNode42" [label="assign"]
+  "VarNode46" -> "VarNode49" [label="assign"]
+  "VarNode44" -> "VarNode47" [label="assign"]
+  "VarNode45" -> "VarNode48" [label="assign"]
+  "VarNode54" -> "VarNode57" [label="assign"]
+  "VarNode53" -> "VarNode56" [label="assign"]
+  "VarNode52" -> "VarNode55" [label="assign"]
+  "VarNode59" -> "VarNode53" [label="assign"]
+  "VarNode63" -> "VarNode64" [label="assign"]
+  "VarNode60" -> "VarNode61" [label="assign"]
+  "FieldRefNode2" -> "VarNode12" [label="load"]
+  "FieldRefNode2" -> "VarNode13" [label="load"]
+  "VarNode50" -> "FieldRefNode11" [label="store"]
+  "VarNode8" -> "FieldRefNode1" [label="store"]
+  "VarNode58" -> "FieldRefNode14" [label="store"]
+  "AllocNode1" -> "VarNode3" [label="new"]
+  "AllocNode2" -> "VarNode5" [label="new"]
+  "AllocNode3" -> "VarNode7" [label="new"]
+  "AllocNode4" -> "VarNode8" [label="new"]
+  "AllocNode5" -> "VarNode14" [label="new"]
+  "AllocNode7" -> "VarNode23" [label="new"]
+  "AllocNode8" -> "VarNode35" [label="new"]
+  "AllocNode9" -> "VarNode50" [label="new"]
+  "AllocNode10" -> "VarNode51" [label="new"]
+  "AllocNode11" -> "VarNode58" [label="new"]
+  "AllocNode12" -> "VarNode59" [label="new"]
+  "AllocNode13" -> "VarNode60" [label="new"]
+  "AllocNode14" -> "VarNode63" [label="new"]
+  "AllocNode15" -> "VarNode67" [label="new"]
+  "AllocNode17" -> "VarNode72" [label="new"]
+  "AllocNode16" -> "VarNode70" [label="new"]
+  "AllocNode18" -> "VarNode74" [label="new"]
+}
