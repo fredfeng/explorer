@@ -19,12 +19,13 @@ public class DemandDrivenHarness {
 		// TODO Auto-generated method stub
 		// String targetLoc = args[0];
 		// System.out.println("begin to run benchmark----------" + targetLoc);
-		 String targetLoc = "benchmarks/CFLexamples/bin/";
+//		 String targetLoc = "benchmarks/CFLexamples/bin/";
 		// String targetLoc = "../CFLexamples/bin/";
 //		String targetLoc = "benchmarks/ashesSuiteCollection/suites/ashesHardTestSuite/benchmarks/javazoom/classes";
 //		String targetLoc = "benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks/soot-j/classes";
 //		String targetLoc = "benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks/javasrc-p/classes";
 //		String targetLoc = "benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks/gj/classes";
+		 String targetLoc = "benchmarks/ashesSuiteCollection/suites/ashesJSuite/benchmarks/jpat-p/classes";
 
 //		String targetLoc = "benchmarks/sablecc-3.7/classes/";
 		// 0: interactive mode; 1: benchmark mode
@@ -33,7 +34,7 @@ public class DemandDrivenHarness {
 			PackManager.v().getPack("wjtp")
 					.add(new Transform("wjtp.ddd", new DemandDrivenTransformer()));
 			
-			String mainClassName = "edu.utexas.cflexamples.Driver";
+			String mainClassName = "JPATTest";
 
 //			String mainClassName = "ca.mcgill.sable.soot.jimple.Main";
 //			String mainClassName = "javasrc.app.JavaSrc";
