@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import soot.Body;
-import soot.G;
 import soot.Local;
 import soot.PointsToAnalysis;
 import soot.PointsToSet;
@@ -14,7 +13,6 @@ import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.SourceLocator;
 import soot.Unit;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
@@ -23,20 +21,13 @@ import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.spark.builder.ContextInsensitiveBuilder;
 import soot.jimple.spark.ondemand.DemandCSPointsTo;
 import soot.jimple.spark.pag.PAG;
-import soot.jimple.spark.pag.PAGDumper;
 import soot.jimple.spark.solver.EBBCollapser;
-import soot.jimple.spark.solver.PropAlias;
-import soot.jimple.spark.solver.PropCycle;
-import soot.jimple.spark.solver.PropIter;
-import soot.jimple.spark.solver.PropMerge;
 import soot.jimple.spark.solver.PropWorklist;
-import soot.jimple.spark.solver.Propagator;
 import soot.jimple.spark.solver.SCCCollapser;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.options.SparkOptions;
 import soot.util.Chain;
 import edu.utexas.cgrex.QueryManager;
-import edu.utexas.cgrex.utils.StringUtil;
 
 /**
  * Generate n numbers of valid regular expressions from CHA-based automaton.

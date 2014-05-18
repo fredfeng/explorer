@@ -3,7 +3,6 @@ package edu.utexas.cgrex.benchmarks;
 import soot.CompilationDeathException;
 import soot.PackManager;
 import soot.Transform;
-import edu.utexas.cgrex.analyses.OTFTransformer;
 
 public class DemandDrivenHarness {
 
@@ -45,7 +44,7 @@ public class DemandDrivenHarness {
 					"-process-dir", targetLoc,
 					"-src-prec", "java",
 					"-allow-phantom-refs",
-//					"-main-class", mainClassName,
+					"-main-class", mainClassName,
 					"-no-bodies-for-excluded",
 					"-exclude", "java",
 					"-exclude", "javax",
