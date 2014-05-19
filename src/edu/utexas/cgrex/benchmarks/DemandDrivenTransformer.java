@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import soot.Body;
 import soot.Local;
@@ -16,6 +17,7 @@ import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
@@ -31,6 +33,7 @@ import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.options.SparkOptions;
 import soot.util.Chain;
 import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.analyses.AutoPAG;
 
 /**
  * Generate n numbers of valid regular expressions from CHA-based automaton.
@@ -97,7 +100,7 @@ public class DemandDrivenTransformer extends SceneTransformer {
 
 		final int DEFAULT_MAX_PASSES = 1000000;
 		final int DEFAULT_MAX_TRAVERSAL = 7500000;
-		final boolean DEFAULT_LAZY = true;
+		final boolean DEFAULT_LAZY = false;
 		Date startOnDemand = new Date();
 		Scene.v().setPointsToAnalysis(pag);
 
@@ -146,22 +149,36 @@ public class DemandDrivenTransformer extends SceneTransformer {
 		//===========================ondemand=============
 		Scene.v().setPointsToAnalysis(pag);
 
+		AutoPAG me = new AutoPAG(pag);
+		me.build();
+		
+		
 		PointsToAnalysis ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		int range = virtSet.size();
-		int trialNum = 2400;
+		int trialNum = 1000;
 		Random randomizer = new Random();
 		
 		assert(!ptsDemand.equals(ptsEager));
+		int cnt = 0;
+		
+		DemandCSPointsTo dcs = (DemandCSPointsTo)ptsDemand;
 
 		for (int i = 0; i < trialNum; i++) {
 			Local ran = virtSet.get(randomizer.nextInt(range));
+			Set<Type> insPt = me.insensitiveQuery(ran);
+			if(insPt.size() > ptsDemand.reachingObjects(ran).possibleTypes().size()) 
+				cnt++;
+				
+			assert(insPt.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
+
 			assert (ptsDemand.reachingObjects(ran).possibleTypes()
 					.containsAll(ptsEager.reachingObjects(ran).possibleTypes()));
 			assert (ptsEager.reachingObjects(ran).possibleTypes()
 					.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
-//			assert (ptsEager.reachingObjects(ran).equals(ptsDemand.reachingObjects(ran)));
 		}
+		
+		System.out.println("diff------------" + cnt);
 
 		assert(false);
 	}
