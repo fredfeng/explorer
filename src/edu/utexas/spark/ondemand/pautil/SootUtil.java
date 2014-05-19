@@ -30,10 +30,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import edu.utexas.spark.ondemand.genericutil.ArraySet;
-import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
-import edu.utexas.spark.ondemand.genericutil.ImmutableStack;
-import edu.utexas.spark.ondemand.genericutil.Predicate;
 import soot.ArrayType;
 import soot.CompilationDeathException;
 import soot.G;
@@ -44,6 +40,7 @@ import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
+import soot.jimple.spark.ondemand.genericutil.Predicate;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.FieldRefNode;
 import soot.jimple.spark.pag.GlobalVarNode;
@@ -63,6 +60,9 @@ import soot.options.Options;
 import soot.toolkits.scalar.Pair;
 import soot.util.Chain;
 import soot.util.queue.ChunkedQueue;
+import edu.utexas.spark.ondemand.genericutil.ArraySet;
+import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
+import edu.utexas.spark.ondemand.genericutil.ImmutableStack;
 
 /**
  * Utility methods for dealing with Soot.
@@ -378,7 +378,7 @@ public class SootUtil {
       }
 
     };
-    return notRefTypePred.test(method.getReturnType()) && edu.utexas.spark.ondemand.genericutil.Util.forAll(method.getParameterTypes(), notRefTypePred);
+    return notRefTypePred.test(method.getReturnType()) && soot.jimple.spark.ondemand.genericutil.Util.forAll(method.getParameterTypes(), notRefTypePred);
   }
 
   public static SootMethod getMainMethod() {

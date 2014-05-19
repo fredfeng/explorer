@@ -19,7 +19,7 @@
 package edu.utexas.spark.ondemand;
 
 import soot.SootField;
-import soot.jimple.spark.ondemand.FieldCheckHeuristic;
+import edu.utexas.spark.ondemand.FieldCheckHeuristic;
 import soot.jimple.spark.pag.ArrayElement;
 import soot.jimple.spark.pag.SparkField;
 

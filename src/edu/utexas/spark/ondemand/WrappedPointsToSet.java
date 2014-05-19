@@ -24,7 +24,6 @@ import soot.PointsToSet;
 import soot.Type;
 import soot.jimple.ClassConstant;
 import soot.jimple.spark.ondemand.AllocAndContextSet;
-import soot.jimple.spark.ondemand.WrappedPointsToSet;
 import soot.jimple.spark.sets.EqualsSupportingPointsToSet;
 import soot.jimple.spark.sets.PointsToSetInternal;
 

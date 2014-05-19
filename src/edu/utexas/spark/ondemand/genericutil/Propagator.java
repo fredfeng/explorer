@@ -20,7 +20,7 @@ package edu.utexas.spark.ondemand.genericutil;
 
 import java.util.Set;
 
-import soot.jimple.spark.ondemand.genericutil.Stack;
+import edu.utexas.spark.ondemand.genericutil.Stack;
 
 public class Propagator<T> {
 

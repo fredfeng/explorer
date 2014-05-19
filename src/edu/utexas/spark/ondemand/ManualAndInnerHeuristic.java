@@ -19,9 +19,9 @@
 package edu.utexas.spark.ondemand;
 
 import soot.jimple.spark.internal.TypeManager;
-import soot.jimple.spark.ondemand.FieldCheckHeuristic;
-import soot.jimple.spark.ondemand.InnerTypesIncrementalHeuristic;
-import soot.jimple.spark.ondemand.ManualFieldCheckHeuristic;
+//import soot.jimple.spark.ondemand.FieldCheckHeuristic;
+//import soot.jimple.spark.ondemand.InnerTypesIncrementalHeuristic;
+//import soot.jimple.spark.ondemand.ManualFieldCheckHeuristic;
 import soot.jimple.spark.pag.SparkField;
 
 public class ManualAndInnerHeuristic implements FieldCheckHeuristic {

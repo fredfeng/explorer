@@ -19,13 +19,12 @@
 package edu.utexas.spark.ondemand;
 
 import soot.jimple.spark.internal.TypeManager;
-import soot.jimple.spark.ondemand.EverythingHeuristic;
-import soot.jimple.spark.ondemand.FieldCheckHeuristic;
-import soot.jimple.spark.ondemand.HeuristicType;
-import soot.jimple.spark.ondemand.InnerTypesIncrementalHeuristic;
-import soot.jimple.spark.ondemand.ManualAndInnerHeuristic;
-import soot.jimple.spark.ondemand.ManualFieldCheckHeuristic;
-import soot.jimple.spark.ondemand.NothingHeuristic;
+import edu.utexas.spark.ondemand.EverythingHeuristic;
+import edu.utexas.spark.ondemand.FieldCheckHeuristic;
+import edu.utexas.spark.ondemand.InnerTypesIncrementalHeuristic;
+import edu.utexas.spark.ondemand.ManualAndInnerHeuristic;
+import edu.utexas.spark.ondemand.ManualFieldCheckHeuristic;
+import edu.utexas.spark.ondemand.NothingHeuristic;
 
 public enum HeuristicType {
 

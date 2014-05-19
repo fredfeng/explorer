@@ -18,7 +18,6 @@
  */
 package edu.utexas.spark.ondemand;
 
-import soot.jimple.spark.ondemand.FieldCheckHeuristic;
 import soot.jimple.spark.pag.SparkField;
 
 public class NothingHeuristic implements FieldCheckHeuristic {

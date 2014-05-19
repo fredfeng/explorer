@@ -6,8 +6,6 @@ import soot.Local;
 import soot.PointsToSet;
 import soot.Type;
 import soot.jimple.ClassConstant;
-import soot.jimple.spark.ondemand.DemandCSPointsTo;
-import soot.jimple.spark.ondemand.LazyContextSensitivePointsToSet;
 import soot.jimple.spark.sets.EqualsSupportingPointsToSet;
 
 /**

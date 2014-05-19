@@ -24,10 +24,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-
-
-
-import edu.utexas.spark.ondemand.genericutil.Predicate;
+import soot.jimple.spark.ondemand.genericutil.Predicate;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.FieldRefNode;
 import soot.jimple.spark.pag.Node;

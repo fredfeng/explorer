@@ -21,16 +21,17 @@ package edu.utexas.spark.ondemand.pautil;
 import java.util.Iterator;
 import java.util.Set;
 
-import edu.utexas.spark.ondemand.genericutil.ArraySet;
-import edu.utexas.spark.ondemand.genericutil.HashSetMultiMap;
-import edu.utexas.spark.ondemand.genericutil.MultiMap;
-import edu.utexas.spark.ondemand.pautil.SootUtil.FieldToEdgesMap;
+import soot.jimple.spark.ondemand.genericutil.HashSetMultiMap;
+import soot.jimple.spark.ondemand.genericutil.MultiMap;
 import soot.jimple.spark.pag.FieldRefNode;
 import soot.jimple.spark.pag.Node;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
 import soot.toolkits.scalar.Pair;
+import edu.utexas.spark.ondemand.genericutil.ArraySet;
+import edu.utexas.spark.ondemand.pautil.SootUtil.FieldToEdgesMap;
+
 
 public class ValidMatches {
 

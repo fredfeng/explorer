@@ -21,7 +21,7 @@ package edu.utexas.spark.ondemand.genericutil;
 import java.util.Collection;
 import java.util.Set;
 
-import soot.jimple.spark.ondemand.genericutil.ArraySet;
+import edu.utexas.spark.ondemand.genericutil.ArraySet;
 
 public class ArraySetMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
