@@ -36,6 +36,8 @@ import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.VarNode;
 import soot.toolkits.scalar.Pair;
 import soot.util.HashMultiMap;
+import edu.utexas.spark.ondemand.DemandCSPointsTo.CallSiteAndContext;
+import edu.utexas.spark.ondemand.DemandCSPointsTo.CallSiteToTargetsMap;
 import edu.utexas.spark.ondemand.genericutil.ArraySet;
 import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
 
@@ -391,5 +393,13 @@ public class ContextSensitiveInfo {
 	public boolean isVirtCall(Integer callSite) {
 		return virtCallSiteToReceiver.containsKey(callSite);
 	}
-
+	
+	// self-added methods
+	public Map<Integer, LocalVarNode> getVirtCallSiteToReceiver() {
+		return this.virtCallSiteToReceiver;
+	}
+	
+	public ArraySetMultiMap<Integer, SootMethod> getCallSiteToTargets() {
+		return this.callSiteToTargets;
+	}
 }

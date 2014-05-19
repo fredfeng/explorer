@@ -58,6 +58,7 @@ import soot.jimple.toolkits.callgraph.VirtualCalls;
 import soot.toolkits.scalar.Pair;
 import soot.util.NumberedString;
 import edu.utexas.spark.ondemand.genericutil.ArraySet;
+import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
 import edu.utexas.spark.ondemand.genericutil.HashSetMultiMap;
 import edu.utexas.spark.ondemand.genericutil.ImmutableStack;
 import edu.utexas.spark.ondemand.genericutil.Predicate;
@@ -88,7 +89,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			ArraySet<ImmutableStack<Integer>> {
 	}
 
-	protected final static class CallSiteAndContext extends
+	public final static class CallSiteAndContext extends
 			Pair<Integer, ImmutableStack<Integer>> {
 
 		public CallSiteAndContext(Integer callSite,
@@ -97,7 +98,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 	}
 
-	protected static final class CallSiteToTargetsMap extends
+	public static final class CallSiteToTargetsMap extends
 			HashSetMultiMap<CallSiteAndContext, SootMethod> {
 	}
 
@@ -251,9 +252,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	protected FieldToEdgesMap fieldToStores;
 
-	protected final int maxNodesPerPass;
+	protected int maxNodesPerPass;
 
-	protected final int maxPasses;
+	protected int maxPasses;
 
 	protected int nesting = 0;
 
@@ -333,6 +334,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
 	public PointsToSet doReachingObjects(Local l) {
+		maxNodesPerPass = 100;
+		maxPasses = 100;
 		// lazy initialization
 		if (fieldToStores == null) {
 			init();
@@ -1763,6 +1766,16 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 	}
 
+	public int count = 0;
+	public Set<Integer> differentCallSites = new HashSet<Integer>();
+	public Set<CallSiteAndContext> differentCallSitesAndContext = new HashSet<CallSiteAndContext>();
+
+	public void update(CallSiteAndContext callSiteAndContext) {
+		differentCallSites.add(callSiteAndContext.getO1());
+		differentCallSitesAndContext.add(callSiteAndContext);
+		count++;
+	}
+
 	protected Set<SootMethod> refineCallSite(Integer callSite,
 			ImmutableStack<Integer> origContext) {
 		CallSiteAndContext callSiteAndContext = new CallSiteAndContext(
@@ -1835,6 +1848,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						allTargets)) {
 					callSiteToResolvedTargets.put(callSiteAndContext, method);
 					callSiteToResolvedTargets1.put(callSiteAndContext, method);
+					update(callSiteAndContext);
 				}
 			}
 			Collection<AssignEdge> assigns = filterAssigns(curVar, curContext,
@@ -1856,6 +1870,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 								allTargets);
 						callSiteToResolvedTargets1.putAll(callSiteAndContext,
 								allTargets);
+						update(callSiteAndContext);
+
 						// if (DEBUG) {
 						// debugPrint("giving up on virt");
 						// }
@@ -1876,7 +1892,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 			// TODO respect heuristic
 			Set<VarNode> matchSources = vMatches.vMatchInvLookup(curVar);
-			final boolean oneMatch = matchSources.size() == 1;
+			final boolean oneMatch = matchSources.size() <= 10;
 			Node[] loads = pag.loadInvLookup(curVar);
 			for (int i = 0; i < loads.length; i++) {
 				FieldRefNode frNode = (FieldRefNode) loads[i];
@@ -1898,13 +1914,15 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 							Set<SootMethod> matchSrcCallTargets = getCallTargets(
 									matchSrcPTo, methodSig, receiverType,
 									allTargets);
-							if (matchSrcCallTargets.size() <= 1) {
+							if (matchSrcCallTargets.size() <= 10) {
 								skipMatch = true;
 								for (SootMethod method : matchSrcCallTargets) {
 									callSiteToResolvedTargets.put(
 											callSiteAndContext, method);
 									callSiteToResolvedTargets1.put(
 											callSiteAndContext, method);
+									update(callSiteAndContext);
+
 								}
 							}
 						}
@@ -1925,6 +1943,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 										callSiteAndContext, allTargets);
 								callSiteToResolvedTargets1.putAll(
 										callSiteAndContext, allTargets);
+								update(callSiteAndContext);
+
 								continue;
 							} finally {
 								refiningCallSite = oldRefining;
@@ -2230,6 +2250,44 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	public ContextSensitiveInfo getCSInfo() {
 		return this.csInfo;
+	}
+
+	public ArraySetMultiMap<Integer, SootMethod> callSiteToMethods = new ArraySetMultiMap<Integer, SootMethod>();
+	public ArraySetMultiMap<VarNode, SootMethod> callSiteVarToMethods = new ArraySetMultiMap<VarNode, SootMethod>();
+	
+	public ArraySetMultiMap<VarNode, SootMethod> convert() {
+
+		Map<Integer, LocalVarNode> virtCallSiteToReceiver = csInfo
+				.getVirtCallSiteToReceiver();
+
+		ArraySetMultiMap<VarNode, SootMethod> ret = callSiteVarToMethods;
+
+		for (CallSiteAndContext cst : callSiteToResolvedTargets1.keySet()) {
+			Integer index = cst.getO1(); // get the callsite
+
+			assert (virtCallSiteToReceiver.containsKey(index));
+
+			LocalVarNode receiver = virtCallSiteToReceiver.get(index);
+
+			assert (receiver != null);
+
+			System.out.println("converting...");
+			// assert (false);
+
+			ret.putAll(receiver, callSiteToResolvedTargets1.get(cst));
+			callSiteToMethods
+					.putAll(index, callSiteToResolvedTargets1.get(cst));
+		}
+
+		return ret;
+	}
+	
+	public ArraySetMultiMap<Integer, SootMethod> getCallSiteToMethods() {
+		return this.callSiteToMethods;
+	}
+	
+	public ArraySetMultiMap<VarNode, SootMethod> getCallSiteVarToMethods() {
+		return this.callSiteVarToMethods;
 	}
 
 }
