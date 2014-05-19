@@ -34,6 +34,7 @@ import soot.jimple.spark.pag.SparkField;
 import soot.jimple.spark.pag.VarNode;
 import soot.jimple.spark.sets.EqualsSupportingPointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
+import soot.jimple.spark.sets.PointsToSetEqualsWrapper;
 import soot.jimple.spark.sets.PointsToSetInternal;
 import edu.utexas.cgrex.utils.SootUtils;
 
@@ -426,9 +427,9 @@ public class AutoPAG {
 
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"src/autopag.dot"));
+					"output/autopag.dot"));
 			BufferedWriter cufw = new BufferedWriter(new FileWriter(
-					"sootOutput/autopagDot"));
+					"output/autopaginfo"));
 			cufw.write(c.toString());
 			bufw.write(b.toString());
 			cufw.close();
@@ -468,6 +469,26 @@ public class AutoPAG {
 
 		}
 		return false;
+	}
+
+	public Set<Type> insensitiveQuery(Value var) {
+
+		assert (var instanceof Local || var instanceof FieldRef);
+
+		VarNode v = null;
+		if (var instanceof Local)
+			v = father.findLocalVarNode(var);
+		else
+			v = father.findGlobalVarNode(((FieldRef) var).getField());
+
+		assert (v != null);
+
+		Set<AllocNode> ptAllocSet = searchingObjects(v);
+		Set<Type> ptTypeSet = new HashSet<Type>();
+		for (AllocNode alloc : ptAllocSet)
+			ptTypeSet.add(alloc.getType());
+
+		return ptTypeSet;
 	}
 
 	// overload: given a list of variables and a list of types
@@ -618,6 +639,31 @@ public class AutoPAG {
 		return refine;
 	}
 
+	// protected static final int DEFAULT_MAX_PASSES = Integer.MAX_VALUE;
+	//
+	// protected static final int DEFAULT_MAX_TRAVERSAL = Integer.MAX_VALUE;
+	//
+	// protected static final boolean DEFAULT_LAZY = false;
+	//
+	// public DemandCSPointsTo demand = new DemandCSPointsTo(
+	// new ContextSensitiveInfo(father), father, DEFAULT_MAX_TRAVERSAL,
+	// DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+	//
+	// public PointsToSet sensitiveQuery(Value var) {
+	// assert (var instanceof Local);
+	//
+	// return demand.reachingObjects((Local) var);
+	// }
+	//
+	// // this is only for un-lazy mode
+	// public boolean ptSetEquals(PointsToSet pt1, PointsToSet pt2) {
+	// EqualsSupportingPointsToSet eq1 = (EqualsSupportingPointsToSet) pt1;
+	// EqualsSupportingPointsToSet eq2 = (EqualsSupportingPointsToSet) pt2;
+	//
+	// return new PointsToSetEqualsWrapper(eq1)
+	// .equals(new PointsToSetEqualsWrapper(eq2));
+	// }
+
 	// used in on-the-fly call graph building in the OndemandInsensitiveWorkList
 	// method
 	public Set<AllocNode> insensitivePTAnalysis(VarNode var) {
@@ -711,7 +757,8 @@ public class AutoPAG {
 				new ContextSensitiveInfo(father), father);
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		for (Value var : vars) {
-			assert (var instanceof Local || var instanceof FieldRef);
+			assert (var instanceof Local);
+			System.out.println("I am in..");
 			PointsToSet ptSet = null;
 			if (var instanceof Local) {
 				ptSet = ptAnalysis.reachingObjects((Local) var);
@@ -734,8 +781,6 @@ public class AutoPAG {
 			} else if (var instanceof FieldRef) {
 				v = father.findGlobalVarNode(((FieldRef) var).getField());
 			}
-
-			assert (v != null);
 
 			if (v == null)
 				continue;
