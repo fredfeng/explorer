@@ -2252,9 +2252,18 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		return this.csInfo;
 	}
 
+	public ArraySet<SootMethod> getResolvedMethod(Local local) {
+		ArraySet<SootMethod> ret = null;
+		
+		LocalVarNode localVar = pag.findLocalVarNode(local);
+		ret = callSiteVarToMethods.get(localVar);
+		return ret;
+	}
+
 	public ArraySetMultiMap<Integer, SootMethod> callSiteToMethods = new ArraySetMultiMap<Integer, SootMethod>();
+
 	public ArraySetMultiMap<VarNode, SootMethod> callSiteVarToMethods = new ArraySetMultiMap<VarNode, SootMethod>();
-	
+
 	public ArraySetMultiMap<VarNode, SootMethod> convert() {
 
 		Map<Integer, LocalVarNode> virtCallSiteToReceiver = csInfo
@@ -2281,11 +2290,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 		return ret;
 	}
-	
+
 	public ArraySetMultiMap<Integer, SootMethod> getCallSiteToMethods() {
 		return this.callSiteToMethods;
 	}
-	
+
 	public ArraySetMultiMap<VarNode, SootMethod> getCallSiteVarToMethods() {
 		return this.callSiteVarToMethods;
 	}
