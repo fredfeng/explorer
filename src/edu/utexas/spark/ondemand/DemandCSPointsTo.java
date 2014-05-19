@@ -338,8 +338,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
 	public PointsToSet doReachingObjects(Local l) {
-		maxNodesPerPass = 100000;
-		maxPasses = 1000;
+		maxNodesPerPass = 1000000;
+		maxPasses = 10;
 		// lazy initialization
 		if (fieldToStores == null) {
 			init();
@@ -1920,7 +1920,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 			// TODO respect heuristic
 			Set<VarNode> matchSources = vMatches.vMatchInvLookup(curVar);
-			final boolean oneMatch = matchSources.size() <= 10;
+			final boolean oneMatch = matchSources.size() <= 100;
 			Node[] loads = pag.loadInvLookup(curVar);
 			for (int i = 0; i < loads.length; i++) {
 				FieldRefNode frNode = (FieldRefNode) loads[i];
@@ -2276,14 +2276,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	// followings are self-added methods
 
-	public CallSiteToTargetsMap getCallSiteToResolvedTargets() {
-		return this.callSiteToResolvedTargets1;
-	}
-
-	public ContextSensitiveInfo getCSInfo() {
-		return this.csInfo;
-	}
-
 	public ArraySet<SootMethod> getResolvedMethod(Local local) {
 		ArraySet<SootMethod> ret = null;
 
@@ -2300,22 +2292,14 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	public ArraySetMultiMap<VarNode, SootMethod> convert() {
 
-		ArraySetMultiMap<VarNode, SootMethod> tmp = new ArraySetMultiMap<VarNode, SootMethod>();
-		for (VarNode v : callSiteVarToMethods.keySet()) {
-			tmp.putAll(v, callSiteVarToMethods.get(v));
-		}
-
 		callSiteVarToMethods.clear();
 		callSiteToMethods.clear();
-		assert (callSiteVarToMethods.size() == 0);
 
 		Map<Integer, LocalVarNode> virtCallSiteToReceiver = csInfo
 				.getVirtCallSiteToReceiver();
 
-		ArraySetMultiMap<VarNode, SootMethod> ret = callSiteVarToMethods;
-
 		for (CallSiteAndContext cst : callSiteToResolvedTargets1.keySet()) {
-			Integer index = cst.getO1(); // get the callsite
+			Integer index = cst.getO1(); // get the call site
 
 			assert (virtCallSiteToReceiver.containsKey(index));
 
@@ -2323,26 +2307,23 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 			assert (receiver != null);
 
-			System.out.println("converting...");
-			// assert (false);
+//			System.out.println("converting...");
 
-			ret.putAll(receiver, callSiteToResolvedTargets1.get(cst));
+			callSiteVarToMethods.putAll(receiver,
+					callSiteToResolvedTargets1.get(cst));
 			callSiteToMethods
 					.putAll(index, callSiteToResolvedTargets1.get(cst));
 		}
 
-		for (VarNode v : tmp.keySet()) {
-			if (callSiteVarToMethods.containsKey(v)) {
-				System.out.println(tmp.get(v));
-				System.out.println("======================");
-				System.out.println(callSiteVarToMethods.get(v));
-				System.out.println("-----------------------");
-				assert ((callSiteVarToMethods.get(v)).containsAll(tmp.get(v)));
-				assert ((tmp.get(v)).containsAll(callSiteVarToMethods.get(v)));
-			}
-		}
+		return callSiteVarToMethods;
+	}
 
-		return ret;
+	public CallSiteToTargetsMap getCallSiteToResolvedTargets() {
+		return this.callSiteToResolvedTargets1;
+	}
+
+	public ContextSensitiveInfo getCSInfo() {
+		return this.csInfo;
 	}
 
 	public ArraySetMultiMap<Integer, SootMethod> getCallSiteToMethods() {
