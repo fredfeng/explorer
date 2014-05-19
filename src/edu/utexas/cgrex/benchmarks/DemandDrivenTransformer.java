@@ -1,9 +1,12 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import soot.Body;
 import soot.Local;
@@ -98,16 +101,14 @@ public class DemandDrivenTransformer extends SceneTransformer {
 		Date startOnDemand = new Date();
 		Scene.v().setPointsToAnalysis(pag);
 
-		PointsToAnalysis onDemandAnalysis = DemandCSPointsTo.makeWithBudget(
+		PointsToAnalysis ptsEager = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		Date endOndemand = new Date();
 		System.out
 				.println("Initialized on-demand refinement-based context-sensitive analysis"
 						+ startOnDemand + endOndemand);
-		Scene.v().setPointsToAnalysis(onDemandAnalysis);
 
-		PointsToAnalysis pts = Scene.v().getPointsToAnalysis();
-
+		List<Local> virtSet = new ArrayList<Local>();
 		// perform pt-set queries.
 		for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
 				.hasNext();) {
@@ -127,9 +128,10 @@ public class DemandDrivenTransformer extends SceneTransformer {
 								|| (ie instanceof InterfaceInvokeExpr)) {
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
-							PointsToSet ps = pts.reachingObjects(receiver);
+							PointsToSet ps = ptsEager.reachingObjects(receiver);
 							if (ps.possibleTypes().size() == 0)
 								continue;
+							virtSet.add(receiver);
 							System.out.println("Virtual call------" + ie);
 							System.out.println("Points-to set------"
 									+ ps.possibleTypes());
@@ -139,7 +141,29 @@ public class DemandDrivenTransformer extends SceneTransformer {
 				}
 			}
 		}
+		
+		
+		//===========================ondemand=============
+		Scene.v().setPointsToAnalysis(pag);
 
+		PointsToAnalysis ptsDemand = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		int range = virtSet.size();
+		int trialNum = 2400;
+		Random randomizer = new Random();
+		
+		assert(!ptsDemand.equals(ptsEager));
+
+		for (int i = 0; i < trialNum; i++) {
+			Local ran = virtSet.get(randomizer.nextInt(range));
+			assert (ptsDemand.reachingObjects(ran).possibleTypes()
+					.containsAll(ptsEager.reachingObjects(ran).possibleTypes()));
+			assert (ptsEager.reachingObjects(ran).possibleTypes()
+					.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
+//			assert (ptsEager.reachingObjects(ran).equals(ptsDemand.reachingObjects(ran)));
+		}
+
+		assert(false);
 	}
 
 }
