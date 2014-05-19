@@ -229,7 +229,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	protected final CallSiteToTargetsMap callSiteToResolvedTargets = new CallSiteToTargetsMap();
 
+	// the best historical records
 	protected final CallSiteToTargetsMap callSiteToResolvedTargets1 = new CallSiteToTargetsMap();
+
+	// the result for this round, may be not the most precise
+	protected final CallSiteToTargetsMap callSiteToResolvedTargets2 = new CallSiteToTargetsMap();
 
 	protected HashMap<List<Object>, Set<SootMethod>> callTargetsArgCache = new HashMap<List<Object>, Set<SootMethod>>();
 
@@ -334,8 +338,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
 	public PointsToSet doReachingObjects(Local l) {
-		maxNodesPerPass = 100;
-		maxPasses = 100;
+		maxNodesPerPass = 100000;
+		maxPasses = 1000;
 		// lazy initialization
 		if (fieldToStores == null) {
 			init();
@@ -355,6 +359,24 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 		}
 		assert consistentResult(l, result);
+
+		for (CallSiteAndContext csc : callSiteToResolvedTargets2.keySet()) {
+			if (!callSiteToMethods.containsKey(csc.getO1())) {
+				callSiteToResolvedTargets1.putAll(csc,
+						callSiteToResolvedTargets2.get(csc));
+			} else {
+				if (callSiteToResolvedTargets2.get(csc).size() < callSiteToResolvedTargets1
+						.get(csc).size()) {
+					callSiteToResolvedTargets1.clear();
+					callSiteToResolvedTargets1.putAll(csc,
+							callSiteToResolvedTargets2.get(csc));
+				}
+			}
+		}
+
+		callSiteToResolvedTargets2.clear();
+
+		convert();
 
 		return result;
 	}
@@ -1847,7 +1869,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						allocNode.getType(), methodSig, receiverType,
 						allTargets)) {
 					callSiteToResolvedTargets.put(callSiteAndContext, method);
-					callSiteToResolvedTargets1.put(callSiteAndContext, method);
+					callSiteToResolvedTargets2.put(callSiteAndContext, method); // this
+																				// reaching
+																				// objects
+					// callSiteToResolvedTargets1.put(callSiteAndContext,
+					// method);
 					update(callSiteAndContext);
 				}
 			}
@@ -1868,8 +1894,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					} else {
 						callSiteToResolvedTargets.putAll(callSiteAndContext,
 								allTargets);
-						callSiteToResolvedTargets1.putAll(callSiteAndContext,
+						callSiteToResolvedTargets2.putAll(callSiteAndContext,
 								allTargets);
+						// callSiteToResolvedTargets1.putAll(callSiteAndContext,
+						// allTargets);
 						update(callSiteAndContext);
 
 						// if (DEBUG) {
@@ -1919,8 +1947,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 								for (SootMethod method : matchSrcCallTargets) {
 									callSiteToResolvedTargets.put(
 											callSiteAndContext, method);
-									callSiteToResolvedTargets1.put(
+									callSiteToResolvedTargets2.put(
 											callSiteAndContext, method);
+									// callSiteToResolvedTargets1.put(
+									// callSiteAndContext, method);
 									update(callSiteAndContext);
 
 								}
@@ -1941,8 +1971,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 							} catch (CallSiteException e) {
 								callSiteToResolvedTargets.putAll(
 										callSiteAndContext, allTargets);
-								callSiteToResolvedTargets1.putAll(
+								callSiteToResolvedTargets2.putAll(
 										callSiteAndContext, allTargets);
+								// callSiteToResolvedTargets1.putAll(
+								// callSiteAndContext, allTargets);
 								update(callSiteAndContext);
 
 								continue;
@@ -2254,7 +2286,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	public ArraySet<SootMethod> getResolvedMethod(Local local) {
 		ArraySet<SootMethod> ret = null;
-		
+
 		LocalVarNode localVar = pag.findLocalVarNode(local);
 		ret = callSiteVarToMethods.get(localVar);
 		return ret;
@@ -2264,7 +2296,18 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	public ArraySetMultiMap<VarNode, SootMethod> callSiteVarToMethods = new ArraySetMultiMap<VarNode, SootMethod>();
 
+	public Set<Integer> visitedCallSites = new HashSet<Integer>();
+
 	public ArraySetMultiMap<VarNode, SootMethod> convert() {
+
+		ArraySetMultiMap<VarNode, SootMethod> tmp = new ArraySetMultiMap<VarNode, SootMethod>();
+		for (VarNode v : callSiteVarToMethods.keySet()) {
+			tmp.putAll(v, callSiteVarToMethods.get(v));
+		}
+
+		callSiteVarToMethods.clear();
+		callSiteToMethods.clear();
+		assert (callSiteVarToMethods.size() == 0);
 
 		Map<Integer, LocalVarNode> virtCallSiteToReceiver = csInfo
 				.getVirtCallSiteToReceiver();
@@ -2286,6 +2329,17 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			ret.putAll(receiver, callSiteToResolvedTargets1.get(cst));
 			callSiteToMethods
 					.putAll(index, callSiteToResolvedTargets1.get(cst));
+		}
+
+		for (VarNode v : tmp.keySet()) {
+			if (callSiteVarToMethods.containsKey(v)) {
+				System.out.println(tmp.get(v));
+				System.out.println("======================");
+				System.out.println(callSiteVarToMethods.get(v));
+				System.out.println("-----------------------");
+				assert ((callSiteVarToMethods.get(v)).containsAll(tmp.get(v)));
+				assert ((tmp.get(v)).containsAll(callSiteVarToMethods.get(v)));
+			}
 		}
 
 		return ret;
