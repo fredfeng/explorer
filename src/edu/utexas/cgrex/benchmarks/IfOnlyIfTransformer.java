@@ -114,7 +114,7 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 	
 	//get regular expressions from sootOutput/regx.txt
 	private void runBenchmark() {
-		String regxSource = BenchmarkHarness.queryLoc;
+		String regxSource = IfAndOnlyIfHarness.queryLoc;
 		
 		BufferedReader br;
 		try {
