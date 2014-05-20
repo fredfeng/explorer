@@ -228,9 +228,42 @@ public class GraphUtil {
 				}
 			}
 		}
+		
+		//make sure this is a valid mincut.
+		assert(isValidCut(auto, cutset));
 
 		return cutset;
 
+	}
+	
+	//check if it's a valid mincut.
+	public static boolean isValidCut(Automaton auto, Set<CutEntity> cutset) {
+		AutoState init = auto.getInitStates().iterator().next();
+		LinkedList<AutoState> worklist = new LinkedList<AutoState>();
+		Set<AutoState> visited = new HashSet<AutoState>();
+		Set<AutoEdge> cutEdges = new HashSet<AutoEdge>();
+		for(CutEntity cut : cutset) {
+			cutEdges.add(cut.edge);
+		}
+		worklist.add(init);
+		while (!worklist.isEmpty()) {
+			AutoState cur = worklist.poll();
+			
+			if(visited.contains(cur))
+				continue;
+			visited.add(cur);
+
+			for (Iterator<AutoState> cIt = cur.outgoingStatesIterator(); cIt
+					.hasNext();) {
+				AutoState tgtState = cIt.next();
+				AutoEdge tgtEdge = cur.outgoingStatesLookup(tgtState)
+						.iterator().next();
+				if (!cutEdges.contains(tgtEdge))
+					worklist.add(tgtState);
+			}
+		}
+		visited.retainAll(auto.getFinalStates());
+		return visited.isEmpty();
 	}
 
 	/* reset all flow values to 0 for the new round. */
