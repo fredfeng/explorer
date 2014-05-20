@@ -16,7 +16,9 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import soot.Body;
 import soot.EntryPoints;
+import soot.Local;
 import soot.MethodOrMethodContext;
+import soot.PointsToAnalysis;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Type;
@@ -48,6 +50,7 @@ import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.SootUtils;
 import edu.utexas.cgrex.utils.StringUtil;
+import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
 /**
  * Top level class to perform query and call graph refinement.
@@ -73,9 +76,6 @@ public class QueryManager {
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
 
-	// make sure each method only be visited once.
-	Map<SootMethod, Boolean> visitedMap = new HashMap<SootMethod, Boolean>();
-
 	/**
 	 * @return the methToEdgeMap only for the purpose of generating random regx.
 	 */
@@ -93,6 +93,9 @@ public class QueryManager {
 
 	// automaton for call graph.
 	CGAutomaton cgAuto;
+	
+	// automaton for eager call graph.
+	CGAutomaton cgEagerAuto;
 
 	// automaton for regular expression.
 	RegAutomaton regAuto;
@@ -101,8 +104,19 @@ public class QueryManager {
 	InterAutomaton interAuto;
 
 	public QueryManager(AutoPAG autoPAG, CallGraph cg) {
+		
+		final int DEFAULT_MAX_PASSES = 10000;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final boolean DEFAULT_LAZY = false;
+		ptsDemand = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		
+		assert(ptsDemand != null);
+		
 		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();
+		cgEagerAuto = new CGAutomaton();
+
 		regAuto = new RegAutomaton();
 		this.cg = cg;
 
@@ -145,10 +159,12 @@ public class QueryManager {
 
 			methToStateMap.put(meth, st);
 			methToEdgeMap.put(meth, inEdge);
-			visitedMap.put(meth, false);
 		}
 		// only build cgauto once.
 		buildCGAutomaton();
+		
+		buildEagerCGAutomaton();
+		
 	}
 
 	private void buildRegAutomaton(String regx) {
@@ -243,10 +259,14 @@ public class QueryManager {
 		worklist.add(mainMeth);
 
 		Set<CGAutoState> reachableState = new HashSet<CGAutoState>();
+		Set<SootMethod> visited = new HashSet<SootMethod>();
+
 
 		while (worklist.size() > 0) {
 			SootMethod worker = worklist.remove(0);
-			visitedMap.put(worker, true);
+			if(visited.contains(worker))
+				continue;
+			visited.add(worker);
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
 
@@ -267,8 +287,7 @@ public class QueryManager {
 
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
-					if (!visitedMap.get(tgtMeth))
-						worklist.add(tgtMeth);
+					worklist.add(tgtMeth);
 
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
 					// need fresh instance for each callsite but share same uid.
@@ -295,8 +314,129 @@ public class QueryManager {
 		// cgAuto.dump();
 		// cgAuto.validate();
 	}
+	
+	private void buildEagerCGAutomaton() {
+		// Start from the main entry.
+		SootMethod mainMeth = Scene.v().getMainMethod();
+		// init FSM
+		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
 
-	private boolean buildInterAutomaton() {
+		// 0 is the initial id.
+		CGAutoState initState = new CGAutoState(0, true, true);
+		CGAutoState mainState = methToStateMap.get(mainMeth);
+		initState.addOutgoingStates(mainState, callEdgeMain);
+		mainState.addIncomingStates(initState, callEdgeMain);
+
+		// no incoming edge for initstate.
+
+		cgEagerAuto.addInitState(initState);
+		cgEagerAuto.addStates(initState);
+
+		// FIXME: should not use list.
+		List<SootMethod> worklist = new LinkedList<SootMethod>();
+		worklist.add(mainMeth);
+
+		Set<CGAutoState> reachableState = new HashSet<CGAutoState>();
+		
+		Set<SootMethod> visited = new HashSet<SootMethod>();
+
+		while (worklist.size() > 0) {
+			SootMethod worker = worklist.remove(0);
+			CGAutoState curState = methToStateMap.get(worker);
+			reachableState.add(curState);
+			if(visited.contains(worker))
+				continue;
+			visited.add(worker);
+
+			// worker. outgoing edges
+			Iterator<Edge> outIt = cg.edgesOutOf(worker);
+			while (outIt.hasNext()) {
+				Edge e = outIt.next();
+				//truely edge?
+				if(e.isVirtual() && !isValidEdge(cg,e))
+					continue;
+				// how about SCC? FIXME!!
+				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
+					AutoEdge outEdge = methToEdgeMap.get(worker);
+					// need fresh instance for each callsite but share same uid.
+					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
+					outEdgeFresh.setShortName(worker.getSignature());
+					curState.addOutgoingStates(curState, outEdgeFresh);
+					curState.addIncomingStates(curState, outEdgeFresh);
+
+				} else {
+					SootMethod tgtMeth = (SootMethod) e.getTgt();
+					worklist.add(tgtMeth);
+
+					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
+					// need fresh instance for each callsite but share same uid.
+					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
+					outEdgeFresh.setShortName(tgtMeth.getSignature());
+
+					CGAutoState tgtState = methToStateMap.get(tgtMeth);
+					curState.addOutgoingStates(tgtState, outEdgeFresh);
+
+					// add incoming state.
+					tgtState.addIncomingStates(curState, outEdgeFresh);
+				}
+			}
+
+		}
+
+		// only add reachable methods.
+		for (CGAutoState rs : reachableState)
+			cgEagerAuto.addStates(rs);
+
+		System.out.println("Total States*******" + cgEagerAuto.getStates().size());
+
+		// dump automaton of the call graph.
+		// cgAuto.dump();
+		// cgAuto.validate();
+	}
+	
+	public PointsToAnalysis ptsDemand;
+
+	private boolean isValidEdge(CallGraph cg, Edge e) {
+		SootMethod caller = (SootMethod)e.getSrc();
+		if (!caller.isConcrete())
+			return true;
+		Body body = caller.retrieveActiveBody();
+		Chain<Unit> units = body.getUnits();
+		Iterator<Unit> uit = units.snapshotIterator();
+		while (uit.hasNext()) {
+			Stmt stmt = (Stmt) uit.next();
+			if (stmt.containsInvokeExpr()) {
+				InvokeExpr ie = stmt.getInvokeExpr();
+				if ((ie instanceof VirtualInvokeExpr)
+						|| (ie instanceof InterfaceInvokeExpr)) {
+					Local receiver = (Local) ie.getUseBoxes().get(0)
+							.getValue();
+					SootMethod callee = ie.getMethod();
+					Iterator<Edge> it = cg.edgesOutOf(stmt);
+					while(it.hasNext()) {
+						Edge tgt = it.next();
+						if( e.equals(tgt) ) {
+							System.out.println(e.getTgt() + "~~~~~" + callee);
+							//is this edge exist?
+							Set<Type> pTypes = ptsDemand.reachingObjects(receiver).possibleTypes();
+							List<Type> typeSet = SootUtils.compatibleTypeList(
+									callee.getDeclaringClass(), callee);
+							pTypes.retainAll(typeSet);
+							if(pTypes.size() == 0) {
+								System.out.println("REFUTE THIS EDGE--------------------" + e);
+								return false;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+
+	private boolean buildInterAutomaton(CGAutomaton cgAuto, RegAutomaton regAuto) {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
 		myoptions.put("two", true);
@@ -392,8 +532,17 @@ public class QueryManager {
 		// to be conservative.
 		if (varSet.size() == 0)
 			return true;
+		
+		Set<Type> ptTypeSet = new HashSet<Type>();
+		for(Value v : varSet) {
+			assert(v instanceof Local);
+			Local l = (Local) v;
+			ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+		}
 
-		return autoPAG.insensitiveQuery(varSet, typeSet);
+		ptTypeSet.retainAll(typeSet);
+		return !ptTypeSet.isEmpty();
+//		return autoPAG.insensitiveQuery(varSet, typeSet);
 	}
 
 	// return the edge from soot's call graph
@@ -440,7 +589,7 @@ public class QueryManager {
 					regx = this.getValidExprBySig(regx);
 					System.out.println("Actual expression......" + regx);
 					buildRegAutomaton(regx);
-					buildInterAutomaton();
+					buildInterAutomaton(cgAuto, regAuto);
 				}
 			}
 		case 1:// interactive mode.
@@ -450,7 +599,7 @@ public class QueryManager {
 				regx = regx.replaceAll("\\s+", "");
 				System.out.println("Random regx------" + regx);
 				buildRegAutomaton(regx);
-				buildInterAutomaton();
+				buildInterAutomaton(cgAuto, regAuto);
 			}
 			break;
 		default:
@@ -465,8 +614,27 @@ public class QueryManager {
 	public boolean queryRegx(String regx) {
 		regx = regx.replaceAll("\\s+", "");
 		buildRegAutomaton(regx);
-		boolean res = buildInterAutomaton();
+		boolean res = buildInterAutomaton(cgAuto, regAuto);
 		return res;
+	}
+	
+	public boolean queryRegxEager(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+		
+		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
+		myoptions.put("annot", true);
+		myoptions.put("two", true);
+		InterAutoOpts myopts = new InterAutoOpts(myoptions);
+
+		InterAutomaton interAutoEager = new InterAutomaton(myopts, regAuto, cgEagerAuto);
+		interAutoEager.build();
+
+		// before we do the mincut, we need to exclude some trivial cases
+		// such as special invoke, static invoke and certain virtual invoke.
+		if (interAutoEager.getFinalStates().size() == 0)
+			return false;
+		return true;
 	}
 
 	public boolean queryWithoutRefine(String regx) {
