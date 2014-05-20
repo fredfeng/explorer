@@ -462,15 +462,16 @@ public class QueryManager {
 		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
 
-		boolean answer = false;
+		boolean answer = true;
 		// contains infinity edge?
 		while (!hasInfinityEdges(cutset)) {
 
-			answer = false;
+			boolean refuteAll = true;
 			for (CutEntity e : cutset) {
 				if (doPointsToQuery(e)) {
-					answer = true;
+					refuteAll = false;
 					e.edge.setInfinityWeight();
+					break;
 				} else { // e is a false positive.
 					// remove this edge and refine call graph.
 					Edge callEdge = this.getEdgeFromCallgraph(e);
@@ -483,8 +484,10 @@ public class QueryManager {
 			}
 
 			// all edges are refute, stop.
-			if (!answer)
+			if (refuteAll) {
+				answer = false;
 				break;
+			}
 			// modify visited edges and continue.
 			cutset = GraphUtil.minCut(interAuto);
 		}
