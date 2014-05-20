@@ -3,14 +3,18 @@ package edu.utexas.cgrex.benchmarks;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import soot.Body;
+import soot.EntryPoints;
 import soot.Local;
+import soot.MethodOrMethodContext;
 import soot.PointsToAnalysis;
 import soot.PointsToSet;
 import soot.Scene;
@@ -28,11 +32,16 @@ import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.solver.EBBCollapser;
 import soot.jimple.spark.solver.PropWorklist;
 import soot.jimple.spark.solver.SCCCollapser;
+import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
+import soot.jimple.toolkits.callgraph.Edge;
+import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.options.SparkOptions;
 import soot.util.Chain;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.analyses.AutoPAG;
+import edu.utexas.cgrex.automaton.AutoState;
+import edu.utexas.cgrex.utils.SootUtils;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
 /**
@@ -48,6 +57,8 @@ public class DemandDrivenTransformer extends SceneTransformer {
 
 	// CHA.
 	QueryManager qm;
+	
+	CallGraph callgraph;
 
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
@@ -98,13 +109,14 @@ public class DemandDrivenTransformer extends SceneTransformer {
 
 		Scene.v().setPointsToAnalysis(pag);
 
-		final int DEFAULT_MAX_PASSES = 1000000;
-		final int DEFAULT_MAX_TRAVERSAL = 7500000;
+		final int DEFAULT_MAX_PASSES = 10000;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
 		Date startOnDemand = new Date();
 		Scene.v().setPointsToAnalysis(pag);
+//		callgraph = pag.getOnFlyCallGraph().callGraph();
 
-		PointsToAnalysis ptsEager = DemandCSPointsTo.makeWithBudget(
+		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		Date endOndemand = new Date();
 		System.out
@@ -113,7 +125,7 @@ public class DemandDrivenTransformer extends SceneTransformer {
 
 		List<Local> virtSet = new ArrayList<Local>();
 		// perform pt-set queries.
-		for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
+		/*for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
 				.hasNext();) {
 			final SootClass clazz = (SootClass) cIt.next();
 			System.out.println("Analyzing...." + clazz);
@@ -156,7 +168,7 @@ public class DemandDrivenTransformer extends SceneTransformer {
 		PointsToAnalysis ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		int range = virtSet.size();
-		int trialNum = 1000;
+		int trialNum = 40000;
 		Random randomizer = new Random();
 		
 		assert(!ptsDemand.equals(ptsEager));
@@ -173,17 +185,87 @@ public class DemandDrivenTransformer extends SceneTransformer {
 			if(!insPt.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()))
 				System.out.println(insPt + "---------" + ptsDemand.reachingObjects(ran).possibleTypes());
 				
-//			assert(insPt.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
-
 			assert (ptsDemand.reachingObjects(ran).possibleTypes()
 					.containsAll(ptsEager.reachingObjects(ran).possibleTypes()));
 			assert (ptsEager.reachingObjects(ran).possibleTypes()
 					.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
 		}
 		
-		System.out.println("diff------------" + cnt);
+		System.out.println("diff------------" + cnt);*/
+		
+		genCallGraph();
 
 		assert(false);
 	}
+	
+	PointsToAnalysis ptsDemand;
+	
+	public void genCallGraph() {
+		CallGraph cg = Scene.v().getCallGraph();
+//		cg = callgraph;
+		
+		Set<SootMethod> visited = new HashSet<SootMethod>();
+		LinkedList<SootMethod> workList = new LinkedList<SootMethod>();
+		
+		for(SootMethod entry : EntryPoints.v().all()) {
+			workList.add(entry);
+		}
 
+		while (!workList.isEmpty()) {
+			SootMethod head = workList.poll();
+			if (visited.contains(head))
+				continue;
+			visited.add(head);
+			Iterator<Edge> outIt = cg.edgesOutOf(head);
+			while(outIt.hasNext()) {
+				Edge e = outIt.next();
+				if(!e.isVirtual() || (e.isVirtual() && isValidEdge(cg,e)))
+					workList.add((SootMethod)e.getTgt());
+			}
+		}
+		
+		System.out.println("Total methods in CG: " + visited.size());
+		System.out.println("Reachable methods in CG: " + Scene.v().getReachableMethods().size());
+	}
+	
+	private boolean isValidEdge(CallGraph cg, Edge e) {
+		SootMethod caller = (SootMethod)e.getSrc();
+		if (!caller.isConcrete())
+			return true;
+		Body body = caller.retrieveActiveBody();
+		Chain<Unit> units = body.getUnits();
+		Iterator<Unit> uit = units.snapshotIterator();
+		while (uit.hasNext()) {
+			Stmt stmt = (Stmt) uit.next();
+			if (stmt.containsInvokeExpr()) {
+				InvokeExpr ie = stmt.getInvokeExpr();
+				if ((ie instanceof VirtualInvokeExpr)
+						|| (ie instanceof InterfaceInvokeExpr)) {
+					Local receiver = (Local) ie.getUseBoxes().get(0)
+							.getValue();
+					SootMethod callee = ie.getMethod();
+					Iterator<Edge> it = cg.edgesOutOf(stmt);
+					while(it.hasNext()) {
+						Edge tgt = it.next();
+						if( e.equals(tgt) ) {
+							System.out.println(e.getTgt() + "~~~~~" + callee);
+							//is this edge exist?
+							Set<Type> pTypes = ptsDemand.reachingObjects(receiver).possibleTypes();
+							List<Type> typeSet = SootUtils.compatibleTypeList(
+									callee.getDeclaringClass(), callee);
+							pTypes.retainAll(typeSet);
+							if(pTypes.size() == 0) {
+								System.out.println("REFUTE THIS EDGE--------------------" + e);
+								return false;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 }
