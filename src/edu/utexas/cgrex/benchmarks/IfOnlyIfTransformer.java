@@ -115,7 +115,7 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 	//get regular expressions from sootOutput/regx.txt
 	private void runBenchmark() {
 		String regxSource = IfAndOnlyIfHarness.queryLoc;
-		
+		int cnt = 0;
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(regxSource));
@@ -126,14 +126,15 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 				boolean res1 = qm.queryRegx(regx);
 				boolean res2 = qm.queryRegxEager(regx);
 				System.out.println(line + ": " + res1 + res2 );
-				assert(res1 == res2);
+				if(res1 != res2) cnt++;
 			}
 			br.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("End of Test!");
+		System.out.println("End of Test!" + cnt);
+		assert(cnt == 0);
 		assert(false);
 
 	}
