@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import soot.Scene;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
+import soot.jimple.spark.ondemand.WrappedPointsToSet;
 import soot.jimple.spark.pag.AllocNode;
 import soot.jimple.spark.pag.FieldRefNode;
 import soot.jimple.spark.pag.GlobalVarNode;
@@ -305,6 +307,12 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		this.reachingObjectsCache = new HashMap<Local, PointsToSet>();
 		this.reachingObjectsCacheNoCGRefinement = new HashMap<Local, PointsToSet>();
 		this.useCache = true;
+
+		this.useChainedCache = false;
+		this.chainedCache = new HashMap<VarNode, PointsToSet>();
+		this.chainedCacheNoCGRefinement = new HashMap<VarNode, PointsToSet>();
+		this.chainedVarNodes = new LinkedList<VarNode>();
+		this.resolvedChainedVarNodes = new HashSet<VarNode>();
 	}
 
 	// public void resetParameters(int maxTraversal, int maxPasses, boolean
@@ -321,6 +329,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
 	public PointsToSet reachingObjects(Local l) {
+
+		// we need to reset the chainedQueryCounter
+		// for a pt-set query issued outside (not self-issued)
+		clearChainedCacheCounters();
+
 		if (lazy)
 			/*
 			 * create a lazy points-to set; this will not actually compute
@@ -338,12 +351,15 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
 	public PointsToSet doReachingObjects(Local l) {
-		maxNodesPerPass = 1000000;
+
+		maxNodesPerPass = 10000;
 		maxPasses = 10;
 		// lazy initialization
 		if (fieldToStores == null) {
 			init();
 		}
+
+		// this is for cache
 		PointsToSet result;
 		Map<Local, PointsToSet> cache;
 		if (refineCallGraph) { // we use different caches for different settings
@@ -357,9 +373,14 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			if (useCache) {
 				cache.put(l, result);
 			}
+		} else {
+			hittingCache++;
 		}
-		assert consistentResult(l, result);
 
+		// for usage, this should be commented in order to use the cache
+		// assert consistentResult(l, result);
+
+		// update the resolved targets as the most precise version
 		for (CallSiteAndContext csc : callSiteToResolvedTargets2.keySet()) {
 			if (!callSiteToMethods.containsKey(csc.getO1())) {
 				callSiteToResolvedTargets1.putAll(csc,
@@ -377,6 +398,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		callSiteToResolvedTargets2.clear();
 
 		convert();
+
+		if (useChainedCache) {
+			chainedRefine();
+		}
 
 		return result;
 	}
@@ -403,11 +428,13 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	 * Computes the possibly refined set of reaching objects for l.
 	 */
 	protected PointsToSet computeReachingObjects(Local l) {
+
 		VarNode v = pag.findLocalVarNode(l);
 		if (v == null) {
 			// no reaching objects
 			return EmptyPointsToSet.v();
 		}
+
 		PointsToSet contextSensitiveResult = computeRefinedReachingObjects(v);
 		if (contextSensitiveResult == null) {
 			// had to abort; return Spark's points-to set in a wrapper
@@ -421,13 +448,24 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	 * Computes the refined set of reaching objects for l. Returns
 	 * <code>null</code> if refinement failed.
 	 */
-	protected PointsToSet computeRefinedReachingObjects(VarNode v) {
+	public PointsToSet computeRefinedReachingObjects(VarNode v) {
+
+		if (useChainedCache)
+			chainedQueryCounter++;
+
 		// must reset the refinement heuristic for each query
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristicType,
 				pag.getTypeManager(), getMaxPasses());
 		doPointsTo = true;
 		numPasses = 0;
 		PointsToSet contextSensitiveResult = null;
+
+		// if hitting the chained cache
+		if (useChainedCache && chainedCache.containsKey(v)) {
+			hittingChainedCache++;
+			return chainedCache.get(v);
+		}
+		// if not, do the pt analysis
 		while (true) {
 			numPasses++;
 			if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
@@ -440,18 +478,42 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				G.v().out.println("PASS " + numPasses);
 				G.v().out.println(fieldCheckHeuristic);
 			}
+
 			// for different queries we should reset the parameters
 			clearState();
+
 			pointsTo = new AllocAndContextSet();
 			try {
+				if (useChainedCache)
+					hittingChainedCacheCounter++;
+
 				refineP2Set(new VarAndContext(v, EMPTY_CALLSTACK), null);
 				contextSensitiveResult = pointsTo;
 			} catch (TerminateEarlyException e) {
+
 			}
 			if (!fieldCheckHeuristic.runNewPass()) {
 				break;
 			}
 		}
+
+		// using chained cache
+		if (useChainedCache) {
+			assert (!chainedCache.containsKey(v));
+			// we should consider the null pointer case as indicated
+			// by the caller of this method (computeReachingObjects)
+			if (contextSensitiveResult == null) {
+				chainedCache.put(v, new WrappedPointsToSet(v.getP2Set()));
+			} else {
+				chainedCache.put(v, contextSensitiveResult);
+			}
+			resolvedChainedVarNodes.add(v);
+		}
+
+		// just for testing, should comment
+		if (contextSensitiveResult == null)
+			return new WrappedPointsToSet(v.getP2Set());
+		
 		return contextSensitiveResult;
 	}
 
@@ -1869,11 +1931,12 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						allocNode.getType(), methodSig, receiverType,
 						allTargets)) {
 					callSiteToResolvedTargets.put(callSiteAndContext, method);
-					callSiteToResolvedTargets2.put(callSiteAndContext, method); // this
-																				// reaching
-																				// objects
+					callSiteToResolvedTargets2.put(callSiteAndContext, method);
+					if (!resolvedChainedVarNodes.contains(curVar))
+						chainedVarNodes.add(curVar);
 					// callSiteToResolvedTargets1.put(callSiteAndContext,
 					// method);
+
 					update(callSiteAndContext);
 				}
 			}
@@ -1896,8 +1959,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 								allTargets);
 						callSiteToResolvedTargets2.putAll(callSiteAndContext,
 								allTargets);
+						if (!resolvedChainedVarNodes.contains(curVar))
+							chainedVarNodes.add(curVar);
 						// callSiteToResolvedTargets1.putAll(callSiteAndContext,
 						// allTargets);
+
 						update(callSiteAndContext);
 
 						// if (DEBUG) {
@@ -1920,7 +1986,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 			// TODO respect heuristic
 			Set<VarNode> matchSources = vMatches.vMatchInvLookup(curVar);
-			final boolean oneMatch = matchSources.size() <= 100;
+			final boolean oneMatch = matchSources.size() <= 1;
 			Node[] loads = pag.loadInvLookup(curVar);
 			for (int i = 0; i < loads.length; i++) {
 				FieldRefNode frNode = (FieldRefNode) loads[i];
@@ -1942,15 +2008,19 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 							Set<SootMethod> matchSrcCallTargets = getCallTargets(
 									matchSrcPTo, methodSig, receiverType,
 									allTargets);
-							if (matchSrcCallTargets.size() <= 10) {
+							if (matchSrcCallTargets.size() <= 1) {
 								skipMatch = true;
 								for (SootMethod method : matchSrcCallTargets) {
 									callSiteToResolvedTargets.put(
 											callSiteAndContext, method);
 									callSiteToResolvedTargets2.put(
 											callSiteAndContext, method);
+									if (!resolvedChainedVarNodes
+											.contains(curVar))
+										chainedVarNodes.add(curVar);
 									// callSiteToResolvedTargets1.put(
 									// callSiteAndContext, method);
+
 									update(callSiteAndContext);
 
 								}
@@ -1973,8 +2043,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 										callSiteAndContext, allTargets);
 								callSiteToResolvedTargets2.putAll(
 										callSiteAndContext, allTargets);
+								if (!resolvedChainedVarNodes.contains(curVar))
+									chainedVarNodes.add(curVar);
 								// callSiteToResolvedTargets1.putAll(
 								// callSiteAndContext, allTargets);
+
 								update(callSiteAndContext);
 
 								continue;
@@ -2307,7 +2380,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 			assert (receiver != null);
 
-//			System.out.println("converting...");
+			// System.out.println("converting...");
 
 			callSiteVarToMethods.putAll(receiver,
 					callSiteToResolvedTargets1.get(cst));
@@ -2334,4 +2407,90 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		return this.callSiteVarToMethods;
 	}
 
+	public void enableChainedCache() {
+		useChainedCache = true;
+	}
+
+	public void disableChainedCache() {
+		useChainedCache = false;
+	}
+
+	public boolean useChainedCache() {
+		return useChainedCache;
+	}
+
+	public void setChainedCache(Map<VarNode, PointsToSet> chainedCache) {
+		this.chainedCache = chainedCache;
+	}
+
+	public Map<VarNode, PointsToSet> getChainedCache() {
+		return chainedCache;
+	}
+
+	public Map<Local, PointsToSet> getCache() {
+		return reachingObjectsCache;
+	}
+
+	public void clearChainedCache() {
+		chainedCache.clear();
+		chainedCacheNoCGRefinement.clear();
+	}
+
+	protected void clearChainedCacheCounters() {
+		chainedQueryCounter = 0;
+		hittingChainedCacheCounter = 0;
+		chainedVarNodes.clear();
+		resolvedChainedVarNodes.clear();
+	}
+
+	public int getChainedQueryCounter() {
+		return this.chainedQueryCounter;
+	}
+
+	public int getHittingChainedCacheCounter() {
+		return this.hittingChainedCacheCounter;
+	}
+
+	public int getHittingCache() {
+		return this.hittingCache;
+	}
+
+	public int getHittingChainedCache() {
+		return this.hittingChainedCache;
+	}
+
+	protected void chainedRefine() {
+		while (!chainedVarNodes.isEmpty()) {
+			VarNode v = chainedVarNodes.poll();
+			if (chainedQueryCounter <= CHAIN_QUERY_MAX
+					&& hittingChainedCacheCounter <= CHAIN_HITTING_MAX) {
+				computeRefinedReachingObjects(v);
+			}
+		}
+
+	}
+
+	// followings are for chained cache
+	// this is the same to reachingObjectsCache
+	protected boolean useChainedCache;
+
+	protected static final int CHAIN_QUERY_MAX = 50;
+
+	protected static final int CHAIN_HITTING_MAX = 100;
+
+	protected int chainedQueryCounter = 0;
+
+	protected int hittingChainedCacheCounter = 0;
+
+	protected int hittingCache = 0;
+
+	protected int hittingChainedCache = 0;
+
+	protected Map<VarNode, PointsToSet> chainedCache;
+
+	protected Map<VarNode, PointsToSet> chainedCacheNoCGRefinement;
+
+	protected LinkedList<VarNode> chainedVarNodes;
+
+	protected Set<VarNode> resolvedChainedVarNodes;
 }
