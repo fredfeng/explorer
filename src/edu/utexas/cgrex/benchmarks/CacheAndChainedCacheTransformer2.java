@@ -1,5 +1,7 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +26,7 @@ import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.spark.builder.ContextInsensitiveBuilder;
+import soot.jimple.spark.pag.LocalVarNode;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.VarNode;
 import soot.jimple.spark.solver.EBBCollapser;
@@ -32,6 +35,7 @@ import soot.jimple.spark.solver.SCCCollapser;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.options.SparkOptions;
 import soot.util.Chain;
+import soot.util.LargeNumberedMap;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
@@ -42,7 +46,7 @@ import edu.utexas.spark.ondemand.DemandCSPointsTo;
  * @author yufeng
  * 
  */
-public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
+public class CacheAndChainedCacheTransformer2 extends SceneTransformer {
 
 	public boolean debug = true;
 
@@ -106,11 +110,14 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 
 		PointsToAnalysis ptsEager = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		PointsToAnalysis ptsEager1 = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		DemandCSPointsTo dcs = (DemandCSPointsTo) ptsEager;
 		assert (dcs.usesCache());
 		assert (!dcs.useChainedCache());
 
 		List<Local> virtSet = new ArrayList<Local>();
+		Map<Local, SootMethod> lost = new HashMap<Local, SootMethod>();
 
 		System.out.println("Starting eager version...");
 		// perform pt-set queries for all call sites and record the pt sets.
@@ -129,12 +136,18 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 						InvokeExpr ie = stmt.getInvokeExpr();
 						if ((ie instanceof VirtualInvokeExpr)
 								|| (ie instanceof InterfaceInvokeExpr)) {
+							assert (ie.getUseBoxes().get(0).getValue() instanceof Local);
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
-							PointsToSet ps = ptsEager.reachingObjects(receiver);
+							PointsToSet ps = ptsEager1
+									.reachingObjects(receiver);
+							lost.put(receiver, ie.getMethod());
 
 							if (ps.possibleTypes().size() == 0)
 								continue;
+
+							ps = ptsEager.reachingObjects(receiver);
+
 							virtSet.add(receiver);
 							Set<Type> s = new HashSet<Type>();
 							s.addAll(ps.possibleTypes());
@@ -150,12 +163,28 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 		System.out.println("Eager version DONE!");
 		Scene.v().setPointsToAnalysis(pag);
 
+		Random randomizer = new Random();
+		int range = virtSet.size();
+		int numOfTests = 1000;
+		List<Local> test = new ArrayList<Local>();
+		for (int i = 0; i < numOfTests; i++) {
+			test.add(virtSet.get(randomizer.nextInt(range)));
+		}
+
+		Map<Local, PointsToSet> eagerCache = dcs.getCache();
+		for (Local l : eagerCache.keySet()) {
+			System.out.println(l);
+			System.out.println(virtSet.contains(l));
+			System.out.println(virtSet.size());
+			System.out.println(eagerCache.size());
+			System.out.println(dcs.in);
+			assert (pag.findLocalVarNode(l) != null);
+		}
+
 		// ====================ondemand (no chained cache)=================
 
 		PointsToAnalysis ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-
-		int trialNum = 10;
 
 		dcs = (DemandCSPointsTo) ptsDemand;
 		assert (dcs.usesCache());
@@ -168,10 +197,10 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 		System.out.println("Verifying pointer analysis results....");
 		System.out
 				.println("Hitting cache " + dcs.getHittingCache() + " times.");
-		for (int i = 0; i < trialNum; i++) {
-			Local ran = virtSet.get(i);
+		for (int i = 0; i < test.size(); i++) {
+			Local ran = test.get(i);
 			for (int j = 0; j < i; j++) {
-				if (virtSet.get(j).equals(ran))
+				if (test.get(j).equals(ran))
 					System.out.println("The " + j
 							+ "-th element in virtSet is the same local");
 			}
@@ -227,8 +256,6 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 		ptsDemand = DemandCSPointsTo.makeWithBudget(DEFAULT_MAX_TRAVERSAL,
 				DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 
-		trialNum = 10;
-
 		dcs = (DemandCSPointsTo) ptsDemand;
 		dcs.enableChainedCache();
 		dcs.disableCache();
@@ -242,8 +269,8 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 		System.out.println("Verifying pointer analysis results....");
 		System.out.println("Hitting chained cache "
 				+ dcs.getHittingChainedCache() + " times.");
-		for (int i = 0; i < trialNum; i++) {
-			Local ran = virtSet.get(i);
+		for (int i = 0; i < test.size(); i++) {
+			Local ran = test.get(i);
 			System.out.println("This is the " + count++
 					+ "-th regular verification (with chained cache)...");
 			dcs.reachingObjects(ran);
@@ -293,8 +320,122 @@ public class CacheAndChainedCacheTransformer1 extends SceneTransformer {
 
 		System.out.println("Demand-driven analysis (with chained cache) DONE!");
 
+		// Cache efficiency check
+		int overlap = 0;
+		int notcovered = 0;
+		int notFindVarNode = 0;
+		for (Local l : eagerCache.keySet()) {
+			VarNode v = pag.findLocalVarNode(l);
+			if (chainedCache.containsKey(v)) {
+				overlap++;
+			} else {
+				if (v != null) {
+					notcovered++;
+					System.out.println(lost.get(l));
+				} else {
+					notFindVarNode++;
+				}
+			}
+		}
+		System.out.println("There are totally " + overlap
+				+ " overlaps between the eager cache and chained cache.");
+		System.out
+				.println("There are totally "
+						+ notcovered
+						+ " receivers that eager cache covers but chained cache does not.");
+		System.out.println("There are totally " + notFindVarNode
+				+ " receivers that are not found corresponding varNode.");
+		System.out.println("eager cache size: " + eagerCache.size());
+		System.out.println("chained cache size: " + chainedCache.size());
+
+		// weired things check about lost varNodes
+		LargeNumberedMap map = pag.getLocalToNodeMap();
+		Map<Object, LocalVarNode> map1 = pag.getValToLocalVarNode();
+		boolean found = false;
+		int notFound = 0;
+		int notExist = 0;
+		StringBuilder inMap = new StringBuilder();
+		StringBuilder notInMap = new StringBuilder();
+		for (VarNode v : chainedCache.keySet()) {
+			found = false;
+			for (Local l : eagerCache.keySet()) {
+
+				if (pag.findLocalVarNode(l).equals(v)) {
+					assert (chainedCache.get(v).possibleTypes()
+							.containsAll(eagerCache.get(l).possibleTypes()));
+					assert (eagerCache.get(l).possibleTypes()
+							.containsAll(chainedCache.get(v).possibleTypes()));
+					found = true;
+				}
+			}
+			if (!found) {
+				notFound++;
+				boolean exist = false;
+				for (Iterator<Local> it = map.keyIterator(); it.hasNext();) {
+					Local l = it.next();
+					assert (l != null);
+					if (map.get(l).equals(v)) {
+						assert (((DemandCSPointsTo) ptsEager)
+								.reachingObjects(l).possibleTypes()
+								.containsAll(chainedCache.get(v)
+										.possibleTypes()));
+						assert (chainedCache.get(v).possibleTypes()
+								.containsAll(((DemandCSPointsTo) ptsEager)
+										.reachingObjects(l).possibleTypes()));
+						exist = true;
+						inMap.append(lost.get(l) + "\n");
+						inMap.append(chainedCache.get(v).possibleTypes() + "\n");
+						inMap.append("--------------------------------\n");
+						break;
+					}
+				}
+				if (!exist) {
+					for (Object obj : map1.keySet()) {
+						if (map1.get(obj).equals(v)) {
+							exist = true;
+							assert (obj instanceof Local);
+							Local l = (Local) obj;
+							inMap.append(lost.get(l) + "\n");
+							inMap.append(chainedCache.get(v).possibleTypes()
+									+ "\n");
+							inMap.append("--------------------------------\n");
+						}
+					}
+				}
+				if (!exist) {
+					notInMap.append("Type: " + v.getType() + "\n");
+					notInMap.append("variable: " + v.getVariable() + "\n");
+					notInMap.append("get class: " + v.getClass() + "\n");
+					notInMap.append("--------------------------------\n");
+					notExist++;
+				}
+			}
+		}
+
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"output/InMap"));
+			bufw.write(inMap.toString());
+			bufw.close();
+			bufw = new BufferedWriter(new FileWriter("output/NotInMap"));
+			bufw.write(notInMap.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		System.out.println("There are totally " + notFound
+				+ " locals not found");
+		System.out.println("There are totally " + notExist
+				+ " locals not existed as varNodes");
+		System.out.println("chained cache size: " + chainedCache.size());
+		System.out.println("cache size: " + cache.size());
+		System.out.println("eager cache size: " + eagerCache.size());
+
 		System.out.println("All verification PASSED!");
 
 		System.out.println("Congratulations! Have a good day~");
+		assert (false);
 	}
 }
