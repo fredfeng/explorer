@@ -506,12 +506,12 @@ public class QueryManager {
 					break;
 				} else { // e is a false positive.
 					// remove this edge and refine call graph.
-					Edge callEdge = this.getEdgeFromCallgraph(e);
+					//Edge callEdge = this.getEdgeFromCallgraph(e);
 					// System.out.println("---------Refine call edge: " +
 					// callEdge);
-					cg.removeEdge(callEdge);
+					//cg.removeEdge(callEdge);
 					// remove this edge from interauto.
-					interAuto.refine(e.edge);
+					//interAuto.refine(e.edge);
 				}
 			}
 
@@ -574,6 +574,8 @@ public class QueryManager {
 			Local l = (Local) v;
 			ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 		}
+
+        if(ptTypeSet.size() == 0) return true;
 
 		ptTypeSet.retainAll(typeSet);
 		return !ptTypeSet.isEmpty();
