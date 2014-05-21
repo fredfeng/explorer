@@ -118,7 +118,8 @@ public class SootUtils {
 		boolean b = false;
 		if (src.equals(tgt))
 			b = true;
-		SootClass srcClazz = src.getDeclaringClass();
+        return b;
+		/*SootClass srcClazz = src.getDeclaringClass();
 		while (srcClazz.hasSuperclass()) {
 			SootClass superClazz = srcClazz.getSuperclass();
 			if (superClazz.declaresMethod(tgt.getName(),
@@ -128,7 +129,7 @@ public class SootUtils {
 			srcClazz = superClazz;
 		}
 
-		return b;
+		return b;*/
 	}
 
 	public static String getSootSubsigFor(String chordSubsig) {

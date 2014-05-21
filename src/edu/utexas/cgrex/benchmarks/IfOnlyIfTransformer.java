@@ -3,6 +3,8 @@ package edu.utexas.cgrex.benchmarks;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,17 +118,24 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 	private void runBenchmark() {
 		String regxSource = IfAndOnlyIfHarness.queryLoc;
 		int cnt = 0;
+		int unsound = 0;
 		BufferedReader br;
+        List<String> broken = new ArrayList();
 		try {
 			br = new BufferedReader(new FileReader(regxSource));
 			String line;
 			while ((line = br.readLine()) != null) {
 			   // process the line.
 				String regx = qm.getValidExprBySig(line);
-				boolean res1 = qm.queryRegx(regx);
 				boolean res2 = qm.queryRegxEager(regx);
-				System.out.println(line + ": " + res1 + res2 );
-				if(res1 != res2) cnt++;
+				boolean res1 = qm.queryRegx(regx);
+				System.out.println(line + ": " + cnt + res1 + res2 );
+		        assert(res1 == res2);
+				if(res1 != res2) {
+                    cnt++;
+                    broken.add(regx);
+                }
+				if((res1 == false) && (res2 == true)) unsound++;
 			}
 			br.close();
 		} catch (Exception e) {
@@ -134,6 +143,10 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 			e.printStackTrace();
 		}
 		System.out.println("End of Test!" + cnt);
+		System.out.println("End of Sound!" + unsound);
+        for(String reg : broken) {
+            System.out.println(reg);
+        }
 		assert(cnt == 0);
 		assert(false);
 

@@ -529,6 +529,7 @@ public class QueryManager {
 			// all edges are refute, stop.
 			if (refuteAll) {
 				answer = false;
+                System.out.println(cutset.size() + "--cutset--" + cutset);
 				break;
 			}
 			// modify visited edges and continue.
@@ -558,7 +559,7 @@ public class QueryManager {
 		assert (calleeMeth != null);
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
-				|| calleeMeth.isPrivate())
+				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
 			return true;
 
 		AutoEdge inEdge = null;
@@ -571,6 +572,8 @@ public class QueryManager {
 		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge) inEdge)
 				.getTgtCGAutoStateId());
 
+        //assert(!calleeMeth.isPhantom());
+        assert(calleeMeth.isConcrete());
 		List<Value> varSet = getVarList(callerMeth, calleeMeth);
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
@@ -587,6 +590,11 @@ public class QueryManager {
 		}
 
         if(ptTypeSet.size() == 0) return true;
+        assert(typeSet.size() > 0);
+        System.out.println("TypeSet:----" + typeSet);
+        System.out.println("Caller:----" + callerMeth);
+        System.out.println("Callee:----" + calleeMeth);
+        System.out.println("PtSet:----" + ptTypeSet);
 
 		ptTypeSet.retainAll(typeSet);
 		return !ptTypeSet.isEmpty();
@@ -757,6 +765,8 @@ public class QueryManager {
 					if (SootUtils.compatibleWith(tgt, callee)) {
 						// ie.get
 						Value var = ie.getUseBoxes().get(0).getValue();
+                        System.out.println("compatible-------1" + tgt);
+                        System.out.println("compatible-------2" + callee);
 						varSet.add(var);
 					}
 				}
