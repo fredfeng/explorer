@@ -278,12 +278,15 @@ public class QueryManager {
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
 					// need fresh instance for each callsite but share same uid.
-					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
-					outEdgeFresh.setShortName(worker.getSignature());
+//					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
+//					outEdgeFresh.setShortName(worker.getSignature());
 
-					curState.addOutgoingStates(curState, outEdgeFresh);
+//					curState.addOutgoingStates(curState, outEdgeFresh);
+//
+//					curState.addIncomingStates(curState, outEdgeFresh);
+					curState.addOutgoingStates(curState, outEdge);
+					curState.addIncomingStates(curState, outEdge);
 
-					curState.addIncomingStates(curState, outEdgeFresh);
 
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
@@ -291,14 +294,17 @@ public class QueryManager {
 
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
 					// need fresh instance for each callsite but share same uid.
-					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
-					outEdgeFresh.setShortName(tgtMeth.getSignature());
+//					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
+//					outEdgeFresh.setShortName(tgtMeth.getSignature());
 
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
-					curState.addOutgoingStates(tgtState, outEdgeFresh);
+					curState.addOutgoingStates(tgtState, outEdge);
+//					curState.addOutgoingStates(tgtState, outEdgeFresh);
 
 					// add incoming state.
-					tgtState.addIncomingStates(curState, outEdgeFresh);
+//					tgtState.addIncomingStates(curState, outEdgeFresh);
+					tgtState.addIncomingStates(curState, outEdge);
+
 				}
 			}
 
