@@ -167,6 +167,8 @@ public class QueryManager {
 		
 		buildEagerCGAutomaton();
 		
+		assert(ddMethods.containsAll(eagerMethods));
+		
 	}
 
 	private void buildRegAutomaton(String regx) {
@@ -238,6 +240,10 @@ public class QueryManager {
 //		System.out.println("dump regular graph.");
 		// regAuto.dump();
 	}
+	
+	Set<SootMethod> ddMethods = new HashSet();
+	Set<SootMethod> eagerMethods = new HashSet();
+
 
 	private void buildCGAutomaton() {
 		// Start from the main entry.
@@ -269,6 +275,7 @@ public class QueryManager {
 			if(visited.contains(worker))
 				continue;
 			visited.add(worker);
+			ddMethods.add(worker);
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
 
@@ -355,6 +362,7 @@ public class QueryManager {
 			if(visited.contains(worker))
 				continue;
 			visited.add(worker);
+			eagerMethods.add(worker);
 
 			// worker. outgoing edges
 			Iterator<Edge> outIt = cg.edgesOutOf(worker);
