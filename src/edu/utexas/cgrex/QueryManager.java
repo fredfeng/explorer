@@ -445,9 +445,6 @@ public class QueryManager {
 	}
 
 	private void createSuperNode(InterAutomaton auto) {
-//		InterAutoState superFinalSt = new InterAutoState("SuperFinal",
-//				masterInitSt, slaveInitSt, false, true );
-		
 		CGAutoState superFinalSt = new CGAutoState("SuperFinal", false, true);
 
 
@@ -459,9 +456,11 @@ public class QueryManager {
 
 			// add incoming state.
 			superFinalSt.addIncomingStates(autoSt, superEdge);
+			autoSt.resetFinalState();
 		}
 		auto.clearFinalState();
 		auto.addFinalState(superFinalSt);
+		auto.addStates(superFinalSt);
 	}
 	
 	private boolean buildInterAutomaton(CGAutomaton cgAuto, RegAutomaton regAuto) {

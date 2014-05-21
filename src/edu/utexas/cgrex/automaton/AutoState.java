@@ -60,6 +60,10 @@ public abstract class AutoState {
 	public void setFinalState() {
 		isFinalState = true;
 	}
+	
+	public void resetFinalState() {
+		isFinalState = false;
+	}
 
 	public boolean isFinalState() {
 		return isFinalState;
