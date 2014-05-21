@@ -488,8 +488,11 @@ public class QueryManager {
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
-		if (interAuto.getFinalStates().size() == 0)
+		if (interAuto.getFinalStates().size() == 0) {
+			//eager version much also be false in this case.
+			assert(egAuto.getFinalStates().size() == 0);
 			return false;
+		}
 		
 		GraphUtil.checkValidInterAuto(interAuto);
 		
@@ -663,6 +666,8 @@ public class QueryManager {
 		return res;
 	}
 	
+	private InterAutomaton egAuto;
+	
 	public boolean queryRegxEager(String regx) {
 		regx = regx.replaceAll("\\s+", "");
 		buildRegAutomaton(regx);
@@ -674,6 +679,7 @@ public class QueryManager {
 
 		InterAutomaton interAutoEager = new InterAutomaton(myopts, regAuto, cgEagerAuto);
 		interAutoEager.build();
+		egAuto = interAutoEager;
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
