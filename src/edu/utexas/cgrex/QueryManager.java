@@ -38,10 +38,12 @@ import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
 import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.automaton.AutoEdge;
+import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.automaton.InterAutoEdge;
 import edu.utexas.cgrex.automaton.InterAutoOpts;
+import edu.utexas.cgrex.automaton.InterAutoState;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
@@ -442,6 +444,26 @@ public class QueryManager {
 		return true;
 	}
 
+	private void createSuperNode(InterAutomaton auto) {
+//		InterAutoState superFinalSt = new InterAutoState("SuperFinal",
+//				masterInitSt, slaveInitSt, false, true );
+		
+		CGAutoState superFinalSt = new CGAutoState("SuperFinal", false, true);
+
+
+		for(AutoState autoSt : auto.getFinalStates()) {
+			AutoEdge superEdge = new AutoEdge(autoSt.getId() + "@superFinal");
+			superEdge.setInfinityWeight();
+			
+			autoSt.addOutgoingStates(superFinalSt, superEdge);
+
+			// add incoming state.
+			superFinalSt.addIncomingStates(autoSt, superEdge);
+		}
+		auto.clearFinalState();
+		auto.addFinalState(superFinalSt);
+	}
+	
 	private boolean buildInterAutomaton(CGAutomaton cgAuto, RegAutomaton regAuto) {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
@@ -461,6 +483,9 @@ public class QueryManager {
 		// such as special invoke, static invoke and certain virtual invoke.
 		if (interAuto.getFinalStates().size() == 0)
 			return false;
+		
+		//need to append a super final state, otherwise the result is wrong.
+		createSuperNode(interAuto);
 
 		// Stop conditions:
 		// 1. Refute all edges in current cut set;(Yes)
