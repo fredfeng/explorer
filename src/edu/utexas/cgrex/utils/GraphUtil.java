@@ -193,7 +193,7 @@ public class GraphUtil {
 		orgStates.retainAll(spath);
 		LinkedList<AutoState> tpath = new LinkedList(auto.getStates());
 		tpath.removeAll(orgStates);
-
+System.out.println("S:" +spath);
 		// collect all the edges that cross between S and T
 		Set<CutEntity> cutset = new HashSet<CutEntity>();
 		for (AutoState s : orgStates) {
@@ -205,8 +205,8 @@ public class GraphUtil {
 				AutoState tgt = s.outgoingStatesInvLookup(outEdge).iterator()
 						.next();
 				if (tpath.contains(tgt) && (outEdge.getWeight() > 0)) {
-//					 System.out.println(s + "->" + tgt + " " +
-//					 outEdge.getWeight());
+					 System.out.println(s + "->" + tgt + " " +
+					 outEdge.getWeight());
 					assert(outEdge.isInvEdge() == false);
 					cutset.add(new CutEntity(s, outEdge, tgt));
 				}
@@ -258,10 +258,13 @@ public class GraphUtil {
 				AutoState tgtState = cIt.next();
 				AutoEdge tgtEdge = cur.outgoingStatesLookup(tgtState)
 						.iterator().next();
-				if (!cutEdges.contains(tgtEdge))
-					worklist.add(tgtState);
+				if(tgtEdge.isInvEdge() || cutEdges.contains(tgtEdge)) 
+					continue;
+				
+				worklist.add(tgtState);
 			}
 		}
+
 		visited.retainAll(auto.getFinalStates());
 		return visited.isEmpty();
 	}

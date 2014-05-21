@@ -23,7 +23,7 @@ public class CutEntity {
 	
 	@Override
 	public String toString() {
-		return state + "->" + edge;
+		return state + "->" + endState;
 	}
 
 }
