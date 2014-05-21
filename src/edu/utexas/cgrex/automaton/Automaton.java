@@ -47,6 +47,10 @@ public abstract class Automaton {
 	public boolean addFinalState(AutoState finalState) {
 		return finalStates.add(finalState);
 	}
+	
+	public void clearFinalState() {
+		finalStates.clear();
+	}
 
 	public void addStates(AutoState state) {
 		states.add(state);
