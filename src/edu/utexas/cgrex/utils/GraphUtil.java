@@ -93,6 +93,17 @@ public class GraphUtil {
 
 		return false;
 	}
+	
+	//for all final states, there exists at least one initial state reach it.
+	public static void checkValidInterAuto(Automaton auto) {
+		for(AutoState finalSt : auto.getFinalStates()) {
+			boolean answer = false;
+			for(AutoState initSt : auto.getInitStates()) {
+				answer = (isReachable(initSt, finalSt, auto) || answer);
+			}
+			assert(answer);
+		}
+	}
 
 	public static List<Set<Object>> doAnalysis(Set<Object> roots,
 			Map<Object, Set<Object>> nodeToPreds,
@@ -152,6 +163,8 @@ public class GraphUtil {
 		// build the residual graph
 		auto.initResidualEdges();
 		auto.genResidualGraph();
+		
+		assert(auto.getFinalStates().size() == 1);
 
 		// we should continue if there is a path to final state in residual
 		// graph.

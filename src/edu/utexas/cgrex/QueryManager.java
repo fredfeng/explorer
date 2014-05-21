@@ -483,6 +483,8 @@ public class QueryManager {
 		if (interAuto.getFinalStates().size() == 0)
 			return false;
 		
+		GraphUtil.checkValidInterAuto(interAuto);
+		
 		//need to append a super final state, otherwise the result is wrong.
 		createSuperNode(interAuto);
 
@@ -667,6 +669,8 @@ public class QueryManager {
 		// such as special invoke, static invoke and certain virtual invoke.
 		if (interAutoEager.getFinalStates().size() == 0)
 			return false;
+		
+		GraphUtil.checkValidInterAuto(interAutoEager);
 		return true;
 	}
 
