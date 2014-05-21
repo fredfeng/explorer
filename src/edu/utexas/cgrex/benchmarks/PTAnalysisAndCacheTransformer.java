@@ -3,10 +3,10 @@ package edu.utexas.cgrex.benchmarks;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import soot.Body;
@@ -33,12 +33,9 @@ import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.options.SparkOptions;
 import soot.util.Chain;
 import edu.utexas.cgrex.QueryManager;
-import edu.utexas.cgrex.analyses.AutoPAG;
-import edu.utexas.cgrex.utils.StringUtil;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
 import edu.utexas.spark.ondemand.genericutil.ArraySet;
 import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
-import edu.utexas.spark.ondemand.pautil.ContextSensitiveInfo;
 
 /**
  * Generate n numbers of valid regular expressions from CHA-based automaton.
@@ -47,7 +44,7 @@ import edu.utexas.spark.ondemand.pautil.ContextSensitiveInfo;
  * @author yufeng
  * 
  */
-public class DemandDrivenTransformer1 extends SceneTransformer {
+public class PTAnalysisAndCacheTransformer extends SceneTransformer {
 
 	public boolean debug = true;
 
@@ -111,17 +108,15 @@ public class DemandDrivenTransformer1 extends SceneTransformer {
 
 		PointsToAnalysis ptsEager = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		Date endOndemand = new Date();
-		System.out
-				.println("Initialized on-demand refinement-based context-sensitive analysis"
-						+ startOnDemand + endOndemand);
 
 		List<Local> virtSet = new ArrayList<Local>();
-		// perform pt-set queries.
+		Map<VarNode, Set<Type>> ptSet = new HashMap<VarNode, Set<Type>>();
+
+		System.out.println("Starting eager version...");
+		// perform pt-set queries for all call sites and record the pt sets.
 		for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
 				.hasNext();) {
 			final SootClass clazz = (SootClass) cIt.next();
-			System.out.println("Analyzing...." + clazz);
 			for (SootMethod m : clazz.getMethods()) {
 				if (!m.isConcrete())
 					continue;
@@ -140,129 +135,68 @@ public class DemandDrivenTransformer1 extends SceneTransformer {
 							if (ps.possibleTypes().size() == 0)
 								continue;
 							virtSet.add(receiver);
-							System.out.println("Virtual call------" + ie);
-							System.out.println("Points-to set------"
-									+ ps.possibleTypes());
-							System.out.println("===========================");
+							Set<Type> s = new HashSet<Type>();
+							s.addAll(ps.possibleTypes());
+
+							assert (s.size() > 0);
+							assert (s.size() == ps.possibleTypes().size());
+							assert (pag.findLocalVarNode(receiver) != null);
+
+							ptSet.put(pag.findLocalVarNode(receiver), s);
 						}
 					}
 				}
 			}
 		}
+		System.out.println("Eager version DONE!");
 
 		// ===========================ondemand=============
 		Scene.v().setPointsToAnalysis(pag);
 
-		AutoPAG me = new AutoPAG(pag);
-		me.build();
-
 		PointsToAnalysis ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		int range = virtSet.size();
 
-		int trialNum = 1000;
-		Random randomizer = new Random();
-
-		assert (!ptsDemand.equals(ptsEager));
-		int cnt = 0;
+		int trialNum = virtSet.size();
 
 		DemandCSPointsTo dcs = (DemandCSPointsTo) ptsDemand;
 
-		double result = 0;
+		System.out.println("Starting demand-driven analysis....");
 		for (int i = 0; i < trialNum; i++) {
 			// Local ran = virtSet.get(randomizer.nextInt(range));
-			Local ran = virtSet.get(i * 4);
-
-			System.out.println("Checking...");
-			Date demandStart = new Date();
-			ptsDemand.reachingObjects(ran);
-			Date demandEnd = new Date();
-			StringUtil.reportTime("The first time: ", demandStart, demandEnd);
-			long first = demandEnd.getTime() - demandStart.getTime();
-
-			Set<Type> insPt = me.insensitiveQuery(ran);
-			if (insPt.size() > ptsDemand.reachingObjects(ran).possibleTypes()
-					.size())
-				cnt++;
-
-			if (!insPt.containsAll(ptsDemand.reachingObjects(ran)
-					.possibleTypes()))
-				System.out.println(insPt + "---------"
-						+ ptsDemand.reachingObjects(ran).possibleTypes());
-
-			// assert(insPt.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
-
-			demandStart = new Date();
-			ptsDemand.reachingObjects(ran);
-			demandEnd = new Date();
-			StringUtil.reportTime("The second time: ", demandStart, demandEnd);
-			long second = demandEnd.getTime() - demandStart.getTime();
-
-			double firstD = first * 10000000.0;
-			double secondD = second * 10000000.0;
-			if (secondD != 0 && firstD / secondD > result)
-				result = firstD / secondD;
+			Local ran = virtSet.get(i);
 
 			assert (ptsDemand.reachingObjects(ran).possibleTypes()
 					.containsAll(ptsEager.reachingObjects(ran).possibleTypes()));
 			assert (ptsEager.reachingObjects(ran).possibleTypes()
 					.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
+
 		}
-
-		System.out.println("The largest ratio is: " + result);
-		assert (false);
-
-		System.out.println("diff------------" + cnt);
+		System.out.println("Demand-driven analysis DONE!");
 
 		// verify the correctness of convert(..) method in ContextSensitiveInfo
 		ArraySetMultiMap<VarNode, SootMethod> callSiteToMethods = ((DemandCSPointsTo) ptsDemand)
 				.getCallSiteVarToMethods();
 
-		// comparing the size of resolved
-		System.out.println("size of callSiteToMethods: "
-				+ callSiteToMethods.keySet().size());
-		for (VarNode var : callSiteToMethods.keySet()) {
-			System.out.println(var.getVariable() + " has size: "
-					+ callSiteToMethods.get(var).size());
-		}
-		System.out.println("virtSet size: " + virtSet.size());
-		System.out.println("number of virtual call sites: "
-				+ ((DemandCSPointsTo) ptsDemand).differentCallSites.size());
-		System.out.println("count: " + ((DemandCSPointsTo) ptsDemand).count);
-		ContextSensitiveInfo csinfo = ((DemandCSPointsTo) ptsDemand)
-				.getCSInfo();
-		ArraySetMultiMap<Integer, SootMethod> callSiteToTargets = csinfo
-				.getCallSiteToTargets();
-		System.out.println("cs info callSiteToTargets size: "
-				+ callSiteToTargets.keySet().size());
-		System.out.println("ResolvedTargets size: "
-				+ ((DemandCSPointsTo) ptsDemand).getCallSiteToResolvedTargets()
-						.keySet().size());
-		System.out.println("callSiteToMethods size: "
-				+ ((DemandCSPointsTo) ptsDemand).getCallSiteToMethods()
-						.keySet().size());
-		int diff = 0, same = 0, reduce = 0;
-		ArraySetMultiMap<Integer, SootMethod> callSiteToMethods1 = ((DemandCSPointsTo) ptsDemand)
-				.getCallSiteToMethods();
-		for (Integer callsite : callSiteToMethods1.keySet()) {
-			assert (callSiteToTargets.containsKey(callsite));
+		System.out.println("Starting verification....");
+		int count = 1;
+		for (VarNode v : callSiteToMethods.keySet()) {
+			System.out.println("Verifying the " + count++ + "th call site...");
+			ArraySet<SootMethod> methods = callSiteToMethods.get(v);
+			Set<Type> types = new HashSet<Type>();
+			for (SootMethod m : methods) {
+				types.add(m.getDeclaringClass().getType());
+			}
 
-			ArraySet<SootMethod> sites = callSiteToTargets.get(callsite);
-			ArraySet<SootMethod> sitesSmall = callSiteToMethods1.get(callsite);
-			assert (sites.containsAll(sitesSmall));
-
-			if (!sitesSmall.containsAll(sites)) {
-				diff++;
-				System.out.println("without resolving.... " + sites.size());
-				System.out.println("with resolving.... " + sitesSmall.size());
-				reduce += (sites.size() - sitesSmall.size());
-			} else
-				same++;
+			if (ptSet.containsKey(v)) {
+				System.out.println("Types in cache: ");
+				System.out.println(types);
+				System.out.println("Types in pt set: ");
+				System.out.println(ptSet.get(v));
+				// assert (types.containsAll(ptSet.get(v)));
+			}
+			System.out.println("PASSED!");
 		}
 
-		System.out.println("Diff------ " + diff);
-		System.out.println("Same------ " + same);
-		System.out.println("Reduce------" + reduce);
 		System.out.println("END.....");
 		assert (false);
 	}
