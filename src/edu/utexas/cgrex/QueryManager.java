@@ -105,8 +105,10 @@ public class QueryManager {
 	// automaton for intersect graph.
 	InterAutomaton interAuto;
 	
+	/*points-to analysis for eager version*/
 	private PointsToAnalysis ptsDemand;
 	
+	/*points-to analysis for demand-driven version*/
 	private PointsToAnalysis ptsEager;
 	
 	private boolean debug = false;
@@ -170,9 +172,16 @@ public class QueryManager {
 			methToEdgeMap.put(meth, inEdge);
 		}
 		// only build cgauto once.
+		long startDd = System.nanoTime();
 		buildCGAutomaton();
+		long endDd = System.nanoTime();
+		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
 		
+		long startEager = System.nanoTime();
 		buildEagerCGAutomaton();
+		long endEager = System.nanoTime();
+		StringUtil.reportSec("Time To build Eager CG:", startEager, endEager);
+
 	}
 
 	private void buildRegAutomaton(String regx) {
