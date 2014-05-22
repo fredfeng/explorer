@@ -19,7 +19,6 @@ import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.options.SparkOptions;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.analyses.AutoPAG;
-import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.StringUtil;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
@@ -28,7 +27,7 @@ import edu.utexas.spark.ondemand.DemandCSPointsTo;
  * @author yufeng
  * 
  */
-public class IfOnlyIfTransformer extends SceneTransformer {
+public class CompTransformer extends SceneTransformer {
 
 	public boolean debug = true;
 
@@ -103,21 +102,32 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 	
 	//get regular expressions from sootOutput/regx.txt
 	private void runBenchmark() {
+		String regxSource = IfAndOnlyIfHarness.queryLoc;
 		int cnt = 0;
-		RegularExpGenerator generator = new RegularExpGenerator(qm);
-		
-		int cur = 0;
-		//how many queries do we need?
-		while (cur < IfAndOnlyIfHarness.benchmarkSize) {
-			String regx = generator.genRegx();
-			regx = regx.replaceAll("\\s+", "");
-			boolean res2 = qm.queryRegxEager(regx);
-			boolean res1 = qm.queryRegx(regx);
-	        assert(res1 == res2);
-	        if(cnt % 100 == 0)
-	        	System.out.println("count-----" + cnt);
+		int unsound = 0;
+		BufferedReader br;
+		try {
+			br = new BufferedReader(new FileReader(regxSource));
+			String line;
+			while ((line = br.readLine()) != null) {
+			   // process the line.
+				String regx = qm.getValidExprBySig(line);
+				boolean res2 = qm.queryRegxEager(regx);
+				boolean res1 = qm.queryRegx(regx);
+				System.out.println(line + ": " + cnt + res1 + res2 );
+		        assert(res1 == res2);
+				if(res1 != res2)
+                    cnt++;
+				if((res1 == false) && (res2 == true)) unsound++;
+			}
+			br.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
+		System.out.println("End of Test!" + cnt);
+		System.out.println("End of Sound!" + unsound);
+		assert(cnt == 0);
 		System.exit(0);
 	}
 	
