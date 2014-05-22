@@ -328,11 +328,13 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		this.vMatches = new ValidMatches(pag, fieldToStores);
 	}
 
-	public PointsToSet reachingObjects(Local l) {
+	public int in = 0;
 
+	public PointsToSet reachingObjects(Local l) {
 		// we need to reset the chainedQueryCounter
 		// for a pt-set query issued outside (not self-issued)
-		clearChainedCacheCounters();
+		if (useChainedCache)
+			clearChainedCacheCounters();
 
 		if (lazy)
 			/*
@@ -351,6 +353,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
 	public PointsToSet doReachingObjects(Local l) {
+		in++;
 
 		maxNodesPerPass = 10000;
 		maxPasses = 10;
@@ -369,11 +372,17 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 		result = cache.get(l);
 		if (result == null) {
+			if (useChainedCache
+					&& chainedCache.containsKey(pag.findLocalVarNode(l))) {
+				System.out.println("Hitting chained cache!!!!");
+			}
 			result = computeReachingObjects(l);
 			if (useCache) {
 				cache.put(l, result);
 			}
+
 		} else {
+			System.out.println("Hitting cache!!!!");
 			hittingCache++;
 		}
 
@@ -513,7 +522,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		// just for testing, should comment
 		if (contextSensitiveResult == null)
 			return new WrappedPointsToSet(v.getP2Set());
-		
+
 		return contextSensitiveResult;
 	}
 
@@ -2474,9 +2483,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	// this is the same to reachingObjectsCache
 	protected boolean useChainedCache;
 
-	protected static final int CHAIN_QUERY_MAX = 50;
+	protected static final int CHAIN_QUERY_MAX = 500;
 
-	protected static final int CHAIN_HITTING_MAX = 100;
+	protected static final int CHAIN_HITTING_MAX = 100000;
 
 	protected int chainedQueryCounter = 0;
 
