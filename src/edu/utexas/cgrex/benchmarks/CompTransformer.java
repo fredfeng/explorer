@@ -38,7 +38,6 @@ public class CompTransformer extends SceneTransformer {
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
 		
-		System.out.println("good----");
 		/* BEGIN: CHA-based demand-driven CALL graph*/
 		long startCHA = System.nanoTime();
 		HashMap<String, String> opt = new HashMap<String, String>(options);
@@ -79,6 +78,9 @@ public class CompTransformer extends SceneTransformer {
 		runByintervals();
 	}
 	
+    public static double eaTime;
+    public static double ddTime;
+    
 	private void runByintervals() {
 		String regxSource = IfAndOnlyIfHarness.queryLoc;
 
@@ -88,6 +90,7 @@ public class CompTransformer extends SceneTransformer {
 			String line;
 		    long startOTF = System.nanoTime();
             int i = 1;
+
 			while ((line = br.readLine()) != null) {
 			   // process the line.
 				String regx = qm.getValidExprBySig(line);
@@ -95,11 +98,19 @@ public class CompTransformer extends SceneTransformer {
 				boolean res2 = qm.queryRegxEager(regx);
 			    long endEa = System.nanoTime();
                 StringUtil.reportSec("EA iterate--- " + i, startEa, endEa);
+                eaTime = eaTime + (endEa - startEa)/1e6;
 
 			    long startDd = System.nanoTime();
 				boolean res1 = qm.queryRegx(regx);
 			    long endDd = System.nanoTime();
                 StringUtil.reportSec("DD iterate---- " + i, startDd, endDd);
+                ddTime = ddTime + (endDd - startDd)/1e6;
+                StringUtil.reportInfo("Total iterator----" + i + ":" + eaTime + " VS " +ddTime);
+                if(eaTime < ddTime) {
+                	System.out.println("Time to Stop...." + i);
+                }        	
+
+                assert(res1 == res2);
 
                 /*if((i % 10) == 0) {
                     long endOTF = System.nanoTime();

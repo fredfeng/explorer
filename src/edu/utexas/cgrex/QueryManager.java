@@ -47,6 +47,7 @@ import edu.utexas.cgrex.automaton.InterAutoState;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
+import edu.utexas.cgrex.benchmarks.CompTransformer;
 import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
@@ -176,11 +177,13 @@ public class QueryManager {
 		buildCGAutomaton();
 		long endDd = System.nanoTime();
 		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
+		CompTransformer.ddTime = (endDd - startDd)/1e6;
 		
 		long startEager = System.nanoTime();
 		buildEagerCGAutomaton();
 		long endEager = System.nanoTime();
 		StringUtil.reportSec("Time To build Eager CG:", startEager, endEager);
+		CompTransformer.eaTime = (endEager - startEager)/1e6;
 
 	}
 
@@ -495,7 +498,6 @@ public class QueryManager {
 		// such as special invoke, static invoke and certain virtual invoke.
 		if (interAuto.getFinalStates().size() == 0) {
 			//eager version much also be false in this case.
-			assert(egAuto.getFinalStates().size() == 0);
 			return false;
 		}
 		
@@ -513,9 +515,11 @@ public class QueryManager {
 
 		boolean answer = true;
 		// contains infinity edge?
+		double ptTime = 0.0;
 		while (!hasInfinityEdges(cutset)) {
 
 			boolean refuteAll = true;
+			long beginPt = System.nanoTime();
 			for (CutEntity e : cutset) {
 				if (doPointsToQuery(e)) {
 					refuteAll = false;
@@ -531,6 +535,8 @@ public class QueryManager {
 					//interAuto.refine(e.edge);
 				}
 			}
+			long endPt = System.nanoTime();
+			ptTime = ptTime + ((endPt - beginPt)/1e6);
 
 			// all edges are refute, stop.
 			if (refuteAll) {
@@ -542,6 +548,7 @@ public class QueryManager {
 		}
 		// interAuto.dump();
 		long endRefine = System.nanoTime();
+		StringUtil.reportInfo("Time on PT: " + ptTime);
 		StringUtil.reportSec("Building refine:", startRefine, endRefine);
 
 		return answer;
@@ -694,7 +701,9 @@ public class QueryManager {
 		if (interAutoEager.getFinalStates().size() == 0)
 			return false;
 		
-		GraphUtil.checkValidInterAuto(interAutoEager);
+		if(debug)
+			GraphUtil.checkValidInterAuto(interAutoEager);
+		
 		return true;
 	}
 
