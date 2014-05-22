@@ -97,7 +97,7 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 		Scene.v().setPointsToAnalysis(pag);
 
 		int DEFAULT_MAX_PASSES = 10;
-		int DEFAULT_MAX_TRAVERSAL = 75000;
+		int DEFAULT_MAX_TRAVERSAL = 7500;
 		final boolean DEFAULT_LAZY = false;
 
 		// ====================eager version (with cache)=================
@@ -139,7 +139,7 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 							askEager.put(receiver, ps);
 
 							time += (end.getTime() - start.getTime());
-
+							System.out.println("Passed!");
 						}
 					}
 				}

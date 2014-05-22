@@ -48,10 +48,11 @@ public class DifferentBudgetHarness {
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-src-prec", "java", "-allow-phantom-refs",
-					// "-main-class", mainClassName,
-					// "-no-bodies-for-excluded", "-exclude", "java",
-					// "-exclude", "javax", "-output-format", "none"
-					});
+							// "-main-class", mainClassName,
+							// "-no-bodies-for-excluded",
+							// "-exclude", "java",
+							// "-exclude", "javax",
+							"-output-format", "none" });
 
 		} catch (CompilationDeathException e) {
 			e.printStackTrace();
