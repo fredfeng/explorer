@@ -108,6 +108,7 @@ public class CompTransformer extends SceneTransformer {
                 StringUtil.reportInfo("Total iterator----" + i + ":" + eaTime + " VS " +ddTime);
                 if(eaTime < ddTime) {
                 	System.out.println("Time to Stop...." + i);
+                	System.exit(0);
                 }        	
 
                 assert(res1 == res2);
