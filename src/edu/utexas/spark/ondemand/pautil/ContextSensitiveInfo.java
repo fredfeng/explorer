@@ -36,8 +36,6 @@ import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.pag.VarNode;
 import soot.toolkits.scalar.Pair;
 import soot.util.HashMultiMap;
-import edu.utexas.spark.ondemand.DemandCSPointsTo.CallSiteAndContext;
-import edu.utexas.spark.ondemand.DemandCSPointsTo.CallSiteToTargetsMap;
 import edu.utexas.spark.ondemand.genericutil.ArraySet;
 import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
 

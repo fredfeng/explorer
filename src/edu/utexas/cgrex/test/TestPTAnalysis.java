@@ -44,7 +44,7 @@ public class TestPTAnalysis extends SceneTransformer {
 		String b = testSensitive(me);
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/sensitivePTset"));
+					"output/sensitivePTset"));
 			bufw.write(b);
 			bufw.close();
 		} catch (Exception e) {
@@ -55,7 +55,7 @@ public class TestPTAnalysis extends SceneTransformer {
 		b = testInsensitive(me);
 		try {
 			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-					"sootOutput/insensitivePTset"));
+					"output/insensitivePTset"));
 			bufw.write(b);
 			bufw.close();
 		} catch (Exception e) {
@@ -141,8 +141,8 @@ public class TestPTAnalysis extends SceneTransformer {
 
 	public static void main(String[] args) {
 		String targetLoc = // "benchmarks/CFLexamples/bin";
-		// "benchmarks/sablecc-3.7/classes";
-		"benchmarks/test/bin";
+		"benchmarks/sablecc-3.7/classes";
+		// "benchmarks/test/bin";
 		try {
 			PackManager.v().getPack("wjtp")
 					.add(new Transform("wjtp.test", new TestPTAnalysis()));
