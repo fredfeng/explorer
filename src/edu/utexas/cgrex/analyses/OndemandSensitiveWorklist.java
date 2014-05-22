@@ -41,7 +41,7 @@ public class OndemandSensitiveWorklist {
 			handleAllocNode((AllocNode) object);
 		}
 
-		pag.dump();
+		//pag.dump();
 
 		do {
 			if (debug) {
