@@ -61,7 +61,6 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 		pag.getTypeManager().makeTypeMask();
 
 		long endCHA = System.nanoTime();
-		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
 		/* END: CHA-based demand-driven CALL graph*/
 		
 		// Propagate
@@ -71,22 +70,9 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 			CallGraphBuilder cgb = new CallGraphBuilder(pag);
 			cgb.build();
 		}
-
-		Scene.v().setPointsToAnalysis(pag);
-
-		final int DEFAULT_MAX_PASSES = 10000;
-		final int DEFAULT_MAX_TRAVERSAL = 75000;
-		final boolean DEFAULT_LAZY = false;
-		Date startOnDemand = new Date();
-//		callgraph = pag.getOnFlyCallGraph().callGraph();
-
-		DemandCSPointsTo ptsDemand = DemandCSPointsTo.makeWithBudget(
-				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		Date endOndemand = new Date();
-		System.out
-				.println("Initialized on-demand refinement-based context-sensitive analysis"
-						+ startOnDemand + endOndemand);
+		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
 		
+		Scene.v().setPointsToAnalysis(pag);
 		qm = new QueryManager(null, Scene.v().getCallGraph());
 		
 //		runBenchmarkWithoutRefine();
@@ -120,7 +106,6 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 		int cnt = 0;
 		int unsound = 0;
 		BufferedReader br;
-        List<String> broken = new ArrayList();
 		try {
 			br = new BufferedReader(new FileReader(regxSource));
 			String line;
@@ -131,10 +116,8 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 				boolean res1 = qm.queryRegx(regx);
 				System.out.println(line + ": " + cnt + res1 + res2 );
 		        assert(res1 == res2);
-				if(res1 != res2) {
+				if(res1 != res2)
                     cnt++;
-                    broken.add(regx);
-                }
 				if((res1 == false) && (res2 == true)) unsound++;
 			}
 			br.close();
@@ -144,12 +127,8 @@ public class IfOnlyIfTransformer extends SceneTransformer {
 		}
 		System.out.println("End of Test!" + cnt);
 		System.out.println("End of Sound!" + unsound);
-        for(String reg : broken) {
-            System.out.println(reg);
-        }
 		assert(cnt == 0);
-		assert(false);
-
+		System.exit(0);
 	}
 	
 }

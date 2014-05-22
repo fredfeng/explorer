@@ -104,6 +104,12 @@ public class QueryManager {
 
 	// automaton for intersect graph.
 	InterAutomaton interAuto;
+	
+	private PointsToAnalysis ptsDemand;
+	
+	private PointsToAnalysis ptsEager;
+	
+	private boolean debug = false;
 
 	public QueryManager(AutoPAG autoPAG, CallGraph cg) {
 		
@@ -113,7 +119,8 @@ public class QueryManager {
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
-		assert(ptsDemand != null);
+		ptsEager = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
 		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();
@@ -401,8 +408,6 @@ public class QueryManager {
 		// cgAuto.validate();
 	}
 	
-	public PointsToAnalysis ptsDemand;
-
 	private boolean isValidEdge(CallGraph cg, Edge e) {
 		SootMethod caller = (SootMethod)e.getSrc();
 		if (!caller.isConcrete())
@@ -425,7 +430,7 @@ public class QueryManager {
 						if( e.equals(tgt) ) {
 							//System.out.println(e.getTgt() + "~~~~~" + callee);
 							//is this edge exist?
-							Set<Type> pTypes = ptsDemand.reachingObjects(receiver).possibleTypes();
+							Set<Type> pTypes = ptsEager.reachingObjects(receiver).possibleTypes();
 							List<Type> typeSet = SootUtils.compatibleTypeList(
 									callee.getDeclaringClass(), callee);
 							pTypes.retainAll(typeSet);
@@ -485,7 +490,8 @@ public class QueryManager {
 			return false;
 		}
 		
-		GraphUtil.checkValidInterAuto(interAuto);
+		if(debug)
+			GraphUtil.checkValidInterAuto(interAuto);
 		
 		//need to append a super final state, otherwise the result is wrong.
 		createSuperNode(interAuto);
