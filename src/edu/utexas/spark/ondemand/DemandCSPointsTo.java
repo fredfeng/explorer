@@ -520,8 +520,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 
 		// just for testing, should comment
-		if (contextSensitiveResult == null)
-			return new WrappedPointsToSet(v.getP2Set());
+		// if (contextSensitiveResult == null)
+		// return new WrappedPointsToSet(v.getP2Set());
 
 		return contextSensitiveResult;
 	}
