@@ -1,5 +1,7 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,8 +96,8 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 
 		Scene.v().setPointsToAnalysis(pag);
 
-		int DEFAULT_MAX_PASSES = 1000;
-		int DEFAULT_MAX_TRAVERSAL = 10000;
+		int DEFAULT_MAX_PASSES = 10;
+		int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
 
 		// ====================eager version (with cache)=================
@@ -104,7 +106,7 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 
 		DemandCSPointsTo ptsEager = (DemandCSPointsTo) pts;
-		Set<Local> ask = new HashSet<Local>();
+		Map<Local, PointsToSet> askEager = new HashMap<Local, PointsToSet>();
 
 		System.out
 				.println("---------------Starting eager version--------------");
@@ -134,7 +136,7 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 							if (ps.possibleTypes().size() == 0)
 								continue;
 
-							ask.add(receiver);
+							askEager.put(receiver, ps);
 
 							time += (end.getTime() - start.getTime());
 
@@ -144,19 +146,45 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 			}
 		}
 
-		System.out.println("There are totally " + ask.size()
+		int one = 0;
+		int ten = 0;
+		int twenty = 0;
+		int morethan = 0;
+
+		for (Local receiver : askEager.keySet()) {
+			if (askEager.get(receiver).possibleTypes().size() <= 1) {
+				one++;
+			} else if (askEager.get(receiver).possibleTypes().size() <= 10) {
+				ten++;
+			} else if (askEager.get(receiver).possibleTypes().size() <= 20) {
+				twenty++;
+			} else {
+				morethan++;
+			}
+		}
+		System.out.println("There are totally " + askEager.size()
 				+ " receivers to analyze.");
+		System.out.println("There are totally " + one
+				+ " receivers with one element");
+		System.out.println("There are totally " + ten
+				+ " receivers with ten elements");
+		System.out.println("There are totally " + twenty
+				+ " receivers with twenty elements");
+		System.out.println("There are totally " + morethan
+				+ " receivers with more than elements");
 		System.out.println("Construction time: " + time + " million seconds");
 		System.out.println("Eager version DONE!");
 		System.out.println("****************************************");
 
 		// ==================== small budget ======================
 
-		DEFAULT_MAX_PASSES = 100;
-		DEFAULT_MAX_TRAVERSAL = 500;
+		// DEFAULT_MAX_PASSES = 100;
+		DEFAULT_MAX_TRAVERSAL = 50000;
 		pts = DemandCSPointsTo.makeWithBudget(DEFAULT_MAX_TRAVERSAL,
 				DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		DemandCSPointsTo ptsSmall = (DemandCSPointsTo) pts;
+
+		Map<Local, PointsToSet> askSmall = new HashMap<Local, PointsToSet>();
 
 		System.out
 				.println("---------------Starting small budget version--------------");
@@ -170,12 +198,13 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 
 		// perform pt-set queries for all call sites and record the pt sets.
 
-		for (Local receiver : ask) {
+		for (Local receiver : askEager.keySet()) {
 			Date start = new Date();
 			PointsToSet ps = ptsSmall.reachingObjects(receiver);
 			Date end = new Date();
 
 			time += (end.getTime() - start.getTime());
+			askSmall.put(receiver, ps);
 
 			total++;
 
@@ -199,6 +228,33 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 			}
 
 		}
+
+		one = 0;
+		ten = 0;
+		twenty = 0;
+		morethan = 0;
+
+		for (Local receiver : askEager.keySet()) {
+			if (askEager.get(receiver).possibleTypes().size() <= 1) {
+				one++;
+			} else if (askEager.get(receiver).possibleTypes().size() <= 10) {
+				ten++;
+			} else if (askEager.get(receiver).possibleTypes().size() <= 20) {
+				twenty++;
+			} else {
+				morethan++;
+			}
+		}
+		System.out.println("There are totally " + askEager.size()
+				+ " receivers to analyze.");
+		System.out.println("There are totally " + one
+				+ " receivers with one element");
+		System.out.println("There are totally " + ten
+				+ " receivers with ten elements");
+		System.out.println("There are totally " + twenty
+				+ " receivers with twenty elements");
+		System.out.println("There are totally " + morethan
+				+ " receivers with more than elements");
 
 		System.out.println("Construction time: " + time + " million seconds");
 		System.out.println("Small budget version DONE!");
@@ -213,11 +269,12 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 
 		// ==================== large budget ======================
 
-		DEFAULT_MAX_PASSES = 10000;
-		DEFAULT_MAX_TRAVERSAL = 200000;
+		DEFAULT_MAX_PASSES = 100;
+		DEFAULT_MAX_TRAVERSAL = 10000000;
 		pts = DemandCSPointsTo.makeWithBudget(DEFAULT_MAX_TRAVERSAL,
 				DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		DemandCSPointsTo ptsLarge = (DemandCSPointsTo) pts;
+		Map<Local, PointsToSet> askLarge = new HashMap<Local, PointsToSet>();
 
 		System.out
 				.println("----------------Starting large budget version-----------------");
@@ -231,12 +288,12 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 
 		// perform pt-set queries for all call sites and record the pt sets.
 
-		for (Local receiver : ask) {
+		for (Local receiver : askEager.keySet()) {
 			Date start = new Date();
 			PointsToSet ps = ptsLarge.reachingObjects(receiver);
 			Date end = new Date();
 			time += (end.getTime() - start.getTime());
-
+			askLarge.put(receiver, ps);
 			total++;
 
 			if (ps.possibleTypes().containsAll(
@@ -259,6 +316,32 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 			}
 		}
 
+		one = 0;
+		ten = 0;
+		twenty = 0;
+		morethan = 0;
+
+		for (Local receiver : askEager.keySet()) {
+			if (askEager.get(receiver).possibleTypes().size() <= 1) {
+				one++;
+			} else if (askEager.get(receiver).possibleTypes().size() <= 10) {
+				ten++;
+			} else if (askEager.get(receiver).possibleTypes().size() <= 20) {
+				twenty++;
+			} else {
+				morethan++;
+			}
+		}
+		System.out.println("There are totally " + askEager.size()
+				+ " receivers to analyze.");
+		System.out.println("There are totally " + one
+				+ " receivers with one element");
+		System.out.println("There are totally " + ten
+				+ " receivers with ten elements");
+		System.out.println("There are totally " + twenty
+				+ " receivers with twenty elements");
+		System.out.println("There are totally " + morethan
+				+ " receivers with more than elements");
 		System.out.println("Construction time: " + time + " million seconds");
 		System.out.println("Large budget version DONE!");
 
@@ -274,6 +357,64 @@ public class DifferentBudgetTransformer extends SceneTransformer {
 
 		System.out.println("All verification PASSED!");
 
+		// ==================== dump =======================
+		StringBuilder str = new StringBuilder();
+		// comparing eager version and small budget version
+		for (Local receiver : askEager.keySet()) {
+			PointsToSet eager = askEager.get(receiver);
+			PointsToSet small = askSmall.get(receiver);
+			if (small.possibleTypes().size() > eager.possibleTypes().size()) {
+				str.append("*****receiver: " + receiver + "\n");
+				str.append("*****eager: " + eager.possibleTypes() + "\n");
+				str.append("*****small: " + small.possibleTypes() + "\n");
+				str.append("----------------------------------------------------\n");
+			} else {
+				str.append("receiver: " + receiver + "\n");
+				str.append("eager: " + eager.possibleTypes() + "\n");
+				str.append("small: " + small.possibleTypes() + "\n");
+				str.append("----------------------------------------------------\n");
+			}
+		}
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"output/small"));
+
+			bufw.write(str.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		str = new StringBuilder();
+		// comparing eager version and large budget version
+		for (Local receiver : askEager.keySet()) {
+			PointsToSet eager = askEager.get(receiver);
+			PointsToSet large = askLarge.get(receiver);
+			if (large.possibleTypes().size() < eager.possibleTypes().size()) {
+				str.append("*****receiver: " + receiver + "\n");
+				str.append("*****eager: " + eager.possibleTypes() + "\n");
+				str.append("*****large: " + large.possibleTypes() + "\n");
+				str.append("----------------------------------------------------\n");
+			} else {
+				// str.append("receiver: " + receiver + "\n");
+				// str.append("eager: " + eager.possibleTypes() + "\n");
+				// str.append("large: " + large.possibleTypes() + "\n");
+				// str.append("----------------------------------------------------\n");
+			}
+		}
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"output/large"));
+
+			bufw.write(str.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		// Congratulations information
 		System.out.println("Congratulations! Have a good night~");
 		assert (false);
 	}
