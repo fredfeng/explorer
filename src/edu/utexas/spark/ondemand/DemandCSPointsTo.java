@@ -231,12 +231,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	protected final CallSiteToTargetsMap callSiteToResolvedTargets = new CallSiteToTargetsMap();
 
-	// the best historical records
-	protected final CallSiteToTargetsMap callSiteToResolvedTargets1 = new CallSiteToTargetsMap();
-
-	// the result for this round, may be not the most precise
-	protected final CallSiteToTargetsMap callSiteToResolvedTargets2 = new CallSiteToTargetsMap();
-
 	protected HashMap<List<Object>, Set<SootMethod>> callTargetsArgCache = new HashMap<List<Object>, Set<SootMethod>>();
 
 	protected final Stack<VarAndContext> contextForAllocsStack = new Stack<VarAndContext>();
@@ -355,8 +349,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	public PointsToSet doReachingObjects(Local l) {
 		in++;
 
-		//maxNodesPerPass = 10000;
-		//maxPasses = 10;
+		// maxNodesPerPass = 10000;
+		// maxPasses = 10;
 		// lazy initialization
 		if (fieldToStores == null) {
 			init();
@@ -374,7 +368,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		if (result == null) {
 			if (useChainedCache
 					&& chainedCache.containsKey(pag.findLocalVarNode(l))) {
-				//System.out.println("Hitting chained cache!!!!");
+				// System.out.println("Hitting chained cache!!!!");
 			}
 			result = computeReachingObjects(l);
 			if (useCache) {
@@ -382,31 +376,12 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 		} else {
-			//System.out.println("Hitting cache!!!!");
+			// System.out.println("Hitting cache!!!!");
 			hittingCache++;
 		}
 
 		// for usage, this should be commented in order to use the cache
 		// assert consistentResult(l, result);
-
-		// update the resolved targets as the most precise version
-		for (CallSiteAndContext csc : callSiteToResolvedTargets2.keySet()) {
-			if (!callSiteToMethods.containsKey(csc.getO1())) {
-				callSiteToResolvedTargets1.putAll(csc,
-						callSiteToResolvedTargets2.get(csc));
-			} else {
-				if (callSiteToResolvedTargets2.get(csc).size() < callSiteToResolvedTargets1
-						.get(csc).size()) {
-					callSiteToResolvedTargets1.clear();
-					callSiteToResolvedTargets1.putAll(csc,
-							callSiteToResolvedTargets2.get(csc));
-				}
-			}
-		}
-
-		callSiteToResolvedTargets2.clear();
-
-		convert();
 
 		if (useChainedCache) {
 			chainedRefine();
@@ -1859,16 +1834,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 	}
 
-	public int count = 0;
-	public Set<Integer> differentCallSites = new HashSet<Integer>();
-	public Set<CallSiteAndContext> differentCallSitesAndContext = new HashSet<CallSiteAndContext>();
-
-	public void update(CallSiteAndContext callSiteAndContext) {
-		differentCallSites.add(callSiteAndContext.getO1());
-		differentCallSitesAndContext.add(callSiteAndContext);
-		count++;
-	}
-
 	protected Set<SootMethod> refineCallSite(Integer callSite,
 			ImmutableStack<Integer> origContext) {
 		CallSiteAndContext callSiteAndContext = new CallSiteAndContext(
@@ -1940,13 +1905,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						allocNode.getType(), methodSig, receiverType,
 						allTargets)) {
 					callSiteToResolvedTargets.put(callSiteAndContext, method);
-					callSiteToResolvedTargets2.put(callSiteAndContext, method);
 					if (!resolvedChainedVarNodes.contains(curVar))
 						chainedVarNodes.add(curVar);
-					// callSiteToResolvedTargets1.put(callSiteAndContext,
-					// method);
 
-					update(callSiteAndContext);
 				}
 			}
 			Collection<AssignEdge> assigns = filterAssigns(curVar, curContext,
@@ -1966,14 +1927,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					} else {
 						callSiteToResolvedTargets.putAll(callSiteAndContext,
 								allTargets);
-						callSiteToResolvedTargets2.putAll(callSiteAndContext,
-								allTargets);
+
 						if (!resolvedChainedVarNodes.contains(curVar))
 							chainedVarNodes.add(curVar);
-						// callSiteToResolvedTargets1.putAll(callSiteAndContext,
-						// allTargets);
-
-						update(callSiteAndContext);
 
 						// if (DEBUG) {
 						// debugPrint("giving up on virt");
@@ -2022,15 +1978,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 								for (SootMethod method : matchSrcCallTargets) {
 									callSiteToResolvedTargets.put(
 											callSiteAndContext, method);
-									callSiteToResolvedTargets2.put(
-											callSiteAndContext, method);
 									if (!resolvedChainedVarNodes
 											.contains(curVar))
 										chainedVarNodes.add(curVar);
-									// callSiteToResolvedTargets1.put(
-									// callSiteAndContext, method);
-
-									update(callSiteAndContext);
 
 								}
 							}
@@ -2050,14 +2000,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 							} catch (CallSiteException e) {
 								callSiteToResolvedTargets.putAll(
 										callSiteAndContext, allTargets);
-								callSiteToResolvedTargets2.putAll(
-										callSiteAndContext, allTargets);
+
 								if (!resolvedChainedVarNodes.contains(curVar))
 									chainedVarNodes.add(curVar);
-								// callSiteToResolvedTargets1.putAll(
-								// callSiteAndContext, allTargets);
-
-								update(callSiteAndContext);
 
 								continue;
 							} finally {
@@ -2372,38 +2317,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	public Set<Integer> visitedCallSites = new HashSet<Integer>();
 
-	public ArraySetMultiMap<VarNode, SootMethod> convert() {
-
-		callSiteVarToMethods.clear();
-		callSiteToMethods.clear();
-
-		Map<Integer, LocalVarNode> virtCallSiteToReceiver = csInfo
-				.getVirtCallSiteToReceiver();
-
-		for (CallSiteAndContext cst : callSiteToResolvedTargets1.keySet()) {
-			Integer index = cst.getO1(); // get the call site
-
-			assert (virtCallSiteToReceiver.containsKey(index));
-
-			LocalVarNode receiver = virtCallSiteToReceiver.get(index);
-
-			assert (receiver != null);
-
-			// System.out.println("converting...");
-
-			callSiteVarToMethods.putAll(receiver,
-					callSiteToResolvedTargets1.get(cst));
-			callSiteToMethods
-					.putAll(index, callSiteToResolvedTargets1.get(cst));
-		}
-
-		return callSiteVarToMethods;
-	}
-
-	public CallSiteToTargetsMap getCallSiteToResolvedTargets() {
-		return this.callSiteToResolvedTargets1;
-	}
-
 	public ContextSensitiveInfo getCSInfo() {
 		return this.csInfo;
 	}
@@ -2483,9 +2396,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	// this is the same to reachingObjectsCache
 	protected boolean useChainedCache;
 
-	protected static final int CHAIN_QUERY_MAX = 500;
+	protected static final int CHAIN_QUERY_MAX = 100;
 
-	protected static final int CHAIN_HITTING_MAX = 100000;
+	protected static final int CHAIN_HITTING_MAX = 1000;
 
 	protected int chainedQueryCounter = 0;
 
