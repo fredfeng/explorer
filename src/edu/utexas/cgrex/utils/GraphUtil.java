@@ -24,6 +24,8 @@ import edu.utexas.cgrex.automaton.InterAutomaton;
 public class GraphUtil {
 
 	public static Cloner cloner = new Cloner();
+	
+	private static boolean debug = false;
 
 	public static Set<AutoState> findRoots(Automaton automaton) {
 		Set<AutoState> roots = new HashSet<AutoState>();
@@ -206,7 +208,6 @@ public class GraphUtil {
 		orgStates.retainAll(spath);
 		LinkedList<AutoState> tpath = new LinkedList(auto.getStates());
 		tpath.removeAll(orgStates);
-System.out.println("S:" +spath);
 		// collect all the edges that cross between S and T
 		Set<CutEntity> cutset = new HashSet<CutEntity>();
 		for (AutoState s : orgStates) {
@@ -218,8 +219,8 @@ System.out.println("S:" +spath);
 				AutoState tgt = s.outgoingStatesInvLookup(outEdge).iterator()
 						.next();
 				if (tpath.contains(tgt) && (outEdge.getWeight() > 0)) {
-					 System.out.println(s + "->" + tgt + " " +
-					 outEdge.getWeight());
+					 /*System.out.println(s + "->" + tgt + " " +
+					 outEdge.getWeight());*/
 					assert(outEdge.isInvEdge() == false);
 					cutset.add(new CutEntity(s, outEdge, tgt));
 				}
@@ -243,7 +244,8 @@ System.out.println("S:" +spath);
 		}
 		
 		//make sure this is a valid mincut.
-		assert(isValidCut(auto, cutset));
+		if(debug)
+			assert(isValidCut(auto, cutset));
 
 		return cutset;
 

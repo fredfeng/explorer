@@ -166,9 +166,6 @@ public class QueryManager {
 		buildCGAutomaton();
 		
 		buildEagerCGAutomaton();
-		
-		assert(ddMethods.containsAll(eagerMethods));
-		
 	}
 
 	private void buildRegAutomaton(String regx) {
@@ -241,10 +238,6 @@ public class QueryManager {
 		// regAuto.dump();
 	}
 	
-	Set<SootMethod> ddMethods = new HashSet();
-	Set<SootMethod> eagerMethods = new HashSet();
-
-
 	private void buildCGAutomaton() {
 		// Start from the main entry.
 		SootMethod mainMeth = Scene.v().getMainMethod();
@@ -275,7 +268,6 @@ public class QueryManager {
 			if(visited.contains(worker))
 				continue;
 			visited.add(worker);
-			ddMethods.add(worker);
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
 
@@ -362,7 +354,6 @@ public class QueryManager {
 			if(visited.contains(worker))
 				continue;
 			visited.add(worker);
-			eagerMethods.add(worker);
 
 			// worker. outgoing edges
 			Iterator<Edge> outIt = cg.edgesOutOf(worker);
@@ -432,14 +423,14 @@ public class QueryManager {
 					while(it.hasNext()) {
 						Edge tgt = it.next();
 						if( e.equals(tgt) ) {
-							System.out.println(e.getTgt() + "~~~~~" + callee);
+							//System.out.println(e.getTgt() + "~~~~~" + callee);
 							//is this edge exist?
 							Set<Type> pTypes = ptsDemand.reachingObjects(receiver).possibleTypes();
 							List<Type> typeSet = SootUtils.compatibleTypeList(
 									callee.getDeclaringClass(), callee);
 							pTypes.retainAll(typeSet);
 							if(pTypes.size() == 0) {
-								System.out.println("REFUTE THIS EDGE--------------------" + e);
+								//System.out.println("REFUTE THIS EDGE--------------------" + e);
 								return false;
 							}
 							break;
@@ -529,7 +520,6 @@ public class QueryManager {
 			// all edges are refute, stop.
 			if (refuteAll) {
 				answer = false;
-                System.out.println(cutset.size() + "--cutset--" + cutset);
 				break;
 			}
 			// modify visited edges and continue.
@@ -590,11 +580,6 @@ public class QueryManager {
 		}
 
         if(ptTypeSet.size() == 0) return true;
-        assert(typeSet.size() > 0);
-        System.out.println("TypeSet:----" + typeSet);
-        System.out.println("Caller:----" + callerMeth);
-        System.out.println("Callee:----" + calleeMeth);
-        System.out.println("PtSet:----" + ptTypeSet);
 
 		ptTypeSet.retainAll(typeSet);
 		return !ptTypeSet.isEmpty();
@@ -765,8 +750,6 @@ public class QueryManager {
 					if (SootUtils.compatibleWith(tgt, callee)) {
 						// ie.get
 						Value var = ie.getUseBoxes().get(0).getValue();
-                        System.out.println("compatible-------1" + tgt);
-                        System.out.println("compatible-------2" + callee);
 						varSet.add(var);
 					}
 				}
