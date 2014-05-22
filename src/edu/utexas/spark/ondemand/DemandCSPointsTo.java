@@ -296,7 +296,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		this.pag = pag;
 		this.maxPasses = maxPasses;
 		this.lazy = lazy;
-		this.maxNodesPerPass = maxTraversal / maxPasses;
+		this.maxNodesPerPass = maxTraversal;
 		this.heuristicType = HeuristicType.INCR;
 		this.reachingObjectsCache = new HashMap<Local, PointsToSet>();
 		this.reachingObjectsCacheNoCGRefinement = new HashMap<Local, PointsToSet>();
