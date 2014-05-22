@@ -355,8 +355,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	public PointsToSet doReachingObjects(Local l) {
 		in++;
 
-		maxNodesPerPass = 10000;
-		maxPasses = 10;
+		//maxNodesPerPass = 10000;
+		//maxPasses = 10;
 		// lazy initialization
 		if (fieldToStores == null) {
 			init();
@@ -374,7 +374,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		if (result == null) {
 			if (useChainedCache
 					&& chainedCache.containsKey(pag.findLocalVarNode(l))) {
-				System.out.println("Hitting chained cache!!!!");
+				//System.out.println("Hitting chained cache!!!!");
 			}
 			result = computeReachingObjects(l);
 			if (useCache) {
@@ -382,7 +382,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 		} else {
-			System.out.println("Hitting cache!!!!");
+			//System.out.println("Hitting cache!!!!");
 			hittingCache++;
 		}
 
