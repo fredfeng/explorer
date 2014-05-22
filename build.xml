@@ -12,9 +12,10 @@
   <property name="alg" location="${alg}"/>
 
 
+        <!--java classname="edu.utexas.cgrex.benchmarks.BenchmarkHarness" -->
   <target name="analyze" depends="jar">
-    <java classname="edu.utexas.cgrex.benchmarks.BenchmarkHarness"
-          maxmemory="8g"
+    <java classname="edu.utexas.cgrex.benchmarks.IfAndOnlyIfHarness"
+          maxmemory="32g"
           fork="true"
           failonerror="true">
           <jvmarg value="-ea" />
@@ -38,7 +39,7 @@
 
   <target name="gen" depends="jar">
       <java classname="edu.utexas.cgrex.benchmarks.GenRegxHarness"
-          maxmemory="8g"
+          maxmemory="64g"
           fork="true"
           failonerror="true">
           <jvmarg value="-ea" />
