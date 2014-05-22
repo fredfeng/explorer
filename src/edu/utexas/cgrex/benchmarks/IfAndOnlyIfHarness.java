@@ -11,7 +11,7 @@ import soot.Transform;
  */
 public class IfAndOnlyIfHarness {
 
-	public static int benchmarkSize = 10;
+	public static int benchmarkSize = 1000;
 	
 	//we will collect the running time at each interval.
 	public static int interval = 5;
@@ -54,7 +54,7 @@ public class IfAndOnlyIfHarness {
 			.v()
 			.getPack("wjtp")
 			.add(new Transform("wjtp.iff",
-					new IfOnlyIfTransformer()));
+					new CompTransformer()));
 			
 			/*if(alg.equals("cha"))
 				PackManager

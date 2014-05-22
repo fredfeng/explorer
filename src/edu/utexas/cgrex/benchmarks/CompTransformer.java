@@ -38,6 +38,7 @@ public class CompTransformer extends SceneTransformer {
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
 		
+		System.out.println("good----");
 		/* BEGIN: CHA-based demand-driven CALL graph*/
 		long startCHA = System.nanoTime();
 		HashMap<String, String> opt = new HashMap<String, String>(options);
@@ -75,60 +76,44 @@ public class CompTransformer extends SceneTransformer {
 		Scene.v().setPointsToAnalysis(pag);
 		qm = new QueryManager(null, Scene.v().getCallGraph());
 		
-//		runBenchmarkWithoutRefine();
-		runBenchmark();
+		runByintervals();
 	}
 	
-	private void runBenchmarkWithoutRefine() {
-		String regxSource = BenchmarkHarness.queryLoc;
-		
-		BufferedReader br;
-		try {
-			br = new BufferedReader(new FileReader(regxSource));
-			String line;
-			while ((line = br.readLine()) != null) {
-			   // process the line.
-				String regx = qm.getValidExprBySig(line);
-				boolean res1 = qm.queryWithoutRefine(regx);
-				System.out.println(line + ": " + res1);
-			}
-			br.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-	
-	//get regular expressions from sootOutput/regx.txt
-	private void runBenchmark() {
+	private void runByintervals() {
 		String regxSource = IfAndOnlyIfHarness.queryLoc;
-		int cnt = 0;
-		int unsound = 0;
+
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(regxSource));
 			String line;
+		    long startOTF = System.nanoTime();
+            int i = 1;
 			while ((line = br.readLine()) != null) {
 			   // process the line.
 				String regx = qm.getValidExprBySig(line);
+			    long startEa = System.nanoTime();
 				boolean res2 = qm.queryRegxEager(regx);
+			    long endEa = System.nanoTime();
+                StringUtil.reportSec("EA iterate--- " + i, startEa, endEa);
+
+			    long startDd = System.nanoTime();
 				boolean res1 = qm.queryRegx(regx);
-				System.out.println(line + ": " + cnt + res1 + res2 );
-		        assert(res1 == res2);
-				if(res1 != res2)
-                    cnt++;
-				if((res1 == false) && (res2 == true)) unsound++;
+			    long endDd = System.nanoTime();
+                StringUtil.reportSec("DD iterate---- " + i, startDd, endDd);
+
+                /*if((i % 10) == 0) {
+                    long endOTF = System.nanoTime();
+                    StringUtil.reportSec("On-the-fly iterate " + i, startOTF, endOTF);
+                }*/
+                i++;
 			}
+
 			br.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println("End of Test!" + cnt);
-		System.out.println("End of Sound!" + unsound);
-		assert(cnt == 0);
-		System.exit(0);
+        System.exit(0);
 	}
 	
 }
