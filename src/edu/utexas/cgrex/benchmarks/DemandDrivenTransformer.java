@@ -123,9 +123,19 @@ public class DemandDrivenTransformer extends SceneTransformer {
 				.println("Initialized on-demand refinement-based context-sensitive analysis"
 						+ startOnDemand + endOndemand);
 
-		List<Local> virtSet = new ArrayList<Local>();
+		Set<Local> virtSet = genReceivers();
 		// perform pt-set queries.
-		/*for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
+
+		assert(false);
+//		genCallGraph();
+	}
+	
+	PointsToAnalysis ptsDemand;
+	
+	public Set<Local> genReceivers() {
+		Set<Local> virtSet = new HashSet<Local>();
+
+		for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
 				.hasNext();) {
 			final SootClass clazz = (SootClass) cIt.next();
 			System.out.println("Analyzing...." + clazz);
@@ -143,62 +153,18 @@ public class DemandDrivenTransformer extends SceneTransformer {
 								|| (ie instanceof InterfaceInvokeExpr)) {
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
-							PointsToSet ps = ptsEager.reachingObjects(receiver);
+							PointsToSet ps = ptsDemand.reachingObjects(receiver);
 							if (ps.possibleTypes().size() == 0)
 								continue;
 							virtSet.add(receiver);
-							System.out.println("Virtual call------" + ie);
-							System.out.println("Points-to set------"
-									+ ps.possibleTypes());
-							System.out.println("===========================");
 						}
 					}
 				}
 			}
 		}
 		
-		
-		//===========================ondemand=============
-		Scene.v().setPointsToAnalysis(pag);
-
-		AutoPAG me = new AutoPAG(pag);
-		me.build();
-		
-		
-		PointsToAnalysis ptsDemand = DemandCSPointsTo.makeWithBudget(
-				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		int range = virtSet.size();
-		int trialNum = 40000;
-		Random randomizer = new Random();
-		
-		assert(!ptsDemand.equals(ptsEager));
-		int cnt = 0;
-		
-		DemandCSPointsTo dcs = (DemandCSPointsTo)ptsDemand;
-
-		for (int i = 0; i < trialNum; i++) {
-			Local ran = virtSet.get(randomizer.nextInt(range));
-			Set<Type> insPt = me.insensitiveQuery(ran);
-			if(insPt.size() > ptsDemand.reachingObjects(ran).possibleTypes().size()) 
-				cnt++;
-			
-			if(!insPt.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()))
-				System.out.println(insPt + "---------" + ptsDemand.reachingObjects(ran).possibleTypes());
-				
-			assert (ptsDemand.reachingObjects(ran).possibleTypes()
-					.containsAll(ptsEager.reachingObjects(ran).possibleTypes()));
-			assert (ptsEager.reachingObjects(ran).possibleTypes()
-					.containsAll(ptsDemand.reachingObjects(ran).possibleTypes()));
-		}
-		
-		System.out.println("diff------------" + cnt);*/
-		
-		genCallGraph();
-
-		assert(false);
+		return virtSet;
 	}
-	
-	PointsToAnalysis ptsDemand;
 	
 	public void genCallGraph() {
 		CallGraph cg = Scene.v().getCallGraph();
