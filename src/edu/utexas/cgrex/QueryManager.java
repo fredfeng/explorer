@@ -442,7 +442,11 @@ public class QueryManager {
 						if( e.equals(tgt) ) {
 							//System.out.println(e.getTgt() + "~~~~~" + callee);
 							//is this edge exist?
-							Set<Type> pTypes = ptsEager.reachingObjects(receiver).possibleTypes();
+                            long startDd = System.nanoTime();
+                            Set<Type> pTypes = ptsEager.reachingObjects(receiver).possibleTypes();
+                            long endDd = System.nanoTime();
+                            StringUtil.reportSec("Time To build PT Set:", startDd, endDd);
+
 							List<Type> typeSet = SootUtils.compatibleTypeList(
 									callee.getDeclaringClass(), callee);
 							pTypes.retainAll(typeSet);
