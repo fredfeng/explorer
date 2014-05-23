@@ -480,9 +480,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
             if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
                 break;
             }
-            if (numPasses > maxPasses) {
-                break;
-            }
+            
+//            if (numPasses > maxPasses) {
+//                break;
+//            }
+            
             if (DEBUG) {
                 G.v().out.println("PASS " + numPasses);
                 G.v().out.println(fieldCheckHeuristic);
@@ -620,9 +622,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
             if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
                 return true;
             }
-            if (numPasses > maxPasses) {
-                return true;
-            }
+            
+//            if (numPasses > maxPasses) {
+//                return true;
+//            }
+            
             if (DEBUG) {
                 G.v().out.println("PASS " + numPasses);
                 G.v().out.println(fieldCheckHeuristic);
@@ -730,9 +734,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
             if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
                 return smallest;
             }
-            if (numPasses > maxPasses) {
-                return smallest;
-            }
+            
+//            if (numPasses > maxPasses) {
+//                return smallest;
+//            }
+            
             if (DEBUG) {
                 G.v().out.println("PASS " + numPasses);
                 G.v().out.println(fieldCheckHeuristic);
@@ -1563,9 +1569,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
     protected void incrementNodesTraversed() {
         numNodesTraversed++;
-        if (numNodesTraversed > maxNodesPerPass) {
-            throw new TerminateEarlyException();
-        }
+        
+//        if (numNodesTraversed > maxNodesPerPass) {
+//            throw new TerminateEarlyException();
+//        }
     }
 
     @SuppressWarnings("unused")
@@ -1822,9 +1829,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
             if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
                 return false;
             }
-            if (numPasses > maxPasses) {
-                return false;
-            }
+            
+//            if (numPasses > maxPasses) {
+//                return false;
+//            }
+            
             if (DEBUG) {
                 G.v().out.println("PASS " + numPasses);
                 G.v().out.println(fieldCheckHeuristic);
@@ -2209,9 +2218,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
                 if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
                     return false;
                 }
-                if (numPasses > maxPasses) {
-                    return false;
-                }
+                
+//                if (numPasses > maxPasses) {
+//                    return false;
+//                }
+                
                 if (DEBUG) {
                     G.v().out.println("PASS " + numPasses);
                     G.v().out.println(fieldCheckHeuristic);
