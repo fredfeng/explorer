@@ -576,9 +576,20 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 			// self-added early termination
-			if (earlyStop && pointsTo.size() == 1) {
-				break;
+			boolean shut = false;
+			if (earlyStop) {
+				Set<Type> types = new HashSet<Type>();
+				for (AllocAndContext pt : pointsTo) {
+					AllocNode alc = pt.alloc;
+					types.add(alc.getType());
+					if (types.size() > 1) {
+						shut = true;
+						break;
+					}
+				}
 			}
+			if (shut)
+				break;
 		}
 
 		return contextSensitiveResult;
