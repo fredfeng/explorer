@@ -127,8 +127,8 @@ public class DemandQueryTransformer extends SceneTransformer {
 				assert (res1 == res2);
 
 				i++;
-				if (i >= range)
-					break;
+				// if (i >= range)
+				// break;
 			}
 
 			br.close();
