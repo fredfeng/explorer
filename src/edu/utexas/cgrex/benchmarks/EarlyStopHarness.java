@@ -48,9 +48,10 @@ public class EarlyStopHarness {
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-src-prec", "java", "-allow-phantom-refs",
 							 "-main-class", mainClassName,
-							"-no-bodies-for-excluded", 
+							 "-soot-class-path", "lib/rt.jar:lib/jce.jar",
+							/*"-no-bodies-for-excluded", 
 							"-exclude", "java",
-							"-exclude", "javax", 
+							"-exclude", "javax", */
 							"-output-format", "none" });
 
 		} catch (CompilationDeathException e) {

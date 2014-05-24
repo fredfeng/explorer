@@ -2,9 +2,6 @@ package edu.utexas.cgrex.benchmarks;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,12 +10,9 @@ import soot.SceneTransformer;
 import soot.jimple.spark.builder.ContextInsensitiveBuilder;
 import soot.jimple.spark.pag.PAG;
 import soot.jimple.spark.solver.PropWorklist;
-import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
-import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.options.SparkOptions;
 import edu.utexas.cgrex.QueryManager;
-import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.utils.StringUtil;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
@@ -39,7 +33,7 @@ public class DemandQueryTransformer extends SceneTransformer {
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
-		System.out.println("Demand Query Transformer--------");
+		StringUtil.reportInfo("DemandQuery Transformer----------");
 		/* BEGIN: CHA-based demand-driven CALL graph */
 		long startCHA = System.nanoTime();
 		HashMap<String, String> opt = new HashMap<String, String>(options);

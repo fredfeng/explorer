@@ -52,6 +52,7 @@ public class EarlyStopTransformer extends SceneTransformer {
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
+		StringUtil.reportInfo("EarlyStop Transformer----------");
 		HashMap<String, String> opt = new HashMap<String, String>(options);
 		opt.put("enabled", "true");
 		opt.put("verbose", "true");

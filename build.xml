@@ -15,7 +15,7 @@
         <!--java classname="edu.utexas.cgrex.benchmarks.BenchmarkHarness" -->
   <target name="analyze" depends="jar">
     <java classname="edu.utexas.cgrex.benchmarks.IfAndOnlyIfHarness"
-          maxmemory="32g"
+          maxmemory="8g"
           fork="true"
           failonerror="true">
           <jvmarg value="-ea" />
@@ -35,6 +35,54 @@
       <arg value="${alg}"/>
 	</java>
   </target>
+	
+	<!--Run demand query harness from Xinyu. -->
+	<target name="demandQuery" depends="jar">
+	    <java classname="edu.utexas.cgrex.benchmarks.DemandQueryHarness"
+	          maxmemory="8g"
+	          fork="true"
+	          failonerror="true">
+	          <jvmarg value="-ea" />
+	      <classpath>
+			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
+			<pathelement location="lib/heros-nightly.jar"/>
+			<pathelement location="lib/automaton.jar"/>
+			<pathelement location="lib/chord.jar"/>
+			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+			<pathelement location="lib/cloning-1.9.0.jar"/>
+			<pathelement location="lib/soot-nightly.jar"/>
+			<pathelement location="lib/objenesis-1.2.jar"/>
+	      </classpath>
+	      <arg value="${target.loc}"/>
+	      <arg value="${target.main}"/>
+	      <arg value="${query.loc}"/>
+	      <arg value="${alg}"/>
+		</java>
+	  </target>
+	
+	<!--Run earlystop harness from Xinyu. -->
+	<target name="earlyStop" depends="jar">
+	    <java classname="edu.utexas.cgrex.benchmarks.EarlyStopHarness"
+	          maxmemory="8g"
+	          fork="true"
+	          failonerror="true">
+	          <jvmarg value="-ea" />
+	      <classpath>
+			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
+			<pathelement location="lib/heros-nightly.jar"/>
+			<pathelement location="lib/automaton.jar"/>
+			<pathelement location="lib/chord.jar"/>
+			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+			<pathelement location="lib/cloning-1.9.0.jar"/>
+			<pathelement location="lib/soot-nightly.jar"/>
+			<pathelement location="lib/objenesis-1.2.jar"/>
+	      </classpath>
+	      <arg value="${target.loc}"/>
+	      <arg value="${target.main}"/>
+	      <arg value="${query.loc}"/>
+	      <arg value="${alg}"/>
+		</java>
+	  </target>
 
 
   <target name="gen" depends="jar">

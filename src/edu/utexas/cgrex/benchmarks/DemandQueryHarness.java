@@ -70,8 +70,10 @@ public class DemandQueryHarness {
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-src-prec", "java", "-allow-phantom-refs",
 							"-main-class", targetMain,
-							"-no-bodies-for-excluded", "-exclude", "java",
-							"-exclude", "javax", "-output-format", "none" });
+							 "-soot-class-path", "lib/rt.jar:lib/jce.jar",
+							/*"-no-bodies-for-excluded", "-exclude", "java",
+							"-exclude", "javax",*/
+							"-output-format", "none" });
 
 		} catch (CompilationDeathException e) {
 			e.printStackTrace();
