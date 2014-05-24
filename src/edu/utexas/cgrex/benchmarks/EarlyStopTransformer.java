@@ -108,8 +108,8 @@ public class EarlyStopTransformer extends SceneTransformer {
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 
 		DemandCSPointsTo ptsEarly = (DemandCSPointsTo) pts1;
-		ptsEarly.enableEarlyStop();
 		ptsEarly.disableBudget();
+		ptsEarly.enableEarlyStop();
 
 		PointsToAnalysis pts2 = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
@@ -117,14 +117,10 @@ public class EarlyStopTransformer extends SceneTransformer {
 		ptsReg.disableBudget();
 		ptsReg.disableEarlyStop();
 
-		Map<Local, PointsToSet> askEarly = new HashMap<Local, PointsToSet>();
-
-		System.out
-				.println("---------------Starting early stop version--------------");
 		long time1 = 0;
 		long time2 = 0;
 		int count = 0;
-		int range = 1000;
+		int range = 10000;
 
 		boolean go = true;
 		// perform pt-set queries for all call sites and record the pt sets.
@@ -153,18 +149,23 @@ public class EarlyStopTransformer extends SceneTransformer {
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
 
-							Date start = new Date();
+							long start = System.nanoTime();
 							PointsToSet ps1 = ptsEarly
 									.reachingObjects(receiver);
-							Date end = new Date();
-							time1 += (end.getTime() - start.getTime());
-							StringUtil.reportTime("Time: ", start, end);
+							long end = System.nanoTime();
+							time1 += (end - start);
+							StringUtil.reportSec("Early stop time: ", start,
+									end);
+							System.out.println("Early stop passes: "
+									+ ptsEarly.getNumPasses());
 
-							start = new Date();
+							start = System.nanoTime();
 							PointsToSet ps2 = ptsReg.reachingObjects(receiver);
-							end = new Date();
-							time2 += (end.getTime() - start.getTime());
-							StringUtil.reportTime("Time: ", start, end);
+							end = System.nanoTime();
+							time2 += (end - start);
+							StringUtil.reportSec("Regular time: ", start, end);
+							System.out.println("Regular passes: "
+									+ ptsReg.getNumPasses());
 
 							System.out.println("Correctness: "
 									+ (ps1.possibleTypes().containsAll(

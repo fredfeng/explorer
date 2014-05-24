@@ -481,16 +481,20 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 			// self-added early termination
+			boolean shut = false;
 			if (earlyStop) {
 				Set<Type> types = new HashSet<Type>();
 				for (AllocAndContext pt : pointsTo) {
 					AllocNode alc = pt.alloc;
 					types.add(alc.getType());
 					if (types.size() > 1) {
+						shut = true;
 						break;
 					}
 				}
 			}
+			if (shut)
+				break;
 		}
 
 		// we should consider the null pointer case
@@ -2487,6 +2491,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	public boolean usingBudget() {
 		return this.useBudget;
+	}
+
+	public int getNumPasses() {
+		return this.numPasses;
 	}
 
 	// followings are for chained cache
