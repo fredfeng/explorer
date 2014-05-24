@@ -104,20 +104,27 @@ public class EarlyStopTransformer extends SceneTransformer {
 
 		// ====================early stop version=================
 
-		PointsToAnalysis pts = DemandCSPointsTo.makeWithBudget(
+		PointsToAnalysis pts1 = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 
-		DemandCSPointsTo ptsEarly = (DemandCSPointsTo) pts;
+		DemandCSPointsTo ptsEarly = (DemandCSPointsTo) pts1;
 		ptsEarly.enableEarlyStop();
 		ptsEarly.disableBudget();
+
+		PointsToAnalysis pts2 = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		DemandCSPointsTo ptsReg = (DemandCSPointsTo) pts2;
+		ptsReg.disableBudget();
+		ptsReg.disableEarlyStop();
 
 		Map<Local, PointsToSet> askEarly = new HashMap<Local, PointsToSet>();
 
 		System.out
 				.println("---------------Starting early stop version--------------");
-		long time = 0;
+		long time1 = 0;
+		long time2 = 0;
 		int count = 0;
-		int range = 10;
+		int range = 1000;
 
 		boolean go = true;
 		// perform pt-set queries for all call sites and record the pt sets.
@@ -147,101 +154,38 @@ public class EarlyStopTransformer extends SceneTransformer {
 									.getValue();
 
 							Date start = new Date();
-							PointsToSet ps = ptsEarly.reachingObjects(receiver);
+							PointsToSet ps1 = ptsEarly
+									.reachingObjects(receiver);
 							Date end = new Date();
-							if (ps.possibleTypes().size() == 0)
-								continue;
+							time1 += (end.getTime() - start.getTime());
+							StringUtil.reportTime("Time: ", start, end);
 
-							askEarly.put(receiver, ps);
+							start = new Date();
+							PointsToSet ps2 = ptsReg.reachingObjects(receiver);
+							end = new Date();
+							time2 += (end.getTime() - start.getTime());
+							StringUtil.reportTime("Time: ", start, end);
+
+							System.out.println("Correctness: "
+									+ (ps1.possibleTypes().containsAll(
+											ps2.possibleTypes()) && ps2
+											.possibleTypes().containsAll(
+													ps1.possibleTypes())));
+
+							// if (ps1.possibleTypes().size() == 0)
+							// continue;
+
 							count++;
 							if (count > range)
 								go = false;
 
-							time += (end.getTime() - start.getTime());
 							System.out.println("Passed!");
-							StringUtil.reportTime("Time: ", start, end);
 						}
 					}
 				}
 			}
 
 		}
-
-		System.out.println("There are totally " + count
-				+ " virtual call sites.");
-		System.out.println("There are totally " + askEarly.size()
-				+ " receivers to analyze.");
-		System.out.println("Construction time: " + time + " million seconds");
-		System.out.println("Early stop version DONE!");
-		System.out.println("****************************************");
-
-		// ==================== no early stop version ======================
-
-		// DEFAULT_MAX_PASSES = 100;
-		DEFAULT_MAX_TRAVERSAL = 50000;
-		pts = DemandCSPointsTo.makeWithBudget(DEFAULT_MAX_TRAVERSAL,
-				DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		DemandCSPointsTo ptsReg = (DemandCSPointsTo) pts;
-		ptsReg.disableBudget();
-		ptsReg.disableEarlyStop();
-
-		Map<Local, PointsToSet> askReg = new HashMap<Local, PointsToSet>();
-
-		System.out
-				.println("---------------Starting regular version--------------");
-		time = 0;
-
-		// perform pt-set queries for all call sites and record the pt sets.
-
-		int exact = 0;
-		int less = 0;
-		int more = 0;
-		int unsound = 0;
-		int total = 0;
-
-		for (Local receiver : askEarly.keySet()) {
-			total++;
-
-			Date start = new Date();
-			PointsToSet ps = ptsReg.reachingObjects(receiver);
-			Date end = new Date();
-
-			time += (end.getTime() - start.getTime());
-			askReg.put(receiver, ps);
-			System.out.println("Passed!");
-			StringUtil.reportTime("Time: ", start, end);
-
-			if (ps.possibleTypes().containsAll(
-					ptsEarly.reachingObjects(receiver).possibleTypes())
-					&& ptsEarly.reachingObjects(receiver).possibleTypes()
-							.containsAll(ps.possibleTypes())) {
-				exact++;
-			} else if (ps.possibleTypes().containsAll(
-					ptsEarly.reachingObjects(receiver).possibleTypes())
-					&& !ptsEarly.reachingObjects(receiver).possibleTypes()
-							.containsAll(ps.possibleTypes())) {
-				less++;
-			} else if (!ps.possibleTypes().containsAll(
-					ptsEarly.reachingObjects(receiver).possibleTypes())
-					&& ptsEarly.reachingObjects(receiver).possibleTypes()
-							.containsAll(ps.possibleTypes())) {
-				more++;
-			} else {
-				unsound++;
-			}
-
-		}
-
-		System.out.println("Construction time: " + time + " million seconds");
-		System.out.println("Small budget version DONE!");
-
-		System.out.println("---Summary---");
-		System.out.println("Total resolved call sites: " + total);
-		System.out.println("Exactly precise than eager version: " + exact);
-		System.out.println("Less precise than eager version: " + less);
-		System.out.println("More precise than eager version: " + more);
-		System.out.println("Unsound results: " + unsound);
-		System.out.println("****************************************");
 
 		// ==================== All DONE ==================
 
