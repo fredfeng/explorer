@@ -113,12 +113,25 @@ public class QueryManager {
 	private PointsToAnalysis ptsEager;
 	
 	private boolean debug = false;
+	
+	//run eager or not?
+	private boolean runEager = false;
+
 
 	public QueryManager(AutoPAG autoPAG, CallGraph cg) {
+		this.initQM(autoPAG, cg, false);
+	}
+	
+	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag) {
+		this.initQM(autoPAG, cg, flag);
+	}
+	
+	public void initQM(AutoPAG autoPAG, CallGraph cg, boolean flag) {
 		
 		final int DEFAULT_MAX_PASSES = 10000;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
+		runEager = flag;
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
@@ -127,13 +140,15 @@ public class QueryManager {
 		
 		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();
-		cgEagerAuto = new CGAutomaton();
+		if(runEager)
+			cgEagerAuto = new CGAutomaton();
 
 		regAuto = new RegAutomaton();
 		this.cg = cg;
 
 		init();
 	}
+	
 
 	public AutoPAG getAutoPAG() {
 		return this.autoPAG;
@@ -179,11 +194,14 @@ public class QueryManager {
 		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
 		CompTransformer.ddTime = (endDd - startDd)/1e6;
 		
-		long startEager = System.nanoTime();
-		buildEagerCGAutomaton();
-		long endEager = System.nanoTime();
-		StringUtil.reportSec("Time To build Eager CG:", startEager, endEager);
-		CompTransformer.eaTime = (endEager - startEager)/1e6;
+		if(runEager) {
+			long startEager = System.nanoTime();
+			buildEagerCGAutomaton();
+			long endEager = System.nanoTime();
+			StringUtil.reportSec("Time To build Eager CG:", startEager,
+					endEager);
+			CompTransformer.eaTime = (endEager - startEager) / 1e6;
+		}
 
 	}
 
