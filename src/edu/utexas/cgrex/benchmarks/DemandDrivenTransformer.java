@@ -57,7 +57,7 @@ public class DemandDrivenTransformer extends SceneTransformer {
 
 	// CHA.
 	QueryManager qm;
-	
+
 	CallGraph callgraph;
 
 	protected void internalTransform(String phaseName,
@@ -114,10 +114,10 @@ public class DemandDrivenTransformer extends SceneTransformer {
 		final boolean DEFAULT_LAZY = false;
 		Date startOnDemand = new Date();
 		Scene.v().setPointsToAnalysis(pag);
-//		callgraph = pag.getOnFlyCallGraph().callGraph();
+		// callgraph = pag.getOnFlyCallGraph().callGraph();
 
-		ptsDemand = DemandCSPointsTo.makeWithBudget(
-				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		ptsDemand = DemandCSPointsTo.makeWithBudget(DEFAULT_MAX_TRAVERSAL,
+				DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		Date endOndemand = new Date();
 		System.out
 				.println("Initialized on-demand refinement-based context-sensitive analysis"
@@ -126,12 +126,12 @@ public class DemandDrivenTransformer extends SceneTransformer {
 		Set<Local> virtSet = genReceivers();
 		// perform pt-set queries.
 
-		assert(false);
-//		genCallGraph();
+		assert (false);
+		// genCallGraph();
 	}
-	
+
 	PointsToAnalysis ptsDemand;
-	
+
 	public Set<Local> genReceivers() {
 		Set<Local> virtSet = new HashSet<Local>();
 
@@ -153,7 +153,8 @@ public class DemandDrivenTransformer extends SceneTransformer {
 								|| (ie instanceof InterfaceInvokeExpr)) {
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
-							PointsToSet ps = ptsDemand.reachingObjects(receiver);
+							PointsToSet ps = ptsDemand
+									.reachingObjects(receiver);
 							if (ps.possibleTypes().size() == 0)
 								continue;
 							virtSet.add(receiver);
@@ -162,18 +163,18 @@ public class DemandDrivenTransformer extends SceneTransformer {
 				}
 			}
 		}
-		
+
 		return virtSet;
 	}
-	
+
 	public void genCallGraph() {
 		CallGraph cg = Scene.v().getCallGraph();
-//		cg = callgraph;
-		
+		// cg = callgraph;
+
 		Set<SootMethod> visited = new HashSet<SootMethod>();
 		LinkedList<SootMethod> workList = new LinkedList<SootMethod>();
-		
-		for(SootMethod entry : EntryPoints.v().all()) {
+
+		for (SootMethod entry : EntryPoints.v().all()) {
 			workList.add(entry);
 		}
 
@@ -183,19 +184,20 @@ public class DemandDrivenTransformer extends SceneTransformer {
 				continue;
 			visited.add(head);
 			Iterator<Edge> outIt = cg.edgesOutOf(head);
-			while(outIt.hasNext()) {
+			while (outIt.hasNext()) {
 				Edge e = outIt.next();
-				if(!e.isVirtual() || (e.isVirtual() && isValidEdge(cg,e)))
-					workList.add((SootMethod)e.getTgt());
+				if (!e.isVirtual() || (e.isVirtual() && isValidEdge(cg, e)))
+					workList.add((SootMethod) e.getTgt());
 			}
 		}
-		
+
 		System.out.println("Total methods in CG: " + visited.size());
-		System.out.println("Reachable methods in CG: " + Scene.v().getReachableMethods().size());
+		System.out.println("Reachable methods in CG: "
+				+ Scene.v().getReachableMethods().size());
 	}
-	
+
 	private boolean isValidEdge(CallGraph cg, Edge e) {
-		SootMethod caller = (SootMethod)e.getSrc();
+		SootMethod caller = (SootMethod) e.getSrc();
 		if (!caller.isConcrete())
 			return true;
 		Body body = caller.retrieveActiveBody();
@@ -207,21 +209,23 @@ public class DemandDrivenTransformer extends SceneTransformer {
 				InvokeExpr ie = stmt.getInvokeExpr();
 				if ((ie instanceof VirtualInvokeExpr)
 						|| (ie instanceof InterfaceInvokeExpr)) {
-					Local receiver = (Local) ie.getUseBoxes().get(0)
-							.getValue();
+					Local receiver = (Local) ie.getUseBoxes().get(0).getValue();
 					SootMethod callee = ie.getMethod();
 					Iterator<Edge> it = cg.edgesOutOf(stmt);
-					while(it.hasNext()) {
+					while (it.hasNext()) {
 						Edge tgt = it.next();
-						if( e.equals(tgt) ) {
+						if (e.equals(tgt)) {
 							System.out.println(e.getTgt() + "~~~~~" + callee);
-							//is this edge exist?
-							Set<Type> pTypes = ptsDemand.reachingObjects(receiver).possibleTypes();
+							// is this edge exist?
+							Set<Type> pTypes = ptsDemand.reachingObjects(
+									receiver).possibleTypes();
 							List<Type> typeSet = SootUtils.compatibleTypeList(
 									callee.getDeclaringClass(), callee);
 							pTypes.retainAll(typeSet);
-							if(pTypes.size() == 0) {
-								System.out.println("REFUTE THIS EDGE--------------------" + e);
+							if (pTypes.size() == 0) {
+								System.out
+										.println("REFUTE THIS EDGE--------------------"
+												+ e);
 								return false;
 							}
 							break;
@@ -230,8 +234,8 @@ public class DemandDrivenTransformer extends SceneTransformer {
 				}
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 }

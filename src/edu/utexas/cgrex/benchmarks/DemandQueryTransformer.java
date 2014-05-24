@@ -79,15 +79,18 @@ public class DemandQueryTransformer extends SceneTransformer {
 		final int DEFAULT_MAX_PASSES = 10;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
+
 		DemandCSPointsTo ptsEarly = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		ptsEarly.enableEarlyStop();
 		ptsEarly.disableBudget();
+		assert (ptsEarly.useEarlyStop());
 
 		DemandCSPointsTo ptsReg = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		ptsReg.disableEarlyStop();
 		ptsReg.disableBudget();
+		assert (!ptsReg.useEarlyStop());
 
 		qm1 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsEarly);
 		qm2 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsReg);
@@ -111,6 +114,7 @@ public class DemandQueryTransformer extends SceneTransformer {
 				// process the line.
 				String regx = qm1.getValidExprBySig(line);
 
+				// early stop
 				long startDd = System.nanoTime();
 				boolean res1 = qm1.queryRegx(regx);
 				long endDd = System.nanoTime();
@@ -118,12 +122,15 @@ public class DemandQueryTransformer extends SceneTransformer {
 				time1 += (endDd - startDd);
 				System.out.println("Result: " + res1);
 
+				// regular
 				startDd = System.nanoTime();
 				boolean res2 = qm2.queryRegx(regx);
 				endDd = System.nanoTime();
 				StringUtil.reportSec("Regular : " + i, startDd, endDd);
 				time2 += (endDd - startDd);
 				System.out.println("Result: " + res2);
+
+				assert (res1 == res2);
 
 				i++;
 				if (i >= range)

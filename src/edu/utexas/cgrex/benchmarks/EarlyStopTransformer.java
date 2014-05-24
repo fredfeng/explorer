@@ -110,12 +110,14 @@ public class EarlyStopTransformer extends SceneTransformer {
 		DemandCSPointsTo ptsEarly = (DemandCSPointsTo) pts1;
 		ptsEarly.disableBudget();
 		ptsEarly.enableEarlyStop();
+		assert (ptsEarly.useEarlyStop());
 
 		PointsToAnalysis pts2 = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		DemandCSPointsTo ptsReg = (DemandCSPointsTo) pts2;
 		ptsReg.disableBudget();
 		ptsReg.disableEarlyStop();
+		assert (!ptsReg.useEarlyStop());
 
 		long time1 = 0;
 		long time2 = 0;
@@ -149,38 +151,68 @@ public class EarlyStopTransformer extends SceneTransformer {
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
 
-							long start = System.nanoTime();
+							long start, end;
+
+							start = System.nanoTime();
 							PointsToSet ps1 = ptsEarly
 									.reachingObjects(receiver);
-							long end = System.nanoTime();
-							time1 += (end - start);
-							StringUtil.reportSec("Early stop time: ", start,
-									end);
-							System.out.println("Early stop passes: "
-									+ ptsEarly.getNumPasses());
+							end = System.nanoTime();
+							if (ps1.possibleTypes().size() > 0) {
+								System.out
+										.println("-------------------------------");
+								System.out
+										.println("Issuing the early stop query");
+								time1 += (end - start);
+								StringUtil.reportSec("Early stop time: ",
+										start, end);
+								System.out.println("point-to set size: "
+										+ ps1.possibleTypes().size());
+								System.out.println("Early stop rounds: "
+										+ ptsEarly.rounds);
+								System.out
+										.println("Finishing the early stop query");
+							}
 
 							start = System.nanoTime();
 							PointsToSet ps2 = ptsReg.reachingObjects(receiver);
 							end = System.nanoTime();
-							time2 += (end - start);
-							StringUtil.reportSec("Regular time: ", start, end);
-							System.out.println("Regular passes: "
-									+ ptsReg.getNumPasses());
+							if (ps2.possibleTypes().size() > 0) {
+								System.out
+										.println("-------------------------------");
+								System.out
+										.println("Issuing the regular stop query");
+								time2 += (end - start);
+								StringUtil.reportSec("Regular time: ", start,
+										end);
+								System.out.println("point-to set size: "
+										+ ps2.possibleTypes().size());
+								System.out.println("Regular rounds: "
+										+ ptsReg.rounds);
+								System.out
+										.println("Finishing the regular stop query");
 
-							System.out.println("Correctness: "
-									+ (ps1.possibleTypes().containsAll(
-											ps2.possibleTypes()) && ps2
-											.possibleTypes().containsAll(
-													ps1.possibleTypes())));
+								System.out
+										.println("-------------------------------");
+							}
+							// try {
+							// Thread.sleep(2000);
+							// } catch (InterruptedException e) {
+							// // TODO Auto-generated catch block
+							// e.printStackTrace();
+							// }
 
-							// if (ps1.possibleTypes().size() == 0)
-							// continue;
+							if (ps1.possibleTypes().size() == 0)
+								continue;
+
+							assert (ps1.possibleTypes().containsAll(
+									ps2.possibleTypes()) && ps2.possibleTypes()
+									.containsAll(ps1.possibleTypes()));
 
 							count++;
 							if (count > range)
 								go = false;
 
-							System.out.println("Passed!");
+							// System.out.println("Passed!");
 						}
 					}
 				}
