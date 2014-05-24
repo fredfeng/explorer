@@ -1,30 +1,24 @@
 package edu.utexas.cgrex.utils;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import chord.util.graph.IGraph;
 import chord.util.graph.MutableGraph;
 import chord.util.tuple.object.Pair;
 
-import com.rits.cloning.Cloner;
 
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.Automaton;
-import edu.utexas.cgrex.automaton.InterAutomaton;
 
 public class GraphUtil {
 
-	public static Cloner cloner = new Cloner();
-	
 	private static boolean debug = false;
 
 	public static Set<AutoState> findRoots(Automaton automaton) {
