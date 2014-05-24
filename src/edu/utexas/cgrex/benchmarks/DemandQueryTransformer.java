@@ -24,6 +24,7 @@ import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
 /**
  * our algorithm, which starts with a CHA-based CG.
+ * 
  * @author yufeng
  * 
  */
@@ -31,14 +32,15 @@ public class DemandQueryTransformer extends SceneTransformer {
 
 	public boolean debug = true;
 
-	//CHA.
-	QueryManager qm;
-	
+	// CHA.
+	QueryManager qm1;
+	QueryManager qm2;
+
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
 		System.out.println("Demand Query Transformer--------");
-		/* BEGIN: CHA-based demand-driven CALL graph*/
+		/* BEGIN: CHA-based demand-driven CALL graph */
 		long startCHA = System.nanoTime();
 		HashMap<String, String> opt = new HashMap<String, String>(options);
 		opt.put("enabled", "true");
@@ -61,8 +63,8 @@ public class DemandQueryTransformer extends SceneTransformer {
 		pag.getTypeManager().makeTypeMask();
 
 		long endCHA = System.nanoTime();
-		/* END: CHA-based demand-driven CALL graph*/
-		
+		/* END: CHA-based demand-driven CALL graph */
+
 		// Propagate
 		new PropWorklist(pag).propagate();
 
@@ -71,38 +73,61 @@ public class DemandQueryTransformer extends SceneTransformer {
 			cgb.build();
 		}
 		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
-		
+
 		Scene.v().setPointsToAnalysis(pag);
-		
+
 		final int DEFAULT_MAX_PASSES = 10;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
-		DemandCSPointsTo ptsDemand = DemandCSPointsTo.makeWithBudget(
+		DemandCSPointsTo ptsEarly = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		
-		qm = new QueryManager(null, Scene.v().getCallGraph(), false, ptsDemand);
-		
+		ptsEarly.enableEarlyStop();
+		ptsEarly.disableBudget();
+
+		DemandCSPointsTo ptsReg = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		ptsReg.disableEarlyStop();
+		ptsReg.disableBudget();
+
+		qm1 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsEarly);
+		qm2 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsReg);
+
 		runByintervals();
 	}
-    
+
 	private void runByintervals() {
 		String regxSource = DemandQueryHarness.queryLoc;
 
+		long time1 = 0;
+		long time2 = 0;
+		int range = 20;
 		BufferedReader br;
 		try {
 			br = new BufferedReader(new FileReader(regxSource));
 			String line;
-            int i = 1;
+			int i = 1;
 
 			while ((line = br.readLine()) != null) {
-			   // process the line.
-				String regx = qm.getValidExprBySig(line);
+				// process the line.
+				String regx = qm1.getValidExprBySig(line);
 
-			    long startDd = System.nanoTime();
-				boolean res1 = qm.queryRegx(regx);
-			    long endDd = System.nanoTime();
-                StringUtil.reportSec("DD iterate---- " + i, startDd, endDd);
-                i++;
+				long startDd = System.nanoTime();
+				boolean res1 = qm1.queryRegx(regx);
+				long endDd = System.nanoTime();
+				StringUtil.reportSec("Early Stop: " + i, startDd, endDd);
+				time1 += (endDd - startDd);
+				System.out.println("Result: " + res1);
+
+				startDd = System.nanoTime();
+				boolean res2 = qm2.queryRegx(regx);
+				endDd = System.nanoTime();
+				StringUtil.reportSec("Regular : " + i, startDd, endDd);
+				time2 += (endDd - startDd);
+				System.out.println("Result: " + res2);
+
+				i++;
+				if (i >= range)
+					break;
 			}
 
 			br.close();
@@ -110,7 +135,6 @@ public class DemandQueryTransformer extends SceneTransformer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        System.exit(0);
+		System.exit(0);
 	}
-	
 }

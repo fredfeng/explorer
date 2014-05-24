@@ -177,7 +177,6 @@ public class CacheAndChainedCacheTransformer2 extends SceneTransformer {
 			System.out.println(virtSet.contains(l));
 			System.out.println(virtSet.size());
 			System.out.println(eagerCache.size());
-			System.out.println(dcs.in);
 			assert (pag.findLocalVarNode(l) != null);
 		}
 
@@ -349,91 +348,91 @@ public class CacheAndChainedCacheTransformer2 extends SceneTransformer {
 		System.out.println("chained cache size: " + chainedCache.size());
 
 		// weired things check about lost varNodes
-//		LargeNumberedMap map = pag.getLocalToNodeMap();
-//		Map<Object, LocalVarNode> map1 = pag.getValToLocalVarNode();
-//		boolean found = false;
-//		int notFound = 0;
-//		int notExist = 0;
-//		StringBuilder inMap = new StringBuilder();
-//		StringBuilder notInMap = new StringBuilder();
-//		for (VarNode v : chainedCache.keySet()) {
-//			found = false;
-//			for (Local l : eagerCache.keySet()) {
-//
-//				if (pag.findLocalVarNode(l).equals(v)) {
-//					assert (chainedCache.get(v).possibleTypes()
-//							.containsAll(eagerCache.get(l).possibleTypes()));
-//					assert (eagerCache.get(l).possibleTypes()
-//							.containsAll(chainedCache.get(v).possibleTypes()));
-//					found = true;
-//				}
-//			}
-//			if (!found) {
-//				notFound++;
-//				boolean exist = false;
-//				for (Iterator<Local> it = map.keyIterator(); it.hasNext();) {
-//					Local l = it.next();
-//					assert (l != null);
-//					if (map.get(l).equals(v)) {
-//						assert (((DemandCSPointsTo) ptsEager)
-//								.reachingObjects(l).possibleTypes()
-//								.containsAll(chainedCache.get(v)
-//										.possibleTypes()));
-//						assert (chainedCache.get(v).possibleTypes()
-//								.containsAll(((DemandCSPointsTo) ptsEager)
-//										.reachingObjects(l).possibleTypes()));
-//						exist = true;
-//						inMap.append(lost.get(l) + "\n");
-//						inMap.append(chainedCache.get(v).possibleTypes() + "\n");
-//						inMap.append("--------------------------------\n");
-//						break;
-//					}
-//				}
-//				if (!exist) {
-//					for (Object obj : map1.keySet()) {
-//						if (map1.get(obj).equals(v)) {
-//							exist = true;
-//
-//							inMap.append(chainedCache.get(v).possibleTypes()
-//									+ "\n");
-//							inMap.append("--------------------------------\n");
-//						}
-//					}
-//				}
-//				if (!exist) {
-//					notInMap.append("Type: " + v.getType() + "\n");
-//					notInMap.append("variable: " + v.getVariable() + "\n");
-//					notInMap.append("get class: " + v.getClass() + "\n");
-//					notInMap.append("--------------------------------\n");
-//					notExist++;
-//				}
-//			}
-//		}
-//
-//		try {
-//			BufferedWriter bufw = new BufferedWriter(new FileWriter(
-//					"output/InMap"));
-//			bufw.write(inMap.toString());
-//			bufw.close();
-//			bufw = new BufferedWriter(new FileWriter("output/NotInMap"));
-//			bufw.write(notInMap.toString());
-//			bufw.close();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			System.exit(0);
-//		}
-//
-//		System.out.println("There are totally " + notFound
-//				+ " locals not found");
-//		System.out.println("There are totally " + notExist
-//				+ " locals not existed as varNodes");
-//		System.out.println("chained cache size: " + chainedCache.size());
-//		System.out.println("cache size: " + cache.size());
-//		System.out.println("eager cache size: " + eagerCache.size());
-//
-//		System.out.println("All verification PASSED!");
-//
-//		System.out.println("Congratulations! Have a good day~");
-//		assert (false);
+		// LargeNumberedMap map = pag.getLocalToNodeMap();
+		// Map<Object, LocalVarNode> map1 = pag.getValToLocalVarNode();
+		// boolean found = false;
+		// int notFound = 0;
+		// int notExist = 0;
+		// StringBuilder inMap = new StringBuilder();
+		// StringBuilder notInMap = new StringBuilder();
+		// for (VarNode v : chainedCache.keySet()) {
+		// found = false;
+		// for (Local l : eagerCache.keySet()) {
+		//
+		// if (pag.findLocalVarNode(l).equals(v)) {
+		// assert (chainedCache.get(v).possibleTypes()
+		// .containsAll(eagerCache.get(l).possibleTypes()));
+		// assert (eagerCache.get(l).possibleTypes()
+		// .containsAll(chainedCache.get(v).possibleTypes()));
+		// found = true;
+		// }
+		// }
+		// if (!found) {
+		// notFound++;
+		// boolean exist = false;
+		// for (Iterator<Local> it = map.keyIterator(); it.hasNext();) {
+		// Local l = it.next();
+		// assert (l != null);
+		// if (map.get(l).equals(v)) {
+		// assert (((DemandCSPointsTo) ptsEager)
+		// .reachingObjects(l).possibleTypes()
+		// .containsAll(chainedCache.get(v)
+		// .possibleTypes()));
+		// assert (chainedCache.get(v).possibleTypes()
+		// .containsAll(((DemandCSPointsTo) ptsEager)
+		// .reachingObjects(l).possibleTypes()));
+		// exist = true;
+		// inMap.append(lost.get(l) + "\n");
+		// inMap.append(chainedCache.get(v).possibleTypes() + "\n");
+		// inMap.append("--------------------------------\n");
+		// break;
+		// }
+		// }
+		// if (!exist) {
+		// for (Object obj : map1.keySet()) {
+		// if (map1.get(obj).equals(v)) {
+		// exist = true;
+		//
+		// inMap.append(chainedCache.get(v).possibleTypes()
+		// + "\n");
+		// inMap.append("--------------------------------\n");
+		// }
+		// }
+		// }
+		// if (!exist) {
+		// notInMap.append("Type: " + v.getType() + "\n");
+		// notInMap.append("variable: " + v.getVariable() + "\n");
+		// notInMap.append("get class: " + v.getClass() + "\n");
+		// notInMap.append("--------------------------------\n");
+		// notExist++;
+		// }
+		// }
+		// }
+		//
+		// try {
+		// BufferedWriter bufw = new BufferedWriter(new FileWriter(
+		// "output/InMap"));
+		// bufw.write(inMap.toString());
+		// bufw.close();
+		// bufw = new BufferedWriter(new FileWriter("output/NotInMap"));
+		// bufw.write(notInMap.toString());
+		// bufw.close();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// System.exit(0);
+		// }
+		//
+		// System.out.println("There are totally " + notFound
+		// + " locals not found");
+		// System.out.println("There are totally " + notExist
+		// + " locals not existed as varNodes");
+		// System.out.println("chained cache size: " + chainedCache.size());
+		// System.out.println("cache size: " + cache.size());
+		// System.out.println("eager cache size: " + eagerCache.size());
+		//
+		// System.out.println("All verification PASSED!");
+		//
+		// System.out.println("Congratulations! Have a good day~");
+		// assert (false);
 	}
 }

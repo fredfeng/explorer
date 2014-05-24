@@ -45,7 +45,7 @@ public class DemandQueryHarness {
 //		String targetLoc = "benchmarks/sablecc-3.7/classes/";
 		// 0: interactive mode; 1: benchmark mode
 			
-		 String targetMain = "ca.mcgill.sable.soot.jimple.Main";
+		String targetMain = "ca.mcgill.sable.soot.jimple.Main";
 
 		System.out.println("benchmark----------" + targetLoc);
 		try {

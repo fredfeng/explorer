@@ -173,31 +173,33 @@ public class PTAnalysisAndCacheTransformer extends SceneTransformer {
 		}
 		System.out.println("Demand-driven analysis DONE!");
 
-		// verify the correctness of convert(..) method in ContextSensitiveInfo
-		ArraySetMultiMap<VarNode, SootMethod> callSiteToMethods = ((DemandCSPointsTo) ptsDemand)
-				.getCallSiteVarToMethods();
-
-		System.out.println("Starting verification....");
-		int count = 1;
-		for (VarNode v : callSiteToMethods.keySet()) {
-			System.out.println("Verifying the " + count++ + "th call site...");
-			ArraySet<SootMethod> methods = callSiteToMethods.get(v);
-			Set<Type> types = new HashSet<Type>();
-			for (SootMethod m : methods) {
-				types.add(m.getDeclaringClass().getType());
-			}
-
-			if (ptSet.containsKey(v)) {
-				System.out.println("Types in cache: ");
-				System.out.println(types);
-				System.out.println("Types in pt set: ");
-				System.out.println(ptSet.get(v));
-				// assert (types.containsAll(ptSet.get(v)));
-			}
-			System.out.println("PASSED!");
-		}
-
-		System.out.println("END.....");
-		assert (false);
+		// // verify the correctness of convert(..) method in
+		// ContextSensitiveInfo
+		// ArraySetMultiMap<VarNode, SootMethod> callSiteToMethods =
+		// ((DemandCSPointsTo) ptsDemand)
+		// .getCallSiteVarToMethods();
+		//
+		// System.out.println("Starting verification....");
+		// int count = 1;
+		// for (VarNode v : callSiteToMethods.keySet()) {
+		// System.out.println("Verifying the " + count++ + "th call site...");
+		// ArraySet<SootMethod> methods = callSiteToMethods.get(v);
+		// Set<Type> types = new HashSet<Type>();
+		// for (SootMethod m : methods) {
+		// types.add(m.getDeclaringClass().getType());
+		// }
+		//
+		// if (ptSet.containsKey(v)) {
+		// System.out.println("Types in cache: ");
+		// System.out.println(types);
+		// System.out.println("Types in pt set: ");
+		// System.out.println(ptSet.get(v));
+		// // assert (types.containsAll(ptSet.get(v)));
+		// }
+		// System.out.println("PASSED!");
+		// }
+		//
+		// System.out.println("END.....");
+		// assert (false);
 	}
 }
