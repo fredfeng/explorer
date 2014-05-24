@@ -112,6 +112,7 @@ public class EarlyStopTransformer extends SceneTransformer {
 		ptsEarly.disableBudget();
 		ptsEarly.enableEarlyStop();
 		assert (ptsEarly.useEarlyStop());
+		assert (!ptsEarly.useBudget());
 
 		PointsToAnalysis pts2 = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
@@ -119,11 +120,13 @@ public class EarlyStopTransformer extends SceneTransformer {
 		ptsReg.disableBudget();
 		ptsReg.disableEarlyStop();
 		assert (!ptsReg.useEarlyStop());
+		assert (!ptsReg.useBudget());
 
 		long time1 = 0;
 		long time2 = 0;
 		int count = 0;
 		int range = 10000;
+		int bug = 0;
 
 		boolean go = true;
 		// perform pt-set queries for all call sites and record the pt sets.
@@ -152,8 +155,37 @@ public class EarlyStopTransformer extends SceneTransformer {
 							Local receiver = (Local) ie.getUseBoxes().get(0)
 									.getValue();
 
+							bug++;
+							System.out.println("This is the " + bug
+									+ "-th times");
+
+							// if (bug != 32)
+							// continue;
+
 							long start, end;
 
+							// regular stop
+							start = System.nanoTime();
+							PointsToSet ps2 = ptsReg.reachingObjects(receiver);
+							end = System.nanoTime();
+							if (ps2.possibleTypes().size() > 0) {
+								System.out
+										.println("-------------------------------");
+								System.out
+										.println("Issuing the regular stop query");
+								time2 += (end - start);
+								StringUtil.reportSec("Regular time: ", start,
+										end);
+								System.out.println("point-to set size: "
+										+ ps2.possibleTypes().size());
+								System.out.println("Regular rounds: "
+										+ ptsReg.rounds);
+								System.out
+										.println("Finishing the regular stop query");
+
+							}
+
+							// early stop
 							start = System.nanoTime();
 							PointsToSet ps1 = ptsEarly
 									.reachingObjects(receiver);
@@ -174,27 +206,9 @@ public class EarlyStopTransformer extends SceneTransformer {
 										.println("Finishing the early stop query");
 							}
 
-							start = System.nanoTime();
-							PointsToSet ps2 = ptsReg.reachingObjects(receiver);
-							end = System.nanoTime();
-							if (ps2.possibleTypes().size() > 0) {
-								System.out
-										.println("-------------------------------");
-								System.out
-										.println("Issuing the regular stop query");
-								time2 += (end - start);
-								StringUtil.reportSec("Regular time: ", start,
-										end);
-								System.out.println("point-to set size: "
-										+ ps2.possibleTypes().size());
-								System.out.println("Regular rounds: "
-										+ ptsReg.rounds);
-								System.out
-										.println("Finishing the regular stop query");
+							System.out
+									.println("-------------------------------\n");
 
-								System.out
-										.println("-------------------------------");
-							}
 							// try {
 							// Thread.sleep(2000);
 							// } catch (InterruptedException e) {
@@ -202,12 +216,19 @@ public class EarlyStopTransformer extends SceneTransformer {
 							// e.printStackTrace();
 							// }
 
-							if (ps1.possibleTypes().size() == 0)
+							if (ps2.possibleTypes().size() == 0)
 								continue;
 
 							assert (ps1.possibleTypes().containsAll(
 									ps2.possibleTypes()) && ps2.possibleTypes()
-									.containsAll(ps1.possibleTypes()));
+									.containsAll(ps1.possibleTypes())) : "\n"
+									+ "Receiver is: "
+									+ pag.findLocalVarNode(receiver)
+											.getVariable() + "\n"
+									+ "Early stop types: "
+									+ ps1.possibleTypes() + "\n"
+									+ "Regular stop types: "
+									+ ps2.possibleTypes();
 
 							count++;
 							if (count > range)
