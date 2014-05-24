@@ -387,7 +387,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				cache.put(l, result);
 			}
 		} else {
-			// System.out.println("Hitting the cache");
+			System.out.println("Hitting the cache");
 			hittingCache++;
 		}
 
