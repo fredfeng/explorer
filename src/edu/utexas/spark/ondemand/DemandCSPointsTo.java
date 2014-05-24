@@ -311,6 +311,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		this.resolvedChainedVarNodes = new HashSet<VarNode>();
 		this.useBudget = false;
 		this.earlyStop = false;
+		this.potentialChainedVarNodes = new HashSet<VarNode>();
 	}
 
 	// public void resetParameters(int maxTraversal, int maxPasses, boolean
@@ -492,19 +493,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 			// self-added early termination
 			if (earlyStop) {
-				boolean go = false;
-				Set<Type> types = new HashSet<Type>();
-				for (AllocAndContext pt : pointsTo) {
-					AllocNode alc = pt.alloc;
-					types.add(alc.getType());
-					if (types.size() > 1) {
-						go = true;
-						break;
-					}
-				}
-				if (!go) {
+				if (contextSensitiveResult != null
+						&& contextSensitiveResult.possibleTypes().size() <= 1)
 					break;
-				}
 			}
 
 		}
@@ -530,7 +521,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		VarNode v = pag.findLocalVarNode(l);
 		if (v == null) {
 			// no reaching objects
-			// System.out.println("Can NOT find local varnode");
+			System.out.println("Can NOT find local varnode");
 			return EmptyPointsToSet.v();
 		}
 
@@ -551,6 +542,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	 */
 	public PointsToSet computeRefinedReachingObjects(VarNode v) {
 		rounds = 0;
+		System.out.println("Do the query");
 
 		// must reset the refinement heuristic for each query
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristicType,
@@ -559,6 +551,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			this.fieldCheckHeuristic.enableBudget();
 		else
 			this.fieldCheckHeuristic.disableBudget();
+
+		assert (!this.fieldCheckHeuristic.useBudget());
 
 		doPointsTo = true;
 		numPasses = 0;
@@ -595,27 +589,20 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 			if (!fieldCheckHeuristic.runNewPass()) {
+				// System.out.println("Heuristic break");
 				break;
 			}
 
 			// self-added early termination
 
 			if (earlyStop) {
-				boolean go = false;
-				Set<Type> types = new HashSet<Type>();
-				for (AllocAndContext pt : pointsTo) {
-					AllocNode alc = pt.alloc;
-					types.add(alc.getType());
-					if (types.size() > 1) {
-						go = true;
-						break;
-					}
-				}
-				if (!go) {
+				if (contextSensitiveResult != null
+						&& contextSensitiveResult.possibleTypes().size() <= 1) {
+					// System.out.println("Early stop break.");
 					break;
+
 				}
 			}
-
 		}
 
 		return contextSensitiveResult;
@@ -2050,7 +2037,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						allocNode.getType(), methodSig, receiverType,
 						allTargets)) {
 					callSiteToResolvedTargets.put(callSiteAndContext, method);
-					if (!resolvedChainedVarNodes.contains(curVar))
+
+					if (useChainedCache
+							&& potentialChainedVarNodes.contains(curVar)
+							&& !resolvedChainedVarNodes.contains(curVar))
 						chainedVarNodes.add(curVar);
 				}
 			}
@@ -2071,7 +2061,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					} else {
 						callSiteToResolvedTargets.putAll(callSiteAndContext,
 								allTargets);
-						if (!resolvedChainedVarNodes.contains(curVar))
+
+						if (useChainedCache
+								&& potentialChainedVarNodes.contains(curVar)
+								&& !resolvedChainedVarNodes.contains(curVar))
 							chainedVarNodes.add(curVar);
 
 						// if (DEBUG) {
@@ -2122,8 +2115,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 									callSiteToResolvedTargets.put(
 											callSiteAndContext, method);
 
-									if (!resolvedChainedVarNodes
-											.contains(curVar))
+									if (useChainedCache
+											&& potentialChainedVarNodes
+													.contains(curVar)
+											&& !resolvedChainedVarNodes
+													.contains(curVar))
 										chainedVarNodes.add(curVar);
 
 								}
@@ -2144,7 +2140,12 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 							} catch (CallSiteException e) {
 								callSiteToResolvedTargets.putAll(
 										callSiteAndContext, allTargets);
-								if (!resolvedChainedVarNodes.contains(curVar))
+
+								if (useChainedCache
+										&& potentialChainedVarNodes
+												.contains(curVar)
+										&& !resolvedChainedVarNodes
+												.contains(curVar))
 									chainedVarNodes.add(curVar);
 
 								continue;
@@ -2539,7 +2540,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		useBudget = false;
 	}
 
-	public boolean usingBudget() {
+	public boolean useBudget() {
 		return this.useBudget;
 	}
 
@@ -2585,4 +2586,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	// whether use budget
 	protected boolean useBudget;
 
+	// the varnodes whose pt-to sets are useful
+	// we only chained cache these varnodes
+	protected Set<VarNode> potentialChainedVarNodes;
 }
