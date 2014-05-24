@@ -119,24 +119,29 @@ public class QueryManager {
 
 
 	public QueryManager(AutoPAG autoPAG, CallGraph cg) {
-		this.initQM(autoPAG, cg, false);
-	}
-	
-	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag) {
-		this.initQM(autoPAG, cg, flag);
-	}
-	
-	public void initQM(AutoPAG autoPAG, CallGraph cg, boolean flag) {
-		
-		final int DEFAULT_MAX_PASSES = 10000;
+		final int DEFAULT_MAX_PASSES = 10;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
-		runEager = flag;
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
 		ptsEager = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		
+		this.initQM(autoPAG, cg, false);
+	}
+	
+	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag, DemandCSPointsTo dcsp) {
+		this.initQM(autoPAG, cg, flag);
+		
+		ptsDemand = dcsp;
+		
+		ptsEager = dcsp;
+	}
+	
+	public void initQM(AutoPAG autoPAG, CallGraph cg, boolean flag) {
+		
+		runEager = flag;
 		
 		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();

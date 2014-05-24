@@ -73,13 +73,17 @@ public class DemandQueryTransformer extends SceneTransformer {
 		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
 		
 		Scene.v().setPointsToAnalysis(pag);
-		qm = new QueryManager(null, Scene.v().getCallGraph(), false);
+		
+		final int DEFAULT_MAX_PASSES = 10;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final boolean DEFAULT_LAZY = false;
+		DemandCSPointsTo ptsDemand = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		
+		qm = new QueryManager(null, Scene.v().getCallGraph(), false, ptsDemand);
 		
 		runByintervals();
 	}
-	
-    public static double eaTime;
-    public static double ddTime;
     
 	private void runByintervals() {
 		String regxSource = DemandQueryHarness.queryLoc;
@@ -98,7 +102,6 @@ public class DemandQueryTransformer extends SceneTransformer {
 				boolean res1 = qm.queryRegx(regx);
 			    long endDd = System.nanoTime();
                 StringUtil.reportSec("DD iterate---- " + i, startDd, endDd);
-                ddTime = ddTime + (endDd - startDd)/1e6;
                 i++;
 			}
 
