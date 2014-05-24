@@ -23,17 +23,32 @@ import soot.jimple.spark.pag.SparkField;
 
 public class EverythingHeuristic implements FieldCheckHeuristic {
 
-    public boolean runNewPass() {
-        return false;
-    }
+	public boolean runNewPass() {
+		return false;
+	}
 
-    public boolean validateMatchesForField(SparkField field) {
-        return true;
-    }
+	public boolean validateMatchesForField(SparkField field) {
+		return true;
+	}
 
-    public boolean validFromBothEnds(SparkField field) {
-        return false;
-    }
+	public boolean validFromBothEnds(SparkField field) {
+		return false;
+	}
 
+	// self-added methods
+
+	protected boolean useBudget = false;
+
+	public void enableBudget() {
+		this.useBudget = true;
+	}
+
+	public void disableBudget() {
+		this.useBudget = false;
+	}
+
+	public boolean useBudget() {
+		return this.useBudget;
+	}
 
 }

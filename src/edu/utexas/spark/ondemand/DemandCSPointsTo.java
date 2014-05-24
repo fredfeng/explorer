@@ -59,6 +59,7 @@ import soot.jimple.spark.sets.PointsToSetInternal;
 import soot.jimple.toolkits.callgraph.VirtualCalls;
 import soot.toolkits.scalar.Pair;
 import soot.util.NumberedString;
+import edu.utexas.cgrex.utils.StringUtil;
 import edu.utexas.spark.ondemand.genericutil.ArraySet;
 import edu.utexas.spark.ondemand.genericutil.ArraySetMultiMap;
 import edu.utexas.spark.ondemand.genericutil.HashSetMultiMap;
@@ -308,6 +309,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		this.chainedCacheNoCGRefinement = new HashMap<VarNode, PointsToSet>();
 		this.chainedVarNodes = new LinkedList<VarNode>();
 		this.resolvedChainedVarNodes = new HashSet<VarNode>();
+		this.useBudget = false;
+		this.earlyStop = false;
 	}
 
 	// public void resetParameters(int maxTraversal, int maxPasses, boolean
@@ -382,8 +385,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			if (useCache) {
 				cache.put(l, result);
 			}
-
 		} else {
+			// System.out.println("Hitting the cache");
 			hittingCache++;
 		}
 
@@ -427,6 +430,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		// must reset the refinement heuristic for each query
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristicType,
 				pag.getTypeManager(), getMaxPasses());
+		if (useBudget)
+			this.fieldCheckHeuristic.enableBudget();
+		else
+			this.fieldCheckHeuristic.disableBudget();
+
 		doPointsTo = true;
 		numPasses = 0;
 		PointsToSet contextSensitiveResult = null;
@@ -449,8 +457,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 		// if not, do the pt analysis
 		while (true) {
-			numPasses++;
-			if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
+			if (useBudget)
+				numPasses++;
+
+			if (DEBUG_PASS != -1 && useBudget && numPasses > DEBUG_PASS) {
 				break;
 			}
 
@@ -482,18 +492,19 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 			// self-added early termination
 			if (earlyStop) {
-				boolean shut = false;
+				boolean go = false;
 				Set<Type> types = new HashSet<Type>();
 				for (AllocAndContext pt : pointsTo) {
 					AllocNode alc = pt.alloc;
 					types.add(alc.getType());
 					if (types.size() > 1) {
-						shut = true;
+						go = true;
 						break;
 					}
 				}
-				if (shut)
+				if (!go) {
 					break;
+				}
 			}
 
 		}
@@ -519,6 +530,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		VarNode v = pag.findLocalVarNode(l);
 		if (v == null) {
 			// no reaching objects
+			// System.out.println("Can NOT find local varnode");
 			return EmptyPointsToSet.v();
 		}
 
@@ -531,23 +543,33 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 	}
 
+	public int rounds = 0;
+
 	/**
 	 * Computes the refined set of reaching objects for l. Returns
 	 * <code>null</code> if refinement failed.
 	 */
 	public PointsToSet computeRefinedReachingObjects(VarNode v) {
+		rounds = 0;
 
 		// must reset the refinement heuristic for each query
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristicType,
 				pag.getTypeManager(), getMaxPasses());
+		if (useBudget)
+			this.fieldCheckHeuristic.enableBudget();
+		else
+			this.fieldCheckHeuristic.disableBudget();
+
 		doPointsTo = true;
 		numPasses = 0;
 		PointsToSet contextSensitiveResult = null;
 
 		// if not, do the pt analysis
 		while (true) {
-			numPasses++;
-			if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
+			rounds++;
+			if (useBudget)
+				numPasses++;
+			if (DEBUG_PASS != -1 && useBudget && numPasses > DEBUG_PASS) {
 				break;
 			}
 
@@ -579,19 +601,21 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			// self-added early termination
 
 			if (earlyStop) {
-				boolean shut = false;
+				boolean go = false;
 				Set<Type> types = new HashSet<Type>();
 				for (AllocAndContext pt : pointsTo) {
 					AllocNode alc = pt.alloc;
 					types.add(alc.getType());
 					if (types.size() > 1) {
-						shut = true;
+						go = true;
 						break;
 					}
 				}
-				if (shut)
+				if (!go) {
 					break;
+				}
 			}
+
 		}
 
 		return contextSensitiveResult;
@@ -685,10 +709,16 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		// DEBUG = v.getNumber() == 150;
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristic,
 				pag.getTypeManager(), getMaxPasses());
+		if (useBudget)
+			this.fieldCheckHeuristic.enableBudget();
+		else
+			this.fieldCheckHeuristic.disableBudget();
+
 		numPasses = 0;
 		while (true) {
-			numPasses++;
-			if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
+			if (useBudget)
+				numPasses++;
+			if (DEBUG_PASS != -1 && useBudget && numPasses > DEBUG_PASS) {
 				return true;
 			}
 
@@ -796,11 +826,17 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			HeuristicType heuristic) {
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristic,
 				pag.getTypeManager(), getMaxPasses());
+		if (useBudget)
+			this.fieldCheckHeuristic.enableBudget();
+		else
+			this.fieldCheckHeuristic.disableBudget();
+
 		numPasses = 0;
 		Set<VarNode> smallest = null;
 		while (true) {
-			numPasses++;
-			if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
+			if (useBudget)
+				numPasses++;
+			if (DEBUG_PASS != -1 && useBudget && numPasses > DEBUG_PASS) {
 				return smallest;
 			}
 
@@ -1892,10 +1928,16 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			PointsToSetInternal intersection, HeuristicType heuristic) {
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristic,
 				pag.getTypeManager(), getMaxPasses());
+		if (useBudget)
+			this.fieldCheckHeuristic.enableBudget();
+		else
+			this.fieldCheckHeuristic.disableBudget();
+
 		numPasses = 0;
 		while (true) {
-			numPasses++;
-			if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
+			if (useBudget)
+				numPasses++;
+			if (DEBUG_PASS != -1 && useBudget && numPasses > DEBUG_PASS) {
 				return false;
 			}
 
@@ -1935,16 +1977,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				}
 			}
 		}
-	}
-
-	public int count = 0;
-	public Set<Integer> differentCallSites = new HashSet<Integer>();
-	public Set<CallSiteAndContext> differentCallSitesAndContext = new HashSet<CallSiteAndContext>();
-
-	public void update(CallSiteAndContext callSiteAndContext) {
-		differentCallSites.add(callSiteAndContext.getO1());
-		differentCallSitesAndContext.add(callSiteAndContext);
-		count++;
 	}
 
 	protected Set<SootMethod> refineCallSite(Integer callSite,
@@ -2258,11 +2290,16 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		this.doPointsTo = false;
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristic,
 				pag.getTypeManager(), getMaxPasses());
+		if (useBudget)
+			this.fieldCheckHeuristic.enableBudget();
+		else
+			this.fieldCheckHeuristic.disableBudget();
 		try {
 			numPasses = 0;
 			while (true) {
-				numPasses++;
-				if (DEBUG_PASS != -1 && numPasses > DEBUG_PASS) {
+				if (useBudget)
+					numPasses++;
+				if (DEBUG_PASS != -1 && useBudget && numPasses > DEBUG_PASS) {
 					return false;
 				}
 
@@ -2543,8 +2580,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	protected Set<VarNode> resolvedChainedVarNodes;
 
 	// early stop flag for size == 1
-	protected boolean earlyStop = false;
+	protected boolean earlyStop;
 
 	// whether use budget
-	protected boolean useBudget = false;
+	protected boolean useBudget;
+
 }
