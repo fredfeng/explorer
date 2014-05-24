@@ -481,8 +481,8 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 			// self-added early termination
-			boolean shut = false;
 			if (earlyStop) {
+				boolean shut = false;
 				Set<Type> types = new HashSet<Type>();
 				for (AllocAndContext pt : pointsTo) {
 					AllocNode alc = pt.alloc;
@@ -492,9 +492,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						break;
 					}
 				}
+				if (shut)
+					break;
 			}
-			if (shut)
-				break;
+
 		}
 
 		// we should consider the null pointer case
@@ -576,8 +577,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			}
 
 			// self-added early termination
-			boolean shut = false;
+
 			if (earlyStop) {
+				boolean shut = false;
 				Set<Type> types = new HashSet<Type>();
 				for (AllocAndContext pt : pointsTo) {
 					AllocNode alc = pt.alloc;
@@ -587,9 +589,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						break;
 					}
 				}
+				if (shut)
+					break;
 			}
-			if (shut)
-				break;
 		}
 
 		return contextSensitiveResult;
