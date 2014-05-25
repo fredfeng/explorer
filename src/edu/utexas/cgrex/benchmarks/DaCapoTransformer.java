@@ -102,13 +102,6 @@ public class DaCapoTransformer extends SceneTransformer {
 		}
 		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
 
-		/* use CHA-based pag to generate queries */
-		AutoPAG ddAutoPAG = new AutoPAG(pag);
-		ddAutoPAG.build();
-		qm = new QueryManager(null, Scene.v().getCallGraph(), false, );
-
-		List<String> queries = genQueries();
-		/* finish generating queries */
 
 		/* preparation for demand-driven analysis */
 		// propagate to fill the P2Set of each node in the pag
@@ -131,10 +124,16 @@ public class DaCapoTransformer extends SceneTransformer {
 		ptsReg.disableEarlyStop();
 		ptsReg.disableBudget();
 		assert (!ptsReg.useEarlyStop());
+		
+		/* use CHA-based pag to generate queries */
 
 		qm1 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsEarly);
 		qm2 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsReg);
+		qm = qm1;
 		/* finish preparation */
+		
+		List<String> queries = genQueries();
+		/* finish generating queries */
 
 		/* demand-driven analysis */
 		runByintervals(queries);
