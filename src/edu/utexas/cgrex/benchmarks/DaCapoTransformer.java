@@ -1,5 +1,9 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,11 +40,13 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 import soot.options.SparkOptions;
 import soot.util.Chain;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.automaton.AutoState;
+import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.SootUtils;
 import edu.utexas.cgrex.utils.StringUtil;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
@@ -53,12 +59,20 @@ import edu.utexas.spark.ondemand.DemandCSPointsTo;
  * 
  */
 public class DaCapoTransformer extends SceneTransformer {
+	public boolean debug = true;
+
+	QueryManager qm; // used to generate queries
+	public static int numQueries = 1000; // number of queries
+
+	QueryManager qm1; // early-stop
+	QueryManager qm2; // regular-stop
 
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
-		StringUtil.reportInfo("=========== DaCapo Transformer ============");
-
+		StringUtil.reportInfo("========== DaCapo Transformer ==========");
+		/* BEGIN: CHA-based demand-driven CALL graph */
+		long startCHA = System.nanoTime();
 		HashMap<String, String> opt = new HashMap<String, String>(options);
 		opt.put("enabled", "true");
 		opt.put("verbose", "true");
@@ -72,51 +86,121 @@ public class DaCapoTransformer extends SceneTransformer {
 
 		// Build pointer assignment graph
 		ContextInsensitiveBuilder b = new ContextInsensitiveBuilder();
-		if (opts.pre_jimplify())
-			b.preJimplify();
+
 		final PAG pag = b.setup(opts);
 		b.build();
 
 		// Build type masks
 		pag.getTypeManager().makeTypeMask();
 
-		// Simplify pag
-		// We only simplify if on_fly_cg is false. But, if vta is true, it
-		// overrides on_fly_cg, so we can still simplify. Something to handle
-		// these option interdependencies more cleanly would be nice...
-		if ((opts.simplify_sccs() && !opts.on_fly_cg()) || opts.vta()) {
-			new SCCCollapser(pag, opts.ignore_types_for_sccs()).collapse();
-		}
-		if (opts.simplify_offline() && !opts.on_fly_cg()) {
-			new EBBCollapser(pag).collapse();
-		}
-		if (true || opts.simplify_sccs() || opts.vta()
-				|| opts.simplify_offline()) {
-			pag.cleanUpMerges();
-		}
-
-		// Propagate
-		new PropWorklist(pag).propagate();
+		long endCHA = System.nanoTime();
+		/* END: CHA-based demand-driven CALL graph */
 
 		if (!opts.on_fly_cg() || opts.vta()) {
 			CallGraphBuilder cgb = new CallGraphBuilder(pag);
 			cgb.build();
 		}
+		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
+
+		/* use CHA-based pag to generate queries */
+		AutoPAG ddAutoPAG = new AutoPAG(pag);
+		ddAutoPAG.build();
+		qm = new QueryManager(null, Scene.v().getCallGraph(), false, );
+
+		List<String> queries = genQueries();
+		/* finish generating queries */
+
+		/* preparation for demand-driven analysis */
+		// propagate to fill the P2Set of each node in the pag
+		new PropWorklist(pag).propagate();
 
 		Scene.v().setPointsToAnalysis(pag);
 
-		int count = 0;
-		// perform pt-set queries for all call sites and record the pt sets.
-		for (Iterator<SootClass> cIt = Scene.v().getClasses().iterator(); cIt
-				.hasNext();) {
-			final SootClass clazz = (SootClass) cIt.next();
-			for (SootMethod m : clazz.getMethods()) {
-				count++;
+		final int DEFAULT_MAX_PASSES = 10;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final boolean DEFAULT_LAZY = false;
+
+		DemandCSPointsTo ptsEarly = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		ptsEarly.enableEarlyStop();
+		ptsEarly.disableBudget();
+		assert (ptsEarly.useEarlyStop());
+
+		DemandCSPointsTo ptsReg = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		ptsReg.disableEarlyStop();
+		ptsReg.disableBudget();
+		assert (!ptsReg.useEarlyStop());
+
+		qm1 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsEarly);
+		qm2 = new QueryManager(null, Scene.v().getCallGraph(), false, ptsReg);
+		/* finish preparation */
+
+		/* demand-driven analysis */
+		runByintervals(queries);
+	}
+
+	private void runByintervals(List<String> queries) {
+
+		long time1 = 0;
+		long time2 = 0;
+
+		try {
+
+			int i = 1;
+			long startDd, endDd;
+			for (String regx : queries) {
+				System.out.println("-----------------------------------------");
+				System.out
+						.println("[Analysis] Start the " + i + "-th query...");
+
+				// regular
+				startDd = System.nanoTime();
+				boolean res2 = qm2.queryRegx(regx);
+				endDd = System.nanoTime();
+				StringUtil.reportSec("Regular stop: " + i, startDd, endDd);
+				time2 += (endDd - startDd);
+				System.out.println("Analysis result: " + res2);
+
+				// early stop
+				startDd = System.nanoTime();
+				boolean res1 = qm1.queryRegx(regx);
+				endDd = System.nanoTime();
+				StringUtil.reportSec("Early stop: " + i, startDd, endDd);
+				time1 += (endDd - startDd);
+				System.out.println("Analysis result: " + res1);
+
+				assert (res1 == res2);
+				System.out.println("[Analysis] The " + i + "-th query PASSED!");
+				System.out.println("-----------------------------------------");
+
+				i++;
 			}
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.exit(0);
+	}
+
+	// generate a set of regular expressions
+	private List<String> genQueries() {
+		// picking up samples from CHA-based version.
+		RegularExpGenerator generator = new RegularExpGenerator(qm);
+		List<String> queries = new ArrayList<String>();
+
+		int cur = 0;
+		// how many queries do we need?
+		while (cur < numQueries) {
+			String regx = generator.genRegx();
+			regx = regx.replaceAll("\\s+", "");
+
+			queries.add(regx);
+			cur++;
 		}
 
-		System.out.println("[DaCapo] self-count number of methods: " + count);
-
-		assert (false);
+		return queries;
 	}
+
 }

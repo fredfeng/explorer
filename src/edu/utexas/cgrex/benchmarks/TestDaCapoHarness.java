@@ -4,7 +4,7 @@ import soot.CompilationDeathException;
 import soot.PackManager;
 import soot.Transform;
 
-public class DaCapoHarness {
+public class TestDaCapoHarness {
 
 	public static int benchmarkSize = 1;
 
@@ -25,7 +25,7 @@ public class DaCapoHarness {
 		try {
 
 			PackManager.v().getPack("wjtp")
-					.add(new Transform("wjtp.ddd", new DaCapoTransformer()));
+					.add(new Transform("wjtp.ddd", new TestDaCapoTransformer()));
 
 			String mainClassName = "Harness";
 			// String mainClassName = "avrora.Main";
