@@ -139,6 +139,15 @@ public class QueryManager {
 		ptsEager = dcsp;
 	}
 	
+	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag,
+			DemandCSPointsTo eagerPt, DemandCSPointsTo ddPt) {
+		this.initQM(autoPAG, cg, flag);
+		
+		ptsDemand = ddPt;
+		
+		ptsEager = eagerPt;
+	}
+	
 	public void initQM(AutoPAG autoPAG, CallGraph cg, boolean flag) {
 		
 		runEager = flag;
