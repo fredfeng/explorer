@@ -140,12 +140,10 @@ public class QueryManager {
 	}
 	
 	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag,
-			DemandCSPointsTo eagerPt, DemandCSPointsTo ddPt) {
-		this.initQM(autoPAG, cg, flag);
-		
+			DemandCSPointsTo eagerPt, DemandCSPointsTo ddPt) {	
 		ptsDemand = ddPt;
-		
 		ptsEager = eagerPt;
+		this.initQM(autoPAG, cg, flag);
 	}
 	
 	public void initQM(AutoPAG autoPAG, CallGraph cg, boolean flag) {
