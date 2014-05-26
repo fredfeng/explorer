@@ -158,6 +158,8 @@ public class EarlyStopTransformer extends SceneTransformer {
 							bug++;
 							System.out.println("This is the " + bug
 									+ "-th times");
+							if (bug < 55 || bug > 60)
+								continue;
 
 							// if (bug != 32)
 							// continue;
