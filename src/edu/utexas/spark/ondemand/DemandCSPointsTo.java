@@ -2548,6 +2548,10 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		return this.numPasses;
 	}
 
+	public void setPotentials(Set<VarNode> potentials) {
+		this.potentialChainedVarNodes = potentials;
+	}
+
 	// followings are for chained cache
 	// this is the same to reachingObjectsCache
 	protected boolean useChainedCache;
