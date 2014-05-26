@@ -2,6 +2,7 @@ package edu.utexas.cgrex.benchmarks;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import soot.Scene;
 import soot.SceneTransformer;
@@ -11,29 +12,30 @@ import soot.jimple.spark.solver.PropWorklist;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.options.SparkOptions;
 import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.StringUtil;
 import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
 /**
- * Transformer for anlalyzing Android Malware integrated with STAMP.
+ * our algorithm, which starts with a CHA-based CG.
  * 
  * @author yufeng
  * 
  */
-public class MalwareTransformer extends SceneTransformer {
+public class CallerCalleeTransformer extends SceneTransformer {
 
 	public boolean debug = true;
+	
+	public int benSize = 1000;
 
-	// QueryManager.
+
+	// CHA.
 	QueryManager qm;
-	
-	String entryPoint = "<edu.stanford.stamp.harness.Main: void main(java.lang.String[])>";
-	String dangerMeths = "<android.content.BroadcastReceiver: void abortBroadcast()>|<java.lang.Runtime: java.lang.Process exec(java.lang.String)>|<java.lang.System: void loadLibrary(java.lang.String)>";
-	
+
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
-		StringUtil.reportInfo("Malware Transformer----------");
+		StringUtil.reportInfo("Caller-Callee Transformer----------");
 		/* BEGIN: CHA-based demand-driven CALL graph */
 		long startCHA = System.nanoTime();
 		HashMap<String, String> opt = new HashMap<String, String>(options);
@@ -91,31 +93,33 @@ public class MalwareTransformer extends SceneTransformer {
 	}
 
 	private void runByintervals() {
-
-		// process the line.
-		String query = entryPoint + ".*" + dangerMeths;
-		String regx = qm.getValidExprBySig(query);
-		StringUtil.reportInfo("Query malware------" + regx);;
-
-		// early stop
-		long startEa = System.nanoTime();
-		boolean res1 = qm.queryRegxEager(regx);
-		long endEa = System.nanoTime();
-		StringUtil.reportSec("Query Eagerly: ", startEa, endEa);
-
-		// regular
-		long startDd = System.nanoTime();
-		boolean res2 = qm.queryRegx(regx);
-		long endDd = System.nanoTime();
-		StringUtil.reportSec("Query on-demand: ", startDd, endDd);
 		
-		if(res1) 
-			StringUtil.reportInfo("This is a malware-----");
-		else 
-			StringUtil.reportInfo("This is a benign app-----");
+		RegularExpGenerator generator = new RegularExpGenerator(qm);
+		
+		int cur = 0;
+		//how many queries do we need?
+		while (cur < benSize) {
+			String callee = generator.genCallee();
+			
+			long startEa = System.nanoTime();
+			Set<String> eaCallers = qm.queryCallers(callee);
+			long endEa = System.nanoTime();
+			StringUtil.reportSec("Query Time: " + cur, startEa, endEa);
+			
+			long startDd = System.nanoTime();
+			Set<String> callers = qm.queryCallers(callee);
+			long endDd = System.nanoTime();
 
-		assert (res1 == res2);
+			StringUtil.reportSec("Query Time: " + cur, startDd, endDd);
+			
+			assert(callers.containsAll(eaCallers) && eaCallers.containsAll(callers));
 
+			StringUtil.reportInfo("Callers of " + callee + ": " + callers);
+			
+
+
+			cur++;
+		}
 		System.exit(0);
 	}
 }

@@ -542,7 +542,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	 */
 	public PointsToSet computeRefinedReachingObjects(VarNode v) {
 		rounds = 0;
-		System.out.println("Do the query");
+//		System.out.println("Do the query");
 
 		// must reset the refinement heuristic for each query
 		this.fieldCheckHeuristic = HeuristicType.getHeuristic(heuristicType,
