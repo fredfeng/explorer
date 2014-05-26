@@ -187,4 +187,9 @@ public class RegularExpGenerator {
 		this.sigRegx = sigRegx;
 	}
 
+	public String genCallee() {
+		SootMethod callee = pickupMethod();
+		return callee.getSignature();
+	}
+
 }

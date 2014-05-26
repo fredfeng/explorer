@@ -74,10 +74,15 @@ public class QueryManager {
 	// this magic number is used to fix the error by invalid unicode such as
 	// \u0022
 	private int offset = 100;
+	
+	private InterAutomaton egAuto;
 
 	private ReachableMethods reachableMethods;
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
+	Map<SootMethod, CGAutoState> methToEagerStateMap = new HashMap<SootMethod, CGAutoState>();
+	Map<CGAutoState, SootMethod> eagerStateToMethMap = new HashMap<CGAutoState, SootMethod>();
+
 
 	/**
 	 * @return the methToEdgeMap only for the purpose of generating random regx.
@@ -196,7 +201,13 @@ public class QueryManager {
 			inEdge.setShortName(meth.getSignature());
 			CGAutoState st = new CGAutoState(uid, false, true);
 
+
 			methToStateMap.put(meth, st);
+			
+			CGAutoState stEager = new CGAutoState(uid, false, true);
+			methToEagerStateMap.put(meth, stEager);
+			eagerStateToMethMap.put(stEager, meth);
+
 			methToEdgeMap.put(meth, inEdge);
 		}
 		// only build cgauto once.
@@ -328,33 +339,17 @@ public class QueryManager {
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
 					// need fresh instance for each callsite but share same uid.
-//					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
-//					outEdgeFresh.setShortName(worker.getSignature());
-
-//					curState.addOutgoingStates(curState, outEdgeFresh);
-//
-//					curState.addIncomingStates(curState, outEdgeFresh);
 					curState.addOutgoingStates(curState, outEdge);
 					curState.addIncomingStates(curState, outEdge);
-
-
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
 					worklist.add(tgtMeth);
-
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
 					// need fresh instance for each callsite but share same uid.
-//					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
-//					outEdgeFresh.setShortName(tgtMeth.getSignature());
-
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
-//					curState.addOutgoingStates(tgtState, outEdgeFresh);
-
 					// add incoming state.
-//					tgtState.addIncomingStates(curState, outEdgeFresh);
 					tgtState.addIncomingStates(curState, outEdge);
-
 				}
 			}
 
@@ -379,7 +374,7 @@ public class QueryManager {
 
 		// 0 is the initial id.
 		CGAutoState initState = new CGAutoState(0, true, true);
-		CGAutoState mainState = methToStateMap.get(mainMeth);
+		CGAutoState mainState = methToEagerStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
 		mainState.addIncomingStates(initState, callEdgeMain);
 
@@ -398,7 +393,7 @@ public class QueryManager {
 
 		while (worklist.size() > 0) {
 			SootMethod worker = worklist.remove(0);
-			CGAutoState curState = methToStateMap.get(worker);
+			CGAutoState curState = methToEagerStateMap.get(worker);
 			reachableState.add(curState);
 			if(visited.contains(worker))
 				continue;
@@ -429,7 +424,7 @@ public class QueryManager {
 					AutoEdge outEdgeFresh = new AutoEdge(outEdge.getId());
 					outEdgeFresh.setShortName(tgtMeth.getSignature());
 
-					CGAutoState tgtState = methToStateMap.get(tgtMeth);
+					CGAutoState tgtState = methToEagerStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdgeFresh);
 
 					// add incoming state.
@@ -470,12 +465,8 @@ public class QueryManager {
 					while(it.hasNext()) {
 						Edge tgt = it.next();
 						if( e.equals(tgt) ) {
-							//System.out.println(e.getTgt() + "~~~~~" + callee);
 							//is this edge exist?
-                            long startDd = System.nanoTime();
                             Set<Type> pTypes = ptsEager.reachingObjects(receiver).possibleTypes();
-                            long endDd = System.nanoTime();
-                            StringUtil.reportSec("Time To build PT Set:", startDd, endDd);
 
 							List<Type> typeSet = SootUtils.compatibleTypeList(
 									callee.getDeclaringClass(), callee);
@@ -715,7 +706,84 @@ public class QueryManager {
 		return res;
 	}
 	
-	private InterAutomaton egAuto;
+	//Return all m's callers.
+	public Set<String> queryEagerCallers(String callee) {
+		Set<String> callers = new HashSet();
+		
+		SootMethod calleeMeth = Scene.v().getMethod(callee);
+		
+		AutoState calleeSt = methToEagerStateMap.get(calleeMeth);
+		for (AutoState callerSt : calleeSt.getIncomingStatesKeySet()){
+			SootMethod callerMeth = eagerStateToMethMap.get(callerSt);
+			
+			List<Value> varSet = getVarList(callerMeth, calleeMeth);
+			List<Type> typeSet = SootUtils.compatibleTypeList(
+					calleeMeth.getDeclaringClass(), calleeMeth);
+
+			// to be conservative.
+			if (varSet.size() == 0) {
+				callers.add(callerMeth.getSignature());
+				continue;
+			}
+			
+			Set<Type> ptTypeSet = new HashSet<Type>();
+			for(Value v : varSet) {
+				assert(v instanceof Local);
+				Local l = (Local) v;
+				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+			}
+
+	        if(ptTypeSet.size() == 0) {
+				callers.add(callerMeth.getSignature());
+				continue;
+	        }
+
+			ptTypeSet.retainAll(typeSet);
+			if(!ptTypeSet.isEmpty())
+				callers.add(callerMeth.getSignature());
+			
+		}
+		return callers;
+	}
+	
+	//Return all m's callers.
+	public Set<String> queryCallers(String callee) {
+		Set<String> callers = new HashSet();
+		SootMethod calleeMeth = Scene.v().getMethod(callee);
+		Iterator<Edge> it = cg.edgesInto(calleeMeth);
+		while(it.hasNext()) {
+			Edge callEdge = it.next();
+			SootMethod callerMeth = (SootMethod)callEdge.getSrc();
+			
+			List<Value> varSet = getVarList(callerMeth, calleeMeth);
+			List<Type> typeSet = SootUtils.compatibleTypeList(
+					calleeMeth.getDeclaringClass(), calleeMeth);
+
+			// to be conservative.
+			if (varSet.size() == 0) {
+				callers.add(callerMeth.getSignature());
+				continue;
+			}
+			
+			Set<Type> ptTypeSet = new HashSet<Type>();
+			for(Value v : varSet) {
+				assert(v instanceof Local);
+				Local l = (Local) v;
+				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+			}
+
+	        if(ptTypeSet.size() == 0) {
+				callers.add(callerMeth.getSignature());
+				continue;
+	        }
+
+			ptTypeSet.retainAll(typeSet);
+			if(!ptTypeSet.isEmpty())
+				callers.add(callerMeth.getSignature());
+
+		}
+		return callers;
+	}
 	
 	public boolean queryRegxEager(String regx) {
 		regx = regx.replaceAll("\\s+", "");
