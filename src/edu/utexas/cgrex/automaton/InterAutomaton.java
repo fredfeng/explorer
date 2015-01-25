@@ -18,6 +18,7 @@ public class InterAutomaton extends Automaton {
 
 	protected Map<String, Set<SrcTgtEdgeWrapper>> STEMap = new HashMap<String, Set<SrcTgtEdgeWrapper>>();
 
+	// master: reg; slave: callgraph
 	public InterAutomaton(InterAutoOpts options, Automaton masterAutomaton,
 			Automaton slaveAutomaton) {
 		this.options = options;
@@ -349,6 +350,12 @@ public class InterAutomaton extends Automaton {
 							// an edge from the current one to the new one
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							
+							//add by yufeng.
+							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
+									slaveSt, slaveNextState);
+							assert cgEdge != null : "cg edge can not be null!";
+							newInterEdge.setSrcStmt(cgEdge.getSrcStmt());
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
 							newInterSt.addIncomingStates(interSt, newInterEdge);
 							addToSTEMap(interSt.getSlaveState().getId() + "$"
@@ -363,6 +370,12 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							// add by yufeng
+							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
+									slaveSt, slaveNextState);
+							assert cgEdge != null : "cg edge can not be null!";
+							newInterEdge.setSrcStmt(cgEdge.getSrcStmt());
+							
 							addToSTEMap(interSt.getSlaveState().getId() + "$"
 									+ newInterSt.getSlaveState().getId(),
 									new SrcTgtEdgeWrapper(interSt, newInterSt,
@@ -411,6 +424,12 @@ public class InterAutomaton extends Automaton {
 							// already existed
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							// add by yufeng
+							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
+									slaveSt, slaveNextState);
+							assert cgEdge != null : "cg edge can not be null!";
+							newInterEdge.setSrcStmt(cgEdge.getSrcStmt());
+							
 							interSt.addOutgoingStates(newInterSt, newInterEdge);
 							newInterSt.addIncomingStates(interSt, newInterEdge);
 							addToSTEMap(interSt.getSlaveState().getId() + "$"
@@ -426,6 +445,12 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							// add by yufeng
+							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
+									slaveSt, slaveNextState);
+							assert cgEdge != null : "cg edge can not be null!";
+							newInterEdge.setSrcStmt(cgEdge.getSrcStmt());
+							
 							addToSTEMap(interSt.getSlaveState().getId() + "$"
 									+ newInterSt.getSlaveState().getId(),
 									new SrcTgtEdgeWrapper(interSt, newInterSt,
@@ -695,6 +720,51 @@ public class InterAutomaton extends Automaton {
 				}
 			}
 		}
+	}
+	
+	public void dump() {
+		StringBuilder b = new StringBuilder("digraph Automaton {\n");
+		b.append("  rankdir = LR;\n");
+		for (AutoState s : states) {
+			b.append("  ").append("\"" + s.id + "\"");
+
+			if (s.isFinalState) {
+				b.append(" [shape=doublecircle,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+			} else {
+				b.append(" [shape=circle,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+			}
+
+			if (s.isInitState) {
+				b.append("  \"initial\" [shape=plaintext,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+				b.append("  \"initial\" -> ").append("\"" + s.id + "\"")
+						.append("\n");
+			}
+
+			for (AutoState tgt : s.getOutgoingStates().keySet()) {
+				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {
+					b.append("  ").append("\"" + s.id + "\"");
+
+					b.append(" -> ").append("\"" + tgt.id + "\"")
+							.append(" [label=\"");
+					if (outEdge.isDotEdge())
+						b.append(".");
+					else {
+						if(outEdge.getSrcStmt() != null) 
+							b.append(outEdge.getSrcStmt().toString());
+					}
+					b.append("\"]\n");
+				}
+
+			}
+		}
+		b.append("}\n");
+		System.out.println(b.toString());
 	}
 
 	/*

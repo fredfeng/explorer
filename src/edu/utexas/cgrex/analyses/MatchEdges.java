@@ -18,7 +18,7 @@ public class MatchEdges {
 
 	/** constructor, add edges to maps */
 	public MatchEdges(PAG pag) {
-		Iterator<Object> store_it = pag.storeSourcesIterator();
+		Iterator<VarNode> store_it = pag.storeSourcesIterator();
 		// storeMap: store_src(VarNode) ----> store_targets(FieldRefNode)
 		while (store_it.hasNext()) {
 			// get the representative of the union
@@ -33,7 +33,7 @@ public class MatchEdges {
 				// three inheritances of SparkField:
 				// ArrayElement, Parm, and SootField
 				if (storeTargetField instanceof SootField) {
-					Iterator<Object> load_it = pag.loadSourcesIterator();
+					Iterator<FieldRefNode> load_it = pag.loadSourcesIterator();
 					while (load_it.hasNext()) {
 						FieldRefNode loadSrc = (FieldRefNode) load_it.next(); // y.f
 						VarNode loadSrcBase = loadSrc.getBase(); // y

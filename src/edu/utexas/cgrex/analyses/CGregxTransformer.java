@@ -107,19 +107,20 @@ public class CGregxTransformer extends SceneTransformer {
 		pag.getTypeManager().makeTypeMask();
 
 		//no need to Propagate. This will run our actual points-to analysis.
+		Scene.v().setPointsToAnalysis(pag);
 		AutoPAG ddAutoPAG = new AutoPAG(pag);
 		ddAutoPAG.build();	
 		long endCHA = System.nanoTime();
 		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
 		/* END: CHA-based demand-driven CALL graph*/
 
-		qm = new QueryManager(ddAutoPAG, this.buildCallGraph());
+		qm = new QueryManager(this.buildCallGraph());
 		
-		otfQm = new QueryManager(otfAutoPAG, otfAutoPAG.getFather()
+		otfQm = new QueryManager(otfAutoPAG.getFather()
 				.getOnFlyCallGraph().callGraph());
 		
-//		this.runBenchmark();
-		this.checkSoundness();
+		this.runBenchmark();
+//		this.checkSoundness();
 	}
 	
 	private void runBenchmark() {
@@ -133,7 +134,7 @@ public class CGregxTransformer extends SceneTransformer {
 		for (int i = 0; i < Harness.benchmarkSize; i++) {
 			String regx = generator.genRegx();
 			regx = regx.replaceAll("\\s+", "");
-//			System.out.println("Random regx------" + regx);
+			System.out.println("Random regx------" + regx);
 			long startOTF = System.nanoTime();
 			boolean res2 = otfQm.queryRegx(regx);
 			long endOTF = System.nanoTime();
@@ -176,7 +177,7 @@ public class CGregxTransformer extends SceneTransformer {
 	
 	//comparing the points-to set of soot and our version.
 	public void checkSoundness() {
-		qm.getAutoPAG().dump();
+		// qm.getAutoPAG().dump();
 		//for all reachable methods in current project.
 		Iterator<MethodOrMethodContext> it = Scene.v().getReachableMethods().listener();
 		while(it.hasNext()) {
@@ -202,12 +203,12 @@ public class CGregxTransformer extends SceneTransformer {
 	                		List list = new ArrayList();
 	                		list.add(l);
 	                	//ask for xinyu's points-to set
-	                		Set pts = qm.getAutoPAG().insensitiveQueryTest(list);
-	                	//ask for soot's point-to set.
-	                		Set pts2 = otfQm.getAutoPAG().insensitiveQueryTest(list);
-	                		System.out.println("check------------------------ ");
-	                		System.out.println("CHA------- " +pts);
-	                		System.out.println("OTF------- " + pts2);
+//	                		Set pts = qm.getAutoPAG().insensitiveQueryTest(list);
+//	                	//ask for soot's point-to set.
+//	                		Set pts2 = otfQm.getAutoPAG().insensitiveQueryTest(list);
+//	                		System.out.println("check------------------------ ");
+//	                		System.out.println("CHA------- " +pts);
+//	                		System.out.println("OTF------- " + pts2);
 
 	                	}
 	                	

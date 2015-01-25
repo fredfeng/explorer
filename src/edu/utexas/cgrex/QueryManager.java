@@ -36,24 +36,22 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
 import dk.brics.automaton.Transition;
-import edu.utexas.cgrex.analyses.AutoPAG;
+import edu.utexas.cgrex.analyses.CgContext;
+import edu.utexas.cgrex.analyses.DemandCSPointsTo;
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.automaton.InterAutoEdge;
 import edu.utexas.cgrex.automaton.InterAutoOpts;
-import edu.utexas.cgrex.automaton.InterAutoState;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
-import edu.utexas.cgrex.benchmarks.CompTransformer;
 import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.SootUtils;
 import edu.utexas.cgrex.utils.StringUtil;
-import edu.utexas.spark.ondemand.DemandCSPointsTo;
 
 /**
  * Top level class to perform query and call graph refinement.
@@ -63,8 +61,6 @@ import edu.utexas.spark.ondemand.DemandCSPointsTo;
  */
 
 public class QueryManager {
-
-	AutoPAG autoPAG;
 
 	private int INFINITY = 9999;
 
@@ -123,39 +119,39 @@ public class QueryManager {
 	private boolean runEager = false;
 
 
-	public QueryManager(AutoPAG autoPAG, CallGraph cg) {
+	public QueryManager(CallGraph cg) {
 		final int DEFAULT_MAX_PASSES = 10;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
+		
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
-		ptsEager = DemandCSPointsTo.makeWithBudget(
-				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+//		ptsEager = DemandCSPointsTo.makeWithBudget(
+//				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
-		this.initQM(autoPAG, cg, false);
+		this.initQM(cg, false);
 	}
 	
-	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag, DemandCSPointsTo dcsp) {
-		this.initQM(autoPAG, cg, flag);
+	public QueryManager(CallGraph cg, boolean flag, DemandCSPointsTo dcsp) {
+		this.initQM(cg, flag);
 		
 		ptsDemand = dcsp;
 		
-		ptsEager = dcsp;
+//		ptsEager = dcsp;
 	}
 	
-	public QueryManager(AutoPAG autoPAG, CallGraph cg, boolean flag,
+	public QueryManager(CallGraph cg, boolean flag,
 			DemandCSPointsTo eagerPt, DemandCSPointsTo ddPt) {	
 		ptsDemand = ddPt;
-		ptsEager = eagerPt;
-		this.initQM(autoPAG, cg, flag);
+//		ptsEager = eagerPt;
+		this.initQM(cg, flag);
 	}
 	
-	public void initQM(AutoPAG autoPAG, CallGraph cg, boolean flag) {
+	public void initQM(CallGraph cg, boolean flag) {
 		
 		runEager = flag;
 		
-		this.autoPAG = autoPAG;
 		cgAuto = new CGAutomaton();
 		if(runEager)
 			cgEagerAuto = new CGAutomaton();
@@ -166,11 +162,6 @@ public class QueryManager {
 		init();
 	}
 	
-
-	public AutoPAG getAutoPAG() {
-		return this.autoPAG;
-	}
-
 	public ReachableMethods getReachableMethods() {
 		if (reachableMethods == null) {
 			reachableMethods = new ReachableMethods(cg,
@@ -215,7 +206,7 @@ public class QueryManager {
 		buildCGAutomaton();
 		long endDd = System.nanoTime();
 		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
-		CompTransformer.ddTime = (endDd - startDd)/1e6;
+//		CompTransformer.ddTime = (endDd - startDd)/1e6;
 		
 		if(runEager) {
 			long startEager = System.nanoTime();
@@ -223,7 +214,7 @@ public class QueryManager {
 			long endEager = System.nanoTime();
 			StringUtil.reportSec("Time To build Eager CG:", startEager,
 					endEager);
-			CompTransformer.eaTime = (endEager - startEager) / 1e6;
+//			CompTransformer.eaTime = (endEager - startEager) / 1e6;
 		}
 
 	}
@@ -275,7 +266,7 @@ public class QueryManager {
 				// using edge label as id.
 				String unicode = StringUtil.appendChar(t.getMin(),
 						new StringBuilder(""));
-				String shortName = "xxxxx";
+				String shortName = "undefined";
 				AutoEdge outEdge = new AutoEdge(unicode);
 
 				if (uidToMethMap.get(unicode) != null) {
@@ -294,8 +285,8 @@ public class QueryManager {
 			regAuto.addStates(fsmState);
 		}
 		// dump current result.
-//		System.out.println("dump regular graph.");
-		// regAuto.dump();
+		System.out.println("dump regular graph.");
+		 regAuto.dump();
 	}
 	
 	private void buildCGAutomaton() {
@@ -335,9 +326,14 @@ public class QueryManager {
 			Iterator<Edge> outIt = cg.edgesOutOf(worker);
 			while (outIt.hasNext()) {
 				Edge e = outIt.next();
+				Stmt srcStmt = e.srcStmt();
+				InvokeExpr expr = null;
+				if(srcStmt != null && srcStmt.containsInvokeExpr())
+					expr = srcStmt.getInvokeExpr();
 				// how about SCC? FIXME!!
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = methToEdgeMap.get(worker);
+					outEdge.setSrcStmt(srcStmt.getInvokeExpr());
 					// need fresh instance for each callsite but share same uid.
 					curState.addOutgoingStates(curState, outEdge);
 					curState.addIncomingStates(curState, outEdge);
@@ -345,6 +341,7 @@ public class QueryManager {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
 					worklist.add(tgtMeth);
 					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
+					outEdge.setSrcStmt(expr);
 					// need fresh instance for each callsite but share same uid.
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
@@ -359,11 +356,11 @@ public class QueryManager {
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
 
-		System.out.println("Total States*******" + cgAuto.getStates().size());
+		System.out.println("Total States****CG_AUTO***" + cgAuto.getStates().size());
 
 		// dump automaton of the call graph.
-		// cgAuto.dump();
-		// cgAuto.validate();
+		 cgAuto.dump();
+		 cgAuto.validate();
 	}
 	
 	private void buildEagerCGAutomaton() {
@@ -516,8 +513,8 @@ public class QueryManager {
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
 
-		// interAuto.validate();
-		// interAuto.dump();
+		 interAuto.validate();
+		 interAuto.dump();
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
@@ -537,6 +534,7 @@ public class QueryManager {
 		// 2. Can not find a mincut without infinity anymore.(No)
 		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
+		System.out.println("cutset:" + cutset);
 
 		boolean answer = true;
 		// contains infinity edge?
@@ -588,11 +586,16 @@ public class QueryManager {
 	}
 
 	private boolean doPointsToQuery(CutEntity cut) {
+		
+		System.out.println("checking a cut:" + cut);
 
 		// type info.
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
 				.getTgtCGAutoStateId());
-
+		
+		AutoState src = cut.getSrc();
+		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
+		
 		assert (calleeMeth != null);
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
@@ -618,12 +621,24 @@ public class QueryManager {
 		// to be conservative.
 		if (varSet.size() == 0)
 			return true;
-		
+
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		for(Value v : varSet) {
 			assert(v instanceof Local);
 			Local l = (Local) v;
-			ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+			for(AutoEdge in : inEdges) {
+				InvokeExpr ie = in.getSrcStmt();
+
+				if ((ie instanceof VirtualInvokeExpr)
+						|| (ie instanceof InterfaceInvokeExpr)) {
+					CgContext ctxt = new CgContext(ie);
+					System.out.println("#######query ctxt:" + ctxt.getCallsite() + " var: " + l + " result:" + ptsDemand.reachingObjects(ctxt,l).possibleTypes());
+					ptTypeSet.addAll(ptsDemand.reachingObjects(ctxt,l).possibleTypes());
+				} else {
+					ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+
+				}
+			}
 		}
 
         if(ptTypeSet.size() == 0) return true;
@@ -873,11 +888,13 @@ public class QueryManager {
 				if ((ie instanceof VirtualInvokeExpr)
 						|| (ie instanceof InterfaceInvokeExpr)) {
 					SootMethod callee = ie.getMethod();
-					if (SootUtils.compatibleWith(tgt, callee)) {
+//					if (SootUtils.compatibleWith(tgt, callee)) {
 						// ie.get
 						Value var = ie.getUseBoxes().get(0).getValue();
 						varSet.add(var);
-					}
+//						System.out.println("my callsite: " + ie);
+//						System.out.println("my receiver#########: " + var + "--->" + ptsDemand.reachingObjects((Local)var));
+//					}
 				}
 			}
 		}

@@ -66,7 +66,7 @@ public class OnTheFlyTransformer extends SceneTransformer {
 
 		/* END: on-the-fly eager CALL graph*/
 
-		qm = new QueryManager(otfAutoPAG, otfAutoPAG.getFather()
+		qm = new QueryManager(otfAutoPAG.getFather()
 				.getOnFlyCallGraph().callGraph());
 
         System.out.println("Reachable Methods: " + qm.getReachableMethods().size());

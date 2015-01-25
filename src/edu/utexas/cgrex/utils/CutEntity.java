@@ -21,6 +21,14 @@ public class CutEntity {
 		this.endState = endState;
 	}
 	
+	public AutoState getSrc() {
+		return state;
+	}
+	
+	public AutoState getTgt() {
+		return endState;
+	}
+	
 	@Override
 	public String toString() {
 		return state + "->" + endState;

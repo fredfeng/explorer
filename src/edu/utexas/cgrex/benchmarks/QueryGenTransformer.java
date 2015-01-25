@@ -82,7 +82,7 @@ public class QueryGenTransformer extends SceneTransformer {
 		StringUtil.reportSec("Building CHA call graph", startCHA, endCHA);
 		/* END: CHA-based demand-driven CALL graph*/
 
-		qm = new QueryManager(ddAutoPAG, this.buildCallGraph());
+		qm = new QueryManager(this.buildCallGraph());
 		
 		genQueries();
 	}

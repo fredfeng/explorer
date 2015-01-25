@@ -64,7 +64,7 @@ public class TestTransformer extends SceneTransformer {
 		AutoPAG ddAutoPAG = new AutoPAG(pag);
 		ddAutoPAG.build();	
 		/* END: CHA-based demand-driven CALL graph*/
-		qm = new QueryManager(ddAutoPAG, this.buildCallGraph());
+		qm = new QueryManager(this.buildCallGraph());
 		qm.doQuery();
 		
 	}

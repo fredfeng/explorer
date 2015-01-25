@@ -144,12 +144,12 @@ public class AutoPAG {
 			allVars.add(obj);
 		for (Object obj : flowInv.keySet())
 			allVars.add(obj);
-		Iterator<Object> it = father.allocSourcesIterator();
+		Iterator<AllocNode> it = father.allocSourcesIterator();
 		while (it.hasNext())
 			allVars.add(it.next());
-		it = father.allocInvSourcesIterator();
-		while (it.hasNext())
-			allVars.add(it.next());
+		Iterator<VarNode> it2 = father.allocInvSourcesIterator();
+		while (it2.hasNext())
+			allVars.add(it2.next());
 
 		StringBuilder b = new StringBuilder("digraph AutoPAG {\n");
 		b.append("  rankdir = LR;\n");
@@ -189,9 +189,9 @@ public class AutoPAG {
 			}
 		}
 
-		it = father.allocInvSourcesIterator();
-		while (it.hasNext()) {
-			VarNode allocInvSrc = (VarNode) it.next();
+		it2 = father.allocInvSourcesIterator();
+		while (it2.hasNext()) {
+			VarNode allocInvSrc = (VarNode) it2.next();
 			Node[] allocTgts = father.allocInvLookup(allocInvSrc);
 			for (int i = 0; i < allocTgts.length; i++) {
 				AllocNode allocInvTgt = (AllocNode) allocTgts[i];
@@ -229,16 +229,16 @@ public class AutoPAG {
 		// allVars.add(obj);
 
 		// simple (assign)
-		Iterator<Object> it = father.simpleSourcesIterator();
+		Iterator<VarNode> it = father.simpleSourcesIterator();
 		while (it.hasNext())
 			allVars.add(it.next());
 		it = father.simpleInvSourcesIterator();
 		while (it.hasNext())
 			allVars.add(it.next());
 		// load (put field)
-		it = father.loadSourcesIterator();
-		while (it.hasNext())
-			allVars.add(it.next());
+		Iterator<FieldRefNode> it2 = father.loadSourcesIterator();
+		while (it2.hasNext())
+			allVars.add(it2.next());
 		it = father.loadInvSourcesIterator();
 		while (it.hasNext())
 			allVars.add(it.next());
@@ -246,13 +246,13 @@ public class AutoPAG {
 		it = father.storeSourcesIterator();
 		while (it.hasNext())
 			allVars.add(it.next());
-		it = father.storeInvSourcesIterator();
-		while (it.hasNext())
-			allVars.add(it.next());
+		it2 = father.storeInvSourcesIterator();
+		while (it2.hasNext())
+			allVars.add(it2.next());
 		// allocate (new)
-		it = father.allocSourcesIterator();
-		while (it.hasNext())
-			allVars.add(it.next());
+		Iterator<AllocNode> it3 = father.allocSourcesIterator();
+		while (it3.hasNext())
+			allVars.add(it3.next());
 		it = father.allocInvSourcesIterator();
 		while (it.hasNext())
 			allVars.add(it.next());
@@ -340,9 +340,9 @@ public class AutoPAG {
 			}
 		}
 
-		it = father.loadSourcesIterator();
-		while (it.hasNext()) {
-			FieldRefNode loadSrc = (FieldRefNode) it.next();
+		it2 = father.loadSourcesIterator();
+		while (it2.hasNext()) {
+			FieldRefNode loadSrc = (FieldRefNode) it2.next();
 			Node[] loadTgts = father.loadLookup(loadSrc);
 			for (int i = 0; i < loadTgts.length; i++) {
 				VarNode loadTgt = (VarNode) loadTgts[i];
@@ -401,9 +401,9 @@ public class AutoPAG {
 
 		}
 
-		it = father.allocSourcesIterator();
-		while (it.hasNext()) {
-			AllocNode allocSrc = (AllocNode) it.next();
+		it3 = father.allocSourcesIterator();
+		while (it3.hasNext()) {
+			AllocNode allocSrc = (AllocNode) it3.next();
 			Node[] allocTgts = father.allocLookup(allocSrc);
 			for (int i = 0; i < allocTgts.length; i++) {
 				VarNode allocTgt = (VarNode) allocTgts[i];
@@ -855,7 +855,7 @@ public class AutoPAG {
 	@SuppressWarnings("unchecked")
 	protected void createFlow() {
 		// first fill flow by simple
-		Iterator<Object> it = father.simpleSourcesIterator();
+		Iterator<VarNode> it = father.simpleSourcesIterator();
 		while (it.hasNext()) {
 			VarNode simpleSrc = (VarNode) it.next();
 			Node[] simpleTgts = father.simpleLookup(simpleSrc);
@@ -959,7 +959,7 @@ public class AutoPAG {
 
 	protected void fillSrc(Map<SootField, Set<VarNode>> storeSrc,
 			Set<VarNode> ptAllSrc) {
-		for (Iterator<Object> it = father.storeInvSourcesIterator(); it
+		for (Iterator<FieldRefNode> it = father.storeInvSourcesIterator(); it
 				.hasNext();) {
 			FieldRefNode store = (FieldRefNode) it.next();
 			SparkField field = store.getField();
@@ -980,7 +980,7 @@ public class AutoPAG {
 
 	protected void fillTgt(Map<SootField, Set<VarNode>> loadTgt,
 			Set<VarNode> ptAllTgt) {
-		for (Iterator<Object> it = father.loadSourcesIterator(); it.hasNext();) {
+		for (Iterator<FieldRefNode> it = father.loadSourcesIterator(); it.hasNext();) {
 			FieldRefNode load = (FieldRefNode) it.next();
 			SparkField field = load.getField();
 

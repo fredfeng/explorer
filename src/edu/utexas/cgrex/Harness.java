@@ -3,7 +3,7 @@ package edu.utexas.cgrex;
 import soot.CompilationDeathException;
 import soot.PackManager;
 import soot.Transform;
-import edu.utexas.cgrex.analyses.CGregxTransformer;
+import edu.utexas.cgrex.analyses.QueryTransformer;
 
 public class Harness {
 
@@ -24,22 +24,23 @@ public class Harness {
 		// String targetLoc = args[0];
 		// System.out.println("begin to run benchmark----------" + targetLoc);
 		// String targetLoc = "benchmarks/CFLexamples/bin/";
-		String targetLoc = "benchmarks/sablecc-3.7/classes/";
+		String targetLoc = "/home/yufeng/workspace/CgTestSet/classes/";
 		// 0: interactive mode; 1: benchmark mode
 		try {
 
-			StringBuilder options = new StringBuilder();
 			PackManager
 					.v()
 					.getPack("wjtp")
 					.add(new Transform("wjtp.regularPT",
-							new CGregxTransformer()));
+							new QueryTransformer()));
 
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-src-prec", "java", "-allow-phantom-refs",
 							"-no-bodies-for-excluded", "-exclude", "java",
-							"-exclude", "javax", "-output-format", "none",
+							"-exclude", "javax",
+							"-output-format", "none",
+							"-p", "cg.spark", "enabled:true",
 							"-p", "jb", "use-original-names:true", });
 
 		} catch (CompilationDeathException e) {

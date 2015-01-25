@@ -165,7 +165,7 @@ public class TestAutoPAG extends SceneTransformer {
 	// AllocNode: AllocNode, StringConstantNode, ClassConstantNode
 	protected void printMap(PAG pag) {
 		Set<String> x = new HashSet<String>();
-		Iterator<Object> it = pag.loadSourcesIterator();
+		Iterator it = pag.loadSourcesIterator();
 		System.out.println("dddd" + pag.loadSources().size());
 		System.out.println("dddd" + pag.storeSources().size());
 		System.out.println("dddd" + pag.simpleSources().size());
@@ -210,7 +210,7 @@ public class TestAutoPAG extends SceneTransformer {
 		Set<String> x = new HashSet<String>();
 		int countArrayElement = 0, countSootField = 0;
 		int countOthers = 0;
-		Iterator<Object> it = pag.loadSourcesIterator();
+		Iterator it = pag.loadSourcesIterator();
 		while (it.hasNext()) {
 			FieldRefNode obj = (FieldRefNode) it.next();
 			x.add(obj.getField().toString());
@@ -250,7 +250,7 @@ public class TestAutoPAG extends SceneTransformer {
 	protected void printVarNodes(PAG pag) {
 		Set<String> x = new HashSet<String>();
 		int countLocalVarNode = 0, countGlobalVarNode = 0, countOthers = 0;
-		Iterator<Object> it = pag.simpleSourcesIterator();
+		Iterator it = pag.simpleSourcesIterator();
 		while (it.hasNext()) {
 			Object obj = it.next();
 			x.add(obj.toString());
@@ -317,7 +317,7 @@ public class TestAutoPAG extends SceneTransformer {
 		Set<String> x = new HashSet<String>();
 		int countAllocNode = 0, countStringConstNode = 0;
 		int countClassConstNode = 0, countOthers = 0;
-		Iterator<Object> it = pag.allocSourcesIterator();
+		Iterator it = pag.allocSourcesIterator();
 		while (it.hasNext()) {
 			Object obj = it.next();
 			x.add(obj.toString());

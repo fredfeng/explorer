@@ -1,5 +1,8 @@
 package edu.utexas.cgrex.automaton;
 
+import soot.jimple.InvokeExpr;
+import soot.jimple.Stmt;
+
 public class AutoEdge {
 
 	// id for Edge class is a
@@ -19,6 +22,8 @@ public class AutoEdge {
 	protected int residual = 0;
 	
 	protected int flow = 0;
+	
+	protected InvokeExpr srcStmt;
 	
 	//if it's true, then it belongs to edge in residual graph.
 	private boolean isInvEdge = false;
@@ -113,6 +118,14 @@ public class AutoEdge {
 	
 	public void setShortName(String name) { 
 		shortName = name; 
+	}
+	
+	public void setSrcStmt(InvokeExpr srcStmt) {
+		this.srcStmt = srcStmt;
+	}
+
+	public InvokeExpr getSrcStmt() {
+		return srcStmt;
 	}
 
 	@Override
