@@ -1,7 +1,5 @@
 package edu.utexas.cgrex.automaton;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -281,6 +279,15 @@ public class CGAutomaton extends Automaton {
 //		System.out.println(secondOpts);
 		return opts;
 	}
+	
+	//FIXME: O(n), very bad idea. 
+	protected boolean containsEdge(Set<AutoEdge> srcs, AutoEdge tgt) {
+		for(AutoEdge e : srcs)
+			if(e.getId().equals(tgt.getId()))
+				return true; 
+		
+		return false;
+	}
 
 	protected boolean annotSlaveMasterSCC2Edges(AutoState currSlaveState,
 			Set<AutoEdge> keyEdges, Map<AutoState, Boolean> opts) {
@@ -305,7 +312,9 @@ public class CGAutomaton extends Automaton {
 			assert (out != null);
 
 			for (AutoEdge e : keyEdges) {
-				if (out.contains(e)) {
+//				if (out.contains(e)) {
+				if (containsEdge(out, e)) {
+
 					outEdgsOfSCCAnnot = true;
 					break;
 				}
@@ -332,11 +341,13 @@ public class CGAutomaton extends Automaton {
 
 			Set<AutoEdge> in = ((CGAutoState) currSlaveState)
 					.getEdgesInTheSameSCC();
-
+			
 			assert (in != null);
 
 			for (AutoEdge e : keyEdges) {
-				if (in.contains(e)) {
+//				if (in.contains(e)) {
+				if (containsEdge(in, e)) {
+
 					edgsInSCCAnnot = true;
 					break;
 				}
@@ -461,5 +472,50 @@ public class CGAutomaton extends Automaton {
 		opts.put(currSlaveState, result);
 
 		return result;
+	}
+	
+	public void dump() {
+		StringBuilder b = new StringBuilder("digraph Automaton {\n");
+		b.append("  rankdir = LR;\n");
+		for (AutoState s : states) {
+			b.append("  ").append("\"" + s.id + "\"");
+
+			if (s.isFinalState) {
+				b.append(" [shape=doublecircle,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+			} else {
+				b.append(" [shape=circle,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+			}
+
+			if (s.isInitState) {
+				b.append("  \"initial\" [shape=plaintext,label=\"");
+				b.append(s.id);
+				b.append("\"];\n");
+				b.append("  \"initial\" -> ").append("\"" + s.id + "\"")
+						.append("\n");
+			}
+
+			for (AutoState tgt : s.getOutgoingStates().keySet()) {
+				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {
+					b.append("  ").append("\"" + s.id + "\"");
+
+					b.append(" -> ").append("\"" + tgt.id + "\"")
+							.append(" [label=\"");
+					if (outEdge.isDotEdge())
+						b.append(".");
+					else {
+						if(outEdge.getSrcStmt() != null)
+							b.append(outEdge.getSrcStmt().toString());
+					}
+					b.append("\"]\n");
+				}
+
+			}
+		}
+		b.append("}\n");
+		System.out.println(b.toString());
 	}
 }

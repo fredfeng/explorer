@@ -116,7 +116,7 @@ public class InterAutomaton extends Automaton {
 								.getTwoStepAnnot();
 						Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
 								.annotateTwoSteps(regExprOpts);
-
+						System.out.println("master:" + regExprOpts);
 						debugAnnot = annots;
 
 						intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
@@ -318,7 +318,7 @@ public class InterAutomaton extends Automaton {
 				}
 			}
 		}
-
+		
 		for (AutoState masterNxtSt : masterSt.getOutgoingStatesKeySet()) {
 			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
 			for (AutoEdge masterNextEdge : masterSt
@@ -395,6 +395,7 @@ public class InterAutomaton extends Automaton {
 
 				} else {
 
+					assert slaveSt instanceof CGAutoState;
 					Set<AutoState> slaveNextStates = slaveSt
 							.outgoingStatesInvLookup(masterNextEdge);
 

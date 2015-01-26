@@ -211,6 +211,8 @@ public abstract class Automaton {
 			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
 					.hasNext();) {
 				AutoState tgtState = cIt.next();
+				System.out.println("src:" + as);
+				System.out.println("tgt:" + tgtState);
 				assert (tgtState.incomingStatesLookup(as).size() > 0);
 			}
 		}
@@ -218,15 +220,20 @@ public abstract class Automaton {
 		
 	//init necessary inverse edges for residual graph.
 	public void initResidualEdges() {
-		//need to create new edges and nodes.
-		
-		for(AutoState s : this.states) {
-			List<AutoEdge> tempList = new LinkedList(s.getOutgoingStatesInvKeySet());
-			for(AutoEdge e : tempList) {
-				//how about self loop.
+		// need to create new edges and nodes.
+
+		for (AutoState s : this.states) {
+			List<AutoEdge> tempList = new LinkedList(
+					s.getOutgoingStatesInvKeySet());
+			for (AutoEdge e : tempList) {
+				// how about self loop.
+				if(e.isInvEdge())
+					continue;
+
 				AutoState tgtState = s.outgoingStatesInvLookup(e).iterator()
 						.next();
-				if(e.isInvEdge() || getEdgeBySrc(tgtState, s)!=null) continue;
+				if (getEdgeBySrc(tgtState, s) != null)
+					continue;
 
 				AutoEdge augEdge = new AutoEdge("inv" + e.getId(), e.getFlow(),
 						e.getFlow() + "");

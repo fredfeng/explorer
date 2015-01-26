@@ -1,6 +1,5 @@
 package edu.utexas.cgrex.automaton;
 
-import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
 
 public class AutoEdge {
@@ -9,6 +8,8 @@ public class AutoEdge {
 	// SootMethod for call graph finite state machine
 	// String for regular expression finite state machine
 	protected Object id;
+	
+	protected String uid;
 
 	protected boolean isDotEdge = false;
 	
@@ -23,7 +24,7 @@ public class AutoEdge {
 	
 	protected int flow = 0;
 	
-	protected InvokeExpr srcStmt;
+	protected Stmt srcStmt;
 	
 	//if it's true, then it belongs to edge in residual graph.
 	private boolean isInvEdge = false;
@@ -120,11 +121,11 @@ public class AutoEdge {
 		shortName = name; 
 	}
 	
-	public void setSrcStmt(InvokeExpr srcStmt) {
+	public void setSrcStmt(Stmt srcStmt) {
 		this.srcStmt = srcStmt;
 	}
 
-	public InvokeExpr getSrcStmt() {
+	public Stmt getSrcStmt() {
 		return srcStmt;
 	}
 

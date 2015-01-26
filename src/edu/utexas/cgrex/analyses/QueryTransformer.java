@@ -37,8 +37,12 @@ public class QueryTransformer extends SceneTransformer {
 		// picking up samples from CHA-based version.
 		RegularExpGenerator generator = new RegularExpGenerator(qm);
 
-		String regx = generator.genRegx();
-		regx = ".*\u1c02.*\u1c08";
+//		String regx = generator.genRegx();
+		//false;
+		String regx = ".*\u1c02.*\u1c08";
+		//true;
+//		String regx = ".*\u1c02.*\u1c06";
+
 		regx = regx.replaceAll("\\s+", "");
 		System.out.println("Random regx------" + regx);
 		boolean res1 = qm.queryRegx(regx);

@@ -198,7 +198,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 		}
 	}
 
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	protected static final int DEBUG_NESTING = 15;
 
@@ -767,7 +767,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				for (AssignEdge assignEdge : assigns) {
 					boolean enteringCall = forward ? assignEdge.isReturnEdge()
 							: assignEdge.isParamEdge();
-					System.out.println("filterAssigns2...." + assigns.size() + " boolean:" + enteringCall);
 
 					if (enteringCall) {
 						Integer callSite = assignEdge.getCallSite();
@@ -1610,9 +1609,9 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					if (assignEdge.isParamEdge()) {
 						Integer callSite = assignEdge.getCallSite();
 
-						System.out.println(csInfo.getCallSiteTargets(callSite));
-						System.out.println(csInfo.getInvokedMethod(callSite));
-						System.out.println(csInfo.getInvokingMethod(callSite));
+//						System.out.println(csInfo.getCallSiteTargets(callSite));
+//						System.out.println(csInfo.getInvokedMethod(callSite));
+//						System.out.println(csInfo.getInvokingMethod(callSite));
 //						System.out.println(csInfo.getReceiverForVirtCallSite(callSite));
 
 //						assert false : csInfo.isVirtCall(callSite) + " + " + weirdCall(callSite);
@@ -2002,7 +2001,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 			@Override
 			public void handleAlloc(AllocNode allocNode,
 					VarAndContext origVarAndContext) {
-				System.out.println("alloc context*******" + origVarAndContext);
 
 				if (doPointsTo && pointsTo != null) {
 					pointsTo.add(new AllocAndContext(allocNode,

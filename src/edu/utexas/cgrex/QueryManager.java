@@ -32,6 +32,8 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.util.Chain;
+import soot.util.queue.QueueReader;
+import chord.util.tuple.object.Pair;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
@@ -40,6 +42,7 @@ import edu.utexas.cgrex.analyses.CgContext;
 import edu.utexas.cgrex.analyses.DemandCSPointsTo;
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.AutoState;
+import edu.utexas.cgrex.automaton.CGAutoEdge;
 import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.automaton.InterAutoEdge;
@@ -88,12 +91,17 @@ public class QueryManager {
 	}
 
 	Map<SootMethod, AutoEdge> methToEdgeMap = new HashMap<SootMethod, AutoEdge>();
+	
+	Map<Pair<Stmt, SootMethod>, AutoEdge> invkToEdgeMap = new HashMap<Pair<Stmt, SootMethod>, AutoEdge>();
 
 	// map JSA's automaton to our own regstate.
 	Map<State, RegAutoState> jsaToAutostate = new HashMap<State, RegAutoState>();
 
 	// each sootmethod will be represented by the unicode of its number.
 	Map<String, SootMethod> uidToMethMap = new HashMap<String, SootMethod>();
+	
+	Map<SootMethod, String> methToUidMap = new HashMap<SootMethod, String>();
+
 
 	// automaton for call graph.
 	CGAutomaton cgAuto;
@@ -187,20 +195,30 @@ public class QueryManager {
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04x", meth.getNumber() + offset);
 			uidToMethMap.put(uid, meth);
+			methToUidMap.put(meth, uid);
 
-			AutoEdge inEdge = new AutoEdge(uid);
-			inEdge.setShortName(meth.getSignature());
 			CGAutoState st = new CGAutoState(uid, false, true);
-
 
 			methToStateMap.put(meth, st);
 			
 			CGAutoState stEager = new CGAutoState(uid, false, true);
 			methToEagerStateMap.put(meth, stEager);
 			eagerStateToMethMap.put(stEager, meth);
-
-			methToEdgeMap.put(meth, inEdge);
 		}
+		
+		QueueReader<Edge> qr = cg.listener();
+		while(qr.hasNext()) {
+			Edge callEdge = qr.next();
+			SootMethod tgtMethod = (SootMethod)callEdge.getTgt();
+			Stmt st = callEdge.srcStmt();
+			String uid = methToUidMap.get(tgtMethod);
+			assert uid != null : "tgt method: " + tgtMethod;
+			CGAutoEdge inEdge = new CGAutoEdge(uid, st);
+			inEdge.setShortName(st != null ? st.toString() : "null");
+			invkToEdgeMap
+					.put(new Pair<Stmt, SootMethod>(st, tgtMethod), inEdge);
+		}
+		
 		// only build cgauto once.
 		long startDd = System.nanoTime();
 		buildCGAutomaton();
@@ -293,7 +311,9 @@ public class QueryManager {
 		// Start from the main entry.
 		SootMethod mainMeth = Scene.v().getMainMethod();
 		// init FSM
-		AutoEdge callEdgeMain = methToEdgeMap.get(mainMeth);
+		String mainId = methToUidMap.get(mainMeth);
+		CGAutoEdge callEdgeMain = new CGAutoEdge(mainId, null);
+		callEdgeMain.setShortName("init");
 
 		// 0 is the initial id.
 		CGAutoState initState = new CGAutoState(0, true, true);
@@ -327,21 +347,20 @@ public class QueryManager {
 			while (outIt.hasNext()) {
 				Edge e = outIt.next();
 				Stmt srcStmt = e.srcStmt();
-				InvokeExpr expr = null;
-				if(srcStmt != null && srcStmt.containsInvokeExpr())
-					expr = srcStmt.getInvokeExpr();
 				// how about SCC? FIXME!!
 				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
-					AutoEdge outEdge = methToEdgeMap.get(worker);
-					outEdge.setSrcStmt(srcStmt.getInvokeExpr());
+					AutoEdge outEdge = invkToEdgeMap.get(new Pair<>(srcStmt,
+							worker));
+					assert outEdge != null : e;
 					// need fresh instance for each callsite but share same uid.
 					curState.addOutgoingStates(curState, outEdge);
 					curState.addIncomingStates(curState, outEdge);
 				} else {
 					SootMethod tgtMeth = (SootMethod) e.getTgt();
 					worklist.add(tgtMeth);
-					AutoEdge outEdge = methToEdgeMap.get(tgtMeth);
-					outEdge.setSrcStmt(expr);
+					AutoEdge outEdge = invkToEdgeMap.get(new Pair<>(srcStmt,
+							tgtMeth));
+					assert outEdge != null : e;
 					// need fresh instance for each callsite but share same uid.
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
@@ -359,8 +378,8 @@ public class QueryManager {
 		System.out.println("Total States****CG_AUTO***" + cgAuto.getStates().size());
 
 		// dump automaton of the call graph.
-		 cgAuto.dump();
 		 cgAuto.validate();
+		 cgAuto.dump();
 	}
 	
 	private void buildEagerCGAutomaton() {
@@ -626,17 +645,27 @@ public class QueryManager {
 		for(Value v : varSet) {
 			assert(v instanceof Local);
 			Local l = (Local) v;
-			for(AutoEdge in : inEdges) {
-				InvokeExpr ie = in.getSrcStmt();
+			for (AutoEdge in : inEdges) {
+				if(in.isInvEdge())
+					continue;
+				Stmt stmt = in.getSrcStmt();
+				if (stmt != null && stmt.containsInvokeExpr()
+						&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
+								.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
+					CgContext ctxt = new CgContext(stmt.getInvokeExpr());
+					System.out.println("#######query ctxt:"
+							+ ctxt.getCallsite()
+							+ " var: "
+							+ l
+							+ " result:"
+							+ ptsDemand.reachingObjects(ctxt, l)
+									.possibleTypes());
+					ptTypeSet.addAll(ptsDemand.reachingObjects(ctxt, l)
+							.possibleTypes());
 
-				if ((ie instanceof VirtualInvokeExpr)
-						|| (ie instanceof InterfaceInvokeExpr)) {
-					CgContext ctxt = new CgContext(ie);
-					System.out.println("#######query ctxt:" + ctxt.getCallsite() + " var: " + l + " result:" + ptsDemand.reachingObjects(ctxt,l).possibleTypes());
-					ptTypeSet.addAll(ptsDemand.reachingObjects(ctxt,l).possibleTypes());
 				} else {
-					ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
-
+					ptTypeSet.addAll(ptsDemand.reachingObjects(l)
+							.possibleTypes());
 				}
 			}
 		}
@@ -644,8 +673,8 @@ public class QueryManager {
         if(ptTypeSet.size() == 0) return true;
 
 		ptTypeSet.retainAll(typeSet);
+
 		return !ptTypeSet.isEmpty();
-//		return autoPAG.insensitiveQuery(varSet, typeSet);
 	}
 
 	// return the edge from soot's call graph

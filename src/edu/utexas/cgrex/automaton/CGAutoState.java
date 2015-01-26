@@ -251,4 +251,14 @@ public class CGAutoState extends AutoState {
 				| outgoingStatesOfSCC.remove(state)
 				| outgoingEdgesOfSCC.remove(edge);
 	}
+	
+	public Set<AutoState> outgoingStatesInvLookup(AutoEdge edge) {
+		Set<AutoState> newSt = new HashSet<AutoState>();
+		for(AutoState outst : outgoingStates.keySet()) {
+			if(outst.getId().equals(edge.getId()))
+				newSt.add(outst);
+		}
+		return newSt;
+	}
+	
 }
