@@ -28,7 +28,7 @@ public class QueryTransformer extends SceneTransformer {
 	protected void internalTransform(String phaseName,
 			@SuppressWarnings("rawtypes") Map options) {
 		// TODO Auto-generated method stub
-		qm = new QueryManager(Scene.v().getCallGraph());
+		qm = new QueryManager(Scene.v().getCallGraph(), Scene.v().getMainMethod());
 		this.runBenchmark();
 	}
 	

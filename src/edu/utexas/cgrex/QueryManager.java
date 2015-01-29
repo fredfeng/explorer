@@ -125,7 +125,10 @@ public class QueryManager {
 	
 	//run eager or not?
 	private boolean runEager = false;
-
+	
+	//reachable methods
+	private Set<SootMethod> reachableMethSet = new HashSet<SootMethod>();
+ 
 
 	public QueryManager(CallGraph cg) {
 		final int DEFAULT_MAX_PASSES = 10;
@@ -137,6 +140,18 @@ public class QueryManager {
 		
 //		ptsEager = DemandCSPointsTo.makeWithBudget(
 //				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		
+		this.initQM(cg, false);
+	}
+	
+	public QueryManager(CallGraph cg, SootMethod meth) {
+		final int DEFAULT_MAX_PASSES = 10;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final boolean DEFAULT_LAZY = false;
+		
+		ptsDemand = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		this.setMainMethod(meth);
 		
 		this.initQM(cg, false);
 	}
@@ -189,8 +204,16 @@ public class QueryManager {
 				+ this.getReachableMethods().size());
 		// this magic number is used to fix the error by invalid unicode such as
 		// \u0022
+		
+		String mainId = "\\u" + String.format("%04x", mainMethod.getNumber() + offset);
+		uidToMethMap.put(mainId, mainMethod);
+		methToUidMap.put(mainMethod, mainId);
+		CGAutoState mst = new CGAutoState(mainId, false, true);
+		methToStateMap.put(mainMethod, mst);
+		
 		while (mIt.hasNext()) {
 			SootMethod meth = (SootMethod) mIt.next();
+			reachableMethSet.add(meth);
 
 			// map each method to a unicode.
 			String uid = "\\u" + String.format("%04x", meth.getNumber() + offset);
@@ -210,8 +233,12 @@ public class QueryManager {
 		while(qr.hasNext()) {
 			Edge callEdge = qr.next();
 			SootMethod tgtMethod = (SootMethod)callEdge.getTgt();
+			if(!reachableMethSet.contains(tgtMethod))
+				continue;
+
 			Stmt st = callEdge.srcStmt();
 			String uid = methToUidMap.get(tgtMethod);
+			assert reachableMethSet.contains(tgtMethod) : tgtMethod + " edge:" + callEdge;
 			assert uid != null : "tgt method: " + tgtMethod;
 			CGAutoEdge inEdge = new CGAutoEdge(uid, st);
 			inEdge.setShortName(st != null ? st.toString() : "null");
@@ -224,7 +251,6 @@ public class QueryManager {
 		buildCGAutomaton();
 		long endDd = System.nanoTime();
 		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
-//		CompTransformer.ddTime = (endDd - startDd)/1e6;
 		
 		if(runEager) {
 			long startEager = System.nanoTime();
@@ -232,7 +258,6 @@ public class QueryManager {
 			long endEager = System.nanoTime();
 			StringUtil.reportSec("Time To build Eager CG:", startEager,
 					endEager);
-//			CompTransformer.eaTime = (endEager - startEager) / 1e6;
 		}
 
 	}
@@ -295,7 +320,6 @@ public class QueryManager {
 				} 
 				outEdge.setShortName(shortName);
 
-
 				fsmState.addOutgoingStates(tgtState, outEdge);
 				tgtState.addIncomingStates(fsmState, outEdge);
 			}
@@ -307,11 +331,19 @@ public class QueryManager {
 		 regAuto.dump();
 	}
 	
+	public void setMainMethod(SootMethod meth) {
+		mainMethod = meth;
+	}
+	
+	SootMethod mainMethod;
+	
 	private void buildCGAutomaton() {
 		// Start from the main entry.
-		SootMethod mainMeth = Scene.v().getMainMethod();
+		assert mainMethod != null;
+		SootMethod mainMeth = mainMethod;
 		// init FSM
 		String mainId = methToUidMap.get(mainMeth);
+		assert mainId != null : "empty main id.";
 		CGAutoEdge callEdgeMain = new CGAutoEdge(mainId, null);
 		callEdgeMain.setShortName("init");
 
@@ -347,8 +379,13 @@ public class QueryManager {
 			while (outIt.hasNext()) {
 				Edge e = outIt.next();
 				Stmt srcStmt = e.srcStmt();
+				SootMethod tgtMeth = (SootMethod) e.getTgt();
+				if(!reachableMethSet.contains(tgtMeth)) {
+					System.err.println("unreachable target method: " + tgtMeth);
+					continue;
+				}
 				// how about SCC? FIXME!!
-				if (e.getTgt().equals(worker)) {// recursive call, add self-loop
+				if (tgtMeth.equals(worker)) {// recursive call, add self-loop
 					AutoEdge outEdge = invkToEdgeMap.get(new Pair<>(srcStmt,
 							worker));
 					assert outEdge != null : e;
@@ -356,7 +393,6 @@ public class QueryManager {
 					curState.addOutgoingStates(curState, outEdge);
 					curState.addIncomingStates(curState, outEdge);
 				} else {
-					SootMethod tgtMeth = (SootMethod) e.getTgt();
 					worklist.add(tgtMeth);
 					AutoEdge outEdge = invkToEdgeMap.get(new Pair<>(srcStmt,
 							tgtMeth));
