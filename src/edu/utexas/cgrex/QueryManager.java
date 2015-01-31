@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import soot.Body;
-import soot.EntryPoints;
 import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.PointsToAnalysis;
@@ -188,7 +187,8 @@ public class QueryManager {
 	public ReachableMethods getReachableMethods() {
 		if (reachableMethods == null) {
 			reachableMethods = new ReachableMethods(cg,
-					new ArrayList<MethodOrMethodContext>(EntryPoints.v().all()));
+					new ArrayList<MethodOrMethodContext>(Scene.v().getEntryPoints()));
+			assert !Scene.v().getEntryPoints().isEmpty() : "No entry points.";
 		}
 		reachableMethods.update();
 		return reachableMethods;
@@ -233,6 +233,9 @@ public class QueryManager {
 		while(qr.hasNext()) {
 			Edge callEdge = qr.next();
 			SootMethod tgtMethod = (SootMethod)callEdge.getTgt();
+			if(tgtMethod.getName().equals("<android.content.BroadcastReceiver: void abortBroadcast()>"))
+				assert false : callEdge;
+			
 			if(!reachableMethSet.contains(tgtMethod))
 				continue;
 
@@ -373,7 +376,7 @@ public class QueryManager {
 			visited.add(worker);
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
-
+			
 			// worker. outgoing edges
 			Iterator<Edge> outIt = cg.edgesOutOf(worker);
 			while (outIt.hasNext()) {
@@ -381,7 +384,8 @@ public class QueryManager {
 				Stmt srcStmt = e.srcStmt();
 				SootMethod tgtMeth = (SootMethod) e.getTgt();
 				if(!reachableMethSet.contains(tgtMeth)) {
-					System.err.println("unreachable target method: " + tgtMeth);
+					System.err.println("unreachable target method: " + tgtMeth.getSignature());
+					assert !Scene.v().containsMethod(tgtMeth.getSignature()) : tgtMeth;
 					continue;
 				}
 				// how about SCC? FIXME!!
@@ -401,6 +405,8 @@ public class QueryManager {
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);
 					curState.addOutgoingStates(tgtState, outEdge);
 					// add incoming state.
+					assert outEdge != null : outEdge;
+					assert curState != null : curState;
 					tgtState.addIncomingStates(curState, outEdge);
 				}
 			}
@@ -642,8 +648,6 @@ public class QueryManager {
 
 	private boolean doPointsToQuery(CutEntity cut) {
 		
-		System.out.println("checking a cut:" + cut);
-
 		// type info.
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
 				.getTgtCGAutoStateId());
@@ -664,45 +668,36 @@ public class QueryManager {
 				break;
 			}
 		}
-		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge) inEdge)
-				.getTgtCGAutoStateId());
 
         //assert(!calleeMeth.isPhantom());
         assert(calleeMeth.isConcrete());
-		List<Value> varSet = getVarList(callerMeth, calleeMeth);
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
-
-		// to be conservative.
-		if (varSet.size() == 0)
-			return true;
+		
+		System.out.println("checking a cut:" + cut);
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
-		for(Value v : varSet) {
-			assert(v instanceof Local);
-			Local l = (Local) v;
-			for (AutoEdge in : inEdges) {
-				if(in.isInvEdge())
-					continue;
-				Stmt stmt = in.getSrcStmt();
-				if (stmt != null && stmt.containsInvokeExpr()
-						&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
-								.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
-					CgContext ctxt = new CgContext(stmt.getInvokeExpr());
-					System.out.println("#######query ctxt:"
-							+ ctxt.getCallsite()
-							+ " var: "
-							+ l
-							+ " result:"
-							+ ptsDemand.reachingObjects(ctxt, l)
-									.possibleTypes());
-					ptTypeSet.addAll(ptsDemand.reachingObjects(ctxt, l)
-							.possibleTypes());
+		Stmt st = cut.getStmt();
+		assert st != null;
+		Local l = this.getVarList(st);
+		//get the context of l. This could be optimized later.
+		for (AutoEdge in : inEdges) {
+			if (in.isInvEdge())
+				continue;
+			Stmt stmt = in.getSrcStmt();
+			if (stmt != null
+					&& stmt.containsInvokeExpr()
+					&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
+							.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
+				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
+				System.out.println("#######query ctxt:" + ctxt.getCallsite()
+						+ " var: " + l + " result:"
+						+ ptsDemand.reachingObjects(ctxt, l).possibleTypes());
+				ptTypeSet.addAll(ptsDemand.reachingObjects(ctxt, l)
+						.possibleTypes());
 
-				} else {
-					ptTypeSet.addAll(ptsDemand.reachingObjects(l)
-							.possibleTypes());
-				}
+			} else {
+				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 			}
 		}
 
@@ -787,83 +782,83 @@ public class QueryManager {
 	}
 	
 	//Return all m's callers.
-	public Set<String> queryEagerCallers(String callee) {
-		Set<String> callers = new HashSet();
-		
-		SootMethod calleeMeth = Scene.v().getMethod(callee);
-		
-		AutoState calleeSt = methToEagerStateMap.get(calleeMeth);
-		for (AutoState callerSt : calleeSt.getIncomingStatesKeySet()){
-			SootMethod callerMeth = eagerStateToMethMap.get(callerSt);
-			
-			List<Value> varSet = getVarList(callerMeth, calleeMeth);
-			List<Type> typeSet = SootUtils.compatibleTypeList(
-					calleeMeth.getDeclaringClass(), calleeMeth);
-
-			// to be conservative.
-			if (varSet.size() == 0) {
-				callers.add(callerMeth.getSignature());
-				continue;
-			}
-			
-			Set<Type> ptTypeSet = new HashSet<Type>();
-			for(Value v : varSet) {
-				assert(v instanceof Local);
-				Local l = (Local) v;
-				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
-			}
-
-	        if(ptTypeSet.size() == 0) {
-				callers.add(callerMeth.getSignature());
-				continue;
-	        }
-
-			ptTypeSet.retainAll(typeSet);
-			if(!ptTypeSet.isEmpty())
-				callers.add(callerMeth.getSignature());
-			
-		}
-		return callers;
-	}
+//	public Set<String> queryEagerCallers(String callee) {
+//		Set<String> callers = new HashSet();
+//		
+//		SootMethod calleeMeth = Scene.v().getMethod(callee);
+//		
+//		AutoState calleeSt = methToEagerStateMap.get(calleeMeth);
+//		for (AutoState callerSt : calleeSt.getIncomingStatesKeySet()){
+//			SootMethod callerMeth = eagerStateToMethMap.get(callerSt);
+//			
+//			Set<Value> varSet = getVarList(callerMeth, calleeMeth);
+//			List<Type> typeSet = SootUtils.compatibleTypeList(
+//					calleeMeth.getDeclaringClass(), calleeMeth);
+//
+//			// to be conservative.
+//			if (varSet.size() == 0) {
+//				callers.add(callerMeth.getSignature());
+//				continue;
+//			}
+//			
+//			Set<Type> ptTypeSet = new HashSet<Type>();
+//			for(Value v : varSet) {
+//				assert(v instanceof Local);
+//				Local l = (Local) v;
+//				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+//			}
+//
+//	        if(ptTypeSet.size() == 0) {
+//				callers.add(callerMeth.getSignature());
+//				continue;
+//	        }
+//
+//			ptTypeSet.retainAll(typeSet);
+//			if(!ptTypeSet.isEmpty())
+//				callers.add(callerMeth.getSignature());
+//			
+//		}
+//		return callers;
+//	}
 	
 	//Return all m's callers.
-	public Set<String> queryCallers(String callee) {
-		Set<String> callers = new HashSet();
-		SootMethod calleeMeth = Scene.v().getMethod(callee);
-		Iterator<Edge> it = cg.edgesInto(calleeMeth);
-		while(it.hasNext()) {
-			Edge callEdge = it.next();
-			SootMethod callerMeth = (SootMethod)callEdge.getSrc();
-			
-			List<Value> varSet = getVarList(callerMeth, calleeMeth);
-			List<Type> typeSet = SootUtils.compatibleTypeList(
-					calleeMeth.getDeclaringClass(), calleeMeth);
-
-			// to be conservative.
-			if (varSet.size() == 0) {
-				callers.add(callerMeth.getSignature());
-				continue;
-			}
-			
-			Set<Type> ptTypeSet = new HashSet<Type>();
-			for(Value v : varSet) {
-				assert(v instanceof Local);
-				Local l = (Local) v;
-				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
-			}
-
-	        if(ptTypeSet.size() == 0) {
-				callers.add(callerMeth.getSignature());
-				continue;
-	        }
-
-			ptTypeSet.retainAll(typeSet);
-			if(!ptTypeSet.isEmpty())
-				callers.add(callerMeth.getSignature());
-
-		}
-		return callers;
-	}
+//	public Set<String> queryCallers(String callee) {
+//		Set<String> callers = new HashSet();
+//		SootMethod calleeMeth = Scene.v().getMethod(callee);
+//		Iterator<Edge> it = cg.edgesInto(calleeMeth);
+//		while(it.hasNext()) {
+//			Edge callEdge = it.next();
+//			SootMethod callerMeth = (SootMethod)callEdge.getSrc();
+//			
+//			Set<Value> varSet = getVarList(callerMeth, calleeMeth);
+//			List<Type> typeSet = SootUtils.compatibleTypeList(
+//					calleeMeth.getDeclaringClass(), calleeMeth);
+//
+//			// to be conservative.
+//			if (varSet.size() == 0) {
+//				callers.add(callerMeth.getSignature());
+//				continue;
+//			}
+//			
+//			Set<Type> ptTypeSet = new HashSet<Type>();
+//			for(Value v : varSet) {
+//				assert(v instanceof Local);
+//				Local l = (Local) v;
+//				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+//			}
+//
+//	        if(ptTypeSet.size() == 0) {
+//				callers.add(callerMeth.getSignature());
+//				continue;
+//	        }
+//
+//			ptTypeSet.retainAll(typeSet);
+//			if(!ptTypeSet.isEmpty())
+//				callers.add(callerMeth.getSignature());
+//
+//		}
+//		return callers;
+//	}
 	
 	public boolean queryRegxEager(String regx) {
 		regx = regx.replaceAll("\\s+", "");
@@ -935,35 +930,20 @@ public class QueryManager {
 	}
 
 	// get a list of vars that can invoke method tgt.
-	private List<Value> getVarList(SootMethod method, SootMethod tgt) {
-		List<Value> varSet = new LinkedList<Value>();
-		if (!method.isConcrete())
-			return varSet;
+	private Local getVarList(Stmt stmt) {
 
-		Body body = method.retrieveActiveBody();
-
-		Chain<Unit> units = body.getUnits();
-		Iterator<Unit> uit = units.snapshotIterator();
-		while (uit.hasNext()) {
-			Stmt stmt = (Stmt) uit.next();
-
-			// invocation statements
-			if (stmt.containsInvokeExpr()) {
-				InvokeExpr ie = stmt.getInvokeExpr();
-				if ((ie instanceof VirtualInvokeExpr)
-						|| (ie instanceof InterfaceInvokeExpr)) {
-					SootMethod callee = ie.getMethod();
-//					if (SootUtils.compatibleWith(tgt, callee)) {
-						// ie.get
-						Value var = ie.getUseBoxes().get(0).getValue();
-						varSet.add(var);
-//						System.out.println("my callsite: " + ie);
-//						System.out.println("my receiver#########: " + var + "--->" + ptsDemand.reachingObjects((Local)var));
-//					}
-				}
+		if (stmt.containsInvokeExpr()) {
+			InvokeExpr ie = stmt.getInvokeExpr();
+			if ((ie instanceof VirtualInvokeExpr)
+					|| (ie instanceof InterfaceInvokeExpr)) {
+				int len = ie.getUseBoxes().size();
+				assert len > 0;
+				Value var = ie.getUseBoxes().get(len - 1).getValue();
+				assert var instanceof Local : var + " in: " + ie;
+				return (Local) var;
 			}
 		}
-		return varSet;
+		return null;
 	}
 
 }

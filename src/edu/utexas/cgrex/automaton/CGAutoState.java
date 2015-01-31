@@ -149,7 +149,7 @@ public class CGAutoState extends AutoState {
 	@Override
 	public boolean addIncomingStates(AutoState state, AutoEdge edge) {
 		assert(state.getId() != null);
-
+		
 		if (incomingEdge == null) {
 			incomingEdge = edge;
 			return incomingStates.add(state);

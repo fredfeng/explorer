@@ -15,6 +15,11 @@ public class CGAutoEdge extends AutoEdge {
 			return false;
 
 		CGAutoEdge cgEdge = (CGAutoEdge) other;
+		
+		if(srcStmt == null) {
+			//1. native call. 2. main entries
+			return id.equals(cgEdge.getId());
+		}
 
 		return id.equals(cgEdge.getId()) && srcStmt.equals(cgEdge.getSrcStmt());
 	}
