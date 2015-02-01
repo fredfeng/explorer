@@ -202,7 +202,7 @@ public abstract class Automaton {
 
 	// validate whether current automaton is well-formed.
 	public void validate() {
-		Set<AutoState> all = new HashSet();
+		Set<AutoState> all = new HashSet<AutoState>();
 		all.addAll(this.getStates());
 		all.addAll(this.getFinalStates());
 		all.addAll(this.getInitStates());
@@ -211,8 +211,6 @@ public abstract class Automaton {
 			for (Iterator<AutoState> cIt = as.outgoingStatesIterator(); cIt
 					.hasNext();) {
 				AutoState tgtState = cIt.next();
-				System.out.println("src:" + as);
-				System.out.println("tgt:" + tgtState);
 				assert (tgtState.incomingStatesLookup(as).size() > 0);
 			}
 		}
@@ -223,7 +221,7 @@ public abstract class Automaton {
 		// need to create new edges and nodes.
 
 		for (AutoState s : this.states) {
-			List<AutoEdge> tempList = new LinkedList(
+			List<AutoEdge> tempList = new LinkedList<AutoEdge>(
 					s.getOutgoingStatesInvKeySet());
 			for (AutoEdge e : tempList) {
 				// how about self loop.

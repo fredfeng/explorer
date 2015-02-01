@@ -1144,7 +1144,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	protected CallingContextSet findVarContextsFromAlloc(
 			AllocAndContext allocAndContext, VarNode targetVar) {
-		System.out.println("findVarContextsFromAlloc....");
 
 		CallingContextSet tmpSet = checkAllocAndContextCache(allocAndContext,
 				targetVar);
@@ -1595,7 +1594,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						// }
 						// }
 					} else if (assignEdge.isReturnEdge()) {
-						assert false;
 						if (DEBUG)
 							debugPrint("entering call site "
 									+ assignEdge.getCallSite());
@@ -1786,7 +1784,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 	protected Set<SootMethod> refineCallSite(Integer callSite,
 			ImmutableStack<Integer> origContext) {
-		assert false;
 		CallSiteAndContext callSiteAndContext = new CallSiteAndContext(
 				callSite, origContext);
 		if (queriedCallSites.contains(callSiteAndContext)) {

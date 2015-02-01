@@ -151,16 +151,12 @@ public class QueryManager {
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		this.setMainMethod(meth);
-		
 		this.initQM(cg, false);
 	}
 	
 	public QueryManager(CallGraph cg, boolean flag, DemandCSPointsTo dcsp) {
 		this.initQM(cg, flag);
-		
 		ptsDemand = dcsp;
-		
-//		ptsEager = dcsp;
 	}
 	
 	public QueryManager(CallGraph cg, boolean flag,
@@ -290,16 +286,10 @@ public class QueryManager {
 
 		for (State s : states) {
 			RegAutoState fsmState = jsaToAutostate.get(s);
-			// Map<State, Edge>
-			// Map<AutoState,Set<AutoEdge>> outgoingStates = new
-			// HashMap<AutoState,Set<AutoEdge>>();
-
 			if (s.isAccept()) {
 				fsmState.setFinalState();
 				regAuto.addFinalState(fsmState);
 			}
-
-			// System.out.println(auto.toDot());
 
 			if (s.equals(auto.getInitialState())) {
 				fsmState.setInitState();
@@ -321,8 +311,8 @@ public class QueryManager {
 					outEdge.setDotEdge();
 					shortName = ".";
 				} 
+				
 				outEdge.setShortName(shortName);
-
 				fsmState.addOutgoingStates(tgtState, outEdge);
 				tgtState.addIncomingStates(fsmState, outEdge);
 			}
@@ -422,6 +412,14 @@ public class QueryManager {
 		// dump automaton of the call graph.
 		 cgAuto.validate();
 		 cgAuto.dump();
+	}
+	
+	public boolean isReachable(String m) {
+		if(!Scene.v().containsMethod(m))
+			return false;
+		
+		SootMethod meth = Scene.v().getMethod(m);
+		return this.reachableMethSet.contains(meth);
 	}
 	
 	private void buildEagerCGAutomaton() {
@@ -647,40 +645,30 @@ public class QueryManager {
 	}
 
 	private boolean doPointsToQuery(CutEntity cut) {
-		
 		// type info.
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
 				.getTgtCGAutoStateId());
-		
+
 		AutoState src = cut.getSrc();
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
-		
+
 		assert (calleeMeth != null);
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
 			return true;
 
-		AutoEdge inEdge = null;
-		for (AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
-			if (!e.isInvEdge()) {
-				inEdge = e;
-				break;
-			}
-		}
-
-        //assert(!calleeMeth.isPhantom());
-        assert(calleeMeth.isConcrete());
+		assert (calleeMeth.isConcrete());
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
-		
+
 		System.out.println("checking a cut:" + cut);
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		Stmt st = cut.getStmt();
 		assert st != null;
 		Local l = this.getVarList(st);
-		//get the context of l. This could be optimized later.
+		// get the context of l. This could be optimized later.
 		for (AutoEdge in : inEdges) {
 			if (in.isInvEdge())
 				continue;
@@ -701,7 +689,8 @@ public class QueryManager {
 			}
 		}
 
-        if(ptTypeSet.size() == 0) return true;
+		if (ptTypeSet.size() == 0)
+			return true;
 
 		ptTypeSet.retainAll(typeSet);
 
