@@ -85,6 +85,37 @@
 	  </target>
 
 
+	<!--Run earlystop harness from Xinyu. -->
+	<target name="malware" depends="jar">
+	    <java classname="edu.utexas.cgrex.benchmarks.MalwareHarness"
+	          maxmemory="8g"
+	          fork="true"
+	          failonerror="true">
+	          <jvmarg value="-ea" />
+	      <classpath>
+			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
+			<pathelement location="lib/heros-nightly.jar"/>
+			<pathelement location="lib/automaton.jar"/>
+			<pathelement location="lib/chord.jar"/>
+			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+			<pathelement location="lib/cloning-1.9.0.jar"/>
+			<pathelement location="lib/soot-trunk.jar"/>
+			<pathelement location="lib/objenesis-1.2.jar"/>
+			<pathelement location="lib/soot-infoflow.jar"/>
+			<pathelement location="lib/soot-infoflow-android.jar"/>
+			<pathelement location="lib/axml-2.0.jar"/>
+			<pathelement location="lib/slf4j-api-1.7.5.jar"/>
+			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
+	      </classpath>
+	      <arg value="${target.loc}"/>
+	      <arg value="${target.main}"/>
+	      <arg value="${query.loc}"/>
+	      <arg value="${alg}"/>
+		</java>
+	  </target>
+
+
+
   <target name="gen" depends="jar">
       <java classname="edu.utexas.cgrex.benchmarks.GenRegxHarness"
           maxmemory="64g"
@@ -121,8 +152,13 @@
 		<pathelement location="lib/chord.jar"/>
 		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
 		<pathelement location="lib/cloning-1.9.0.jar"/>
-		<pathelement location="lib/soot-nightly.jar"/>
+		<pathelement location="lib/soot-trunk.jar"/>
 		<pathelement location="lib/objenesis-1.2.jar"/>
+        <pathelement location="lib/soot-infoflow.jar"/>
+        <pathelement location="lib/soot-infoflow-android.jar"/>
+        <pathelement location="lib/axml-2.0.jar"/>
+        <pathelement location="lib/slf4j-api-1.7.5.jar"/>
+        <pathelement location="lib/slf4j-simple-1.7.5.jar"/>
 	  </classpath>
 	</javac>
   </target>
