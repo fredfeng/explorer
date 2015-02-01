@@ -36,12 +36,8 @@ public class Harness {
 
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
-							"-src-prec", "java", "-allow-phantom-refs",
-							"-no-bodies-for-excluded", "-exclude", "java",
-							"-exclude", "javax",
-							"-output-format", "none",
-							"-p", "cg.spark", "enabled:true",
-							"-p", "jb", "use-original-names:true", });
+							"-no-bodies-for-excluded", 
+							"-p", "cg.spark", "enabled:true" });
 
 		} catch (CompilationDeathException e) {
 			e.printStackTrace();

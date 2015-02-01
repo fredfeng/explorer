@@ -320,8 +320,8 @@ public class QueryManager {
 			regAuto.addStates(fsmState);
 		}
 		// dump current result.
-		System.out.println("dump regular graph.");
-		 regAuto.dump();
+//		System.out.println("dump regular graph.");
+//		regAuto.dump();
 	}
 	
 	public void setMainMethod(SootMethod meth) {
@@ -407,11 +407,11 @@ public class QueryManager {
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
 
-		System.out.println("Total States****CG_AUTO***" + cgAuto.getStates().size());
+//		System.out.println("Total States****CG_AUTO***" + cgAuto.getStates().size());
 
 		// dump automaton of the call graph.
-		 cgAuto.validate();
-		 cgAuto.dump();
+//		 cgAuto.validate();
+//		 cgAuto.dump();
 	}
 	
 	public boolean isReachable(String m) {
@@ -572,8 +572,8 @@ public class QueryManager {
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
 
-		 interAuto.validate();
-		 interAuto.dump();
+//		interAuto.validate();
+//		interAuto.dump();
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
@@ -666,7 +666,7 @@ public class QueryManager {
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		Stmt st = cut.getStmt();
-		assert st != null;
+		assert st != null : calleeMeth;
 		Local l = this.getVarList(st);
 		// get the context of l. This could be optimized later.
 		for (AutoEdge in : inEdges) {
