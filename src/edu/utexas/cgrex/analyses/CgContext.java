@@ -14,4 +14,8 @@ public class CgContext implements Context{
 		return callsite;
 	}
 	
+	public String toString() {
+		return callsite.toString();
+	}
+	
 }

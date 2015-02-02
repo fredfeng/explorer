@@ -67,14 +67,13 @@ public abstract class Automaton {
 
 	public AutoEdge getEdgeBySrc(AutoState src, AutoState sink) {
 		AutoEdge e = null;
-
 		for (AutoState s : src.getOutgoingStatesKeySet()) {
 			if (s.equals(sink)) {
 				e = src.outgoingStatesLookup(s).iterator().next();
 				break;
 			}
 		}
-
+		
 		return e;
 	}
 
@@ -225,7 +224,7 @@ public abstract class Automaton {
 					s.getOutgoingStatesInvKeySet());
 			for (AutoEdge e : tempList) {
 				// how about self loop.
-				if(e.isInvEdge())
+				if (e.isInvEdge())
 					continue;
 
 				AutoState tgtState = s.outgoingStatesInvLookup(e).iterator()
@@ -233,8 +232,9 @@ public abstract class Automaton {
 				if (getEdgeBySrc(tgtState, s) != null)
 					continue;
 
-				AutoEdge augEdge = new AutoEdge("inv" + e.getId(), e.getFlow(),
-						e.getFlow() + "");
+				int weight = e.getFlow();
+				AutoEdge augEdge = new AutoEdge("inv" + e.getId(), weight,
+						weight + "");
 				augEdge.setResidual(e.getFlow());
 				augEdge.setInvEdge(true);
 				this.addEdge(tgtState, s, augEdge);

@@ -13,7 +13,7 @@ public class AutoEdge {
 
 	protected boolean isDotEdge = false;
 	
-	private int INFINITY = 9999;
+	public static int INFINITY = 9999;
 	
 	//name displayed in the graph.
 	protected String shortName = "";
@@ -123,6 +123,8 @@ public class AutoEdge {
 	
 	public void setSrcStmt(Stmt srcStmt) {
 		this.srcStmt = srcStmt;
+		if(srcStmt == null)
+			this.weight = INFINITY;
 	}
 
 	public Stmt getSrcStmt() {

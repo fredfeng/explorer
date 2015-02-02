@@ -1607,12 +1607,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					if (assignEdge.isParamEdge()) {
 						Integer callSite = assignEdge.getCallSite();
 
-//						System.out.println(csInfo.getCallSiteTargets(callSite));
-//						System.out.println(csInfo.getInvokedMethod(callSite));
-//						System.out.println(csInfo.getInvokingMethod(callSite));
-//						System.out.println(csInfo.getReceiverForVirtCallSite(callSite));
-
-//						assert false : csInfo.isVirtCall(callSite) + " + " + weirdCall(callSite);
 						if (csInfo.isVirtCall(callSite) && !weirdCall(callSite)) {
 							Set<SootMethod> targets = refineCallSite(callSite,
 									newContext);
@@ -1640,6 +1634,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 
 				}
 			}
+			assert vMatches != null;
 			Set<VarNode> matchSources = vMatches.vMatchInvLookup(v);
 			Node[] loads = pag.loadInvLookup(v);
 			for (int i = 0; i < loads.length; i++) {

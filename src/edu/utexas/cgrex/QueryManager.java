@@ -590,6 +590,12 @@ public class QueryManager {
 		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
 		System.out.println("cutset:" + cutset);
+		
+		for(CutEntity ct : cutset) {
+			assert ct.edge.getWeight() != AutoEdge.INFINITY : ct.edge;
+			assert !ct.edge.isInvEdge();
+			assert ct.getStmt() != null : ct.edge;
+		}
 
 		boolean answer = true;
 		// contains infinity edge?
@@ -663,7 +669,7 @@ public class QueryManager {
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		Stmt st = cut.getStmt();
 		assert st != null : calleeMeth;
-		Local l = this.getVarList(st);
+		Local l = getVarList(st);
 		// get the context of l. This could be optimized later.
 		for (AutoEdge in : inEdges) {
 			if (in.isInvEdge())
@@ -674,11 +680,11 @@ public class QueryManager {
 					&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
 							.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
-				System.out.println("#######query ctxt:" + ctxt.getCallsite()
-						+ " var: " + l + " result:"
-						+ ptsDemand.reachingObjects(ctxt, l).possibleTypes());
-				ptTypeSet.addAll(ptsDemand.reachingObjects(ctxt, l)
-						.possibleTypes());
+				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
+						.possibleTypes();
+				System.out.println("#######query ctxt:" + ctxt + " var: " + l
+						+ " result:" + types);
+				ptTypeSet.addAll(types);
 
 			} else {
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());

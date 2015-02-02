@@ -461,6 +461,7 @@ public class SetupApplication {
 		Options.v().set_process_dir(Collections.singletonList(apkFileLocation));
 		Options.v().set_soot_classpath(forceAndroidJar ? androidJar
 				: Scene.v().getAndroidJarPath(androidJar, apkFileLocation));
+//				: Scene.v().getAndroidJarPath(androidJar, apkFileLocation) + ":lib/rt.jar:lib/jce.jar:lib/httpcore-4.3.3.jar:lib/httpclient-4.3.6.jar");
 		if (forceAndroidJar)
 			Options.v().set_force_android_jar(androidJar);
 		else
