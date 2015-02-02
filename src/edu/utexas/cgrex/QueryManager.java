@@ -229,15 +229,11 @@ public class QueryManager {
 		while(qr.hasNext()) {
 			Edge callEdge = qr.next();
 			SootMethod tgtMethod = (SootMethod)callEdge.getTgt();
-			if(tgtMethod.getName().equals("<android.content.BroadcastReceiver: void abortBroadcast()>"))
-				assert false : callEdge;
-			
 			if(!reachableMethSet.contains(tgtMethod))
 				continue;
 
 			Stmt st = callEdge.srcStmt();
 			String uid = methToUidMap.get(tgtMethod);
-			assert reachableMethSet.contains(tgtMethod) : tgtMethod + " edge:" + callEdge;
 			assert uid != null : "tgt method: " + tgtMethod;
 			CGAutoEdge inEdge = new CGAutoEdge(uid, st);
 			inEdge.setShortName(st != null ? st.toString() : "null");
