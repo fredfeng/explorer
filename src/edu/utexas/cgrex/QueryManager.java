@@ -403,11 +403,9 @@ public class QueryManager {
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
 
-//		System.out.println("Total States****CG_AUTO***" + cgAuto.getStates().size());
-
 		// dump automaton of the call graph.
-//		 cgAuto.validate();
-//		 cgAuto.dump();
+		// cgAuto.validate();
+		// cgAuto.dump();
 	}
 	
 	public boolean isReachable(String m) {
@@ -584,18 +582,77 @@ public class QueryManager {
 		//need to append a super final state, otherwise the result is wrong.
 		createSuperNode(interAuto);
 
+		// exhaustive checking.
+		long startExhau = System.nanoTime();
+		HashMap<AutoEdge, Boolean> edgeMap = new HashMap<AutoEdge, Boolean>();
+		//step 1: check all edges
+		LinkedList<AutoState> worklist = new LinkedList<AutoState>();
+		worklist.addAll(interAuto.getInitStates());
+		Set<AutoState> visited = new HashSet<AutoState>();
+		while (!worklist.isEmpty()) {
+			AutoState worker = worklist.pollFirst();
+			if(visited.contains(worker))
+				continue;
+			
+			visited.add(worker);
+			worklist.addAll(worker.getOutgoingStatesKeySet());
+			if(interAuto.getInitStates().contains(worker))
+				continue;
+			
+			for(AutoEdge e : worker.getOutgoingStatesInvKeySet()) {
+				// check each edge.
+				Set<AutoState> sts = worker.outgoingStatesInvLookup(e);
+				assert sts.size() == 1 : e;
+				AutoState tgt = sts.iterator().next();
+				if(tgt.isFinalState())
+					continue;
+				
+				SootMethod callee = uidToMethMap.get(((InterAutoEdge) e)
+						.getTgtCGAutoStateId());
+				assert callee != null : tgt;
+				edgeMap.put(e, isValidEdge(e, worker));
+			}
+		}
+		//step 2: perform dfs
+		worklist.clear();
+		worklist.addAll(interAuto.getInitStates());
+		visited.clear();
+		while (!worklist.isEmpty()) {
+			AutoState worker = worklist.pollFirst();
+			if (visited.contains(worker))
+				continue;
+
+			visited.add(worker);
+			for (AutoEdge e : worker.getOutgoingStatesInvKeySet()) {
+				Set<AutoState> sts = worker.outgoingStatesInvLookup(e);
+				assert sts.size() == 1 : e;
+				AutoState tgt = sts.iterator().next();
+				if (!edgeMap.containsKey(e) || edgeMap.get(e)) {
+					worklist.add(tgt);
+				}
+			}
+		}
+		
+		visited.retainAll(interAuto.getFinalStates());
+		boolean reach = !visited.isEmpty();
+		long stopExhau = System.nanoTime();
+		StringUtil.reportSec("exhau: " + reach, startExhau, stopExhau);
+		
 		// Stop conditions:
 		// 1. Refute all edges in current cut set;(Yes)
 		// 2. Can not find a mincut without infinity anymore.(No)
 		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
 		System.out.println("cutset:" + cutset);
+		long endCut = System.nanoTime();
+
+		StringUtil.reportSec("min-cut:", startRefine, endCut);
 		
-		for(CutEntity ct : cutset) {
-			assert ct.edge.getWeight() != AutoEdge.INFINITY : ct.edge;
-			assert !ct.edge.isInvEdge();
-			assert ct.getStmt() != null : ct.edge;
-		}
+//		for(CutEntity ct : cutset) {
+//			assert ct.edge.getWeight() != AutoEdge.INFINITY : ct.edge;
+//			assert !ct.edge.isInvEdge();
+//			assert ct.getStmt() != null : ct.edge;
+//		}
 
 		boolean answer = true;
 		// contains infinity edge?
@@ -605,7 +662,7 @@ public class QueryManager {
 			boolean refuteAll = true;
 			long beginPt = System.nanoTime();
 			for (CutEntity e : cutset) {
-				if (doPointsToQuery(e)) {
+				if (isValidEdge(e.edge, e.getSrc())) {
 					refuteAll = false;
 					e.edge.setInfinityWeight();
 					break;
@@ -633,7 +690,8 @@ public class QueryManager {
 		// interAuto.dump();
 		long endRefine = System.nanoTime();
 		StringUtil.reportInfo("Time on PT: " + ptTime);
-		StringUtil.reportSec("Building refine:", startRefine, endRefine);
+		StringUtil.reportSec("min-refute:" + answer, startRefine, endRefine);
+		assert answer == reach;
 
 		return answer;
 	}
@@ -645,13 +703,12 @@ public class QueryManager {
 
 		return false;
 	}
-
-	private boolean doPointsToQuery(CutEntity cut) {
-		// type info.
-		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
+	
+	private boolean isValidEdge(AutoEdge e, AutoState src) {
+		
+		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
-
-		AutoState src = cut.getSrc();
+		
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 
 		assert (calleeMeth != null);
@@ -660,14 +717,11 @@ public class QueryManager {
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
 			return true;
 
-//		assert calleeMeth.isConcrete() : calleeMeth;
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
 
-		System.out.println("checking a cut:" + cut);
-
 		Set<Type> ptTypeSet = new HashSet<Type>();
-		Stmt st = cut.getStmt();
+		Stmt st = e.getSrcStmt();
 		assert st != null : calleeMeth;
 		Local l = getVarList(st);
 		// get the context of l. This could be optimized later.
@@ -694,7 +748,6 @@ public class QueryManager {
 			return false;
 
 		ptTypeSet.retainAll(typeSet);
-
 		return !ptTypeSet.isEmpty();
 	}
 
@@ -769,6 +822,11 @@ public class QueryManager {
 		buildRegAutomaton(regx);
 		boolean res = buildInterAutomaton(cgAuto, regAuto);
 		return res;
+	}
+	
+	// return the default answer based on interauto w/o refine.
+	public boolean defaultAns() {
+		return interAuto.getFinalStates().size() > 0;
 	}
 	
 	//Return all m's callers.

@@ -768,42 +768,4 @@ public class InterAutomaton extends Automaton {
 		System.out.println(b.toString());
 	}
 
-	/*
-	 * // given a regular expression fsm // find all the states that might be
-	 * optimized which are mapped // to a set of edges // each key is a state
-	 * that has a dot edge // if that key cannot be optimized, the set is empty
-	 * (not null) // if that key can be optimized, the set contains the edges
-	 * 
-	 * // build the finite state machine which combines // a call graph state
-	 * machine and a regular expr state machine public void
-	 * buildWithoutOpt(Automaton masterFSM, Automaton slaveFSM) {
-	 * Iterator<AutoState> masterInitStatesIt = masterFSM.initStatesIterator();
-	 * Iterator<AutoState> slaveInitStatesIt = slaveFSM.initStatesIterator();
-	 * while (masterInitStatesIt.hasNext()) { AutoState masterInitState =
-	 * (AutoState) masterInitStatesIt.next(); while
-	 * (slaveInitStatesIt.hasNext()) { AutoState slaveInitState = (AutoState)
-	 * slaveInitStatesIt.next(); InterAutoState sp = new
-	 * InterAutoState(masterInitState.getId() .toString() +
-	 * slaveInitState.getId().toString(), masterInitState, slaveInitState);
-	 * states.add(sp); initStates.add(sp); sp.setInitState();
-	 * intersectWithoutOpt(masterInitState, slaveInitState, sp); } } }
-	 * 
-	 * public void buildWithOpt(Automaton masterFSM, Automaton slaveFSM) { //
-	 * first parse the masterFSM to get the keyEdges set as the regExprOpts
-	 * Map<AutoState, Set<AutoEdge>> regExprOpts = ((RegAutomaton) masterFSM)
-	 * .find(); // then get the annotations for slaveFSM Map<AutoState,
-	 * Map<AutoState, Boolean>> annotations = ((CGAutomaton) slaveFSM)
-	 * .annotate(regExprOpts); // call the intersectWithOpt method to build the
-	 * intersection machine Iterator<AutoState> masterInitStatesIt =
-	 * masterFSM.initStatesIterator(); Iterator<AutoState> slaveInitStatesIt =
-	 * slaveFSM.initStatesIterator(); while (masterInitStatesIt.hasNext()) {
-	 * AutoState masterInitState = (AutoState) masterInitStatesIt.next(); while
-	 * (slaveInitStatesIt.hasNext()) { AutoState slaveInitState = (AutoState)
-	 * slaveInitStatesIt.next(); InterAutoState sp = new
-	 * InterAutoState(masterInitState.getId() .toString() +
-	 * slaveInitState.getId().toString(), masterInitState, slaveInitState);
-	 * states.add(sp); initStates.add(sp); sp.setInitState();
-	 * intersectWithOpt(masterInitState, slaveInitState, sp, annotations); } } }
-	 */
-
 }

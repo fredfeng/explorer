@@ -200,7 +200,7 @@ public abstract class AutoState {
 	public Set<AutoState> outgoingStatesInvLookup(AutoEdge edge) {
 		return outgoingStatesInv.get(edge);
 	}
-
+	
 	public boolean hasOnlyOneOutgoingEdge() {
 		return outgoingStatesInv.size() == 1;
 	}

@@ -39,9 +39,12 @@ public class QueryTransformer extends SceneTransformer {
 
 //		String regx = generator.genRegx();
 		//false;
-		String regx = ".*\u1c02.*\u1c08";
+//		String regx = ".*\u1c02.*\u1c08";
+//		String regx = ".*\u1c03.*\u1c06";
+
 		//true;
 //		String regx = ".*\u1c02.*\u1c06";
+		String regx = ".*\u1c03.*\u1c08";
 
 		regx = regx.replaceAll("\\s+", "");
 		System.out.println("Random regx------" + regx);

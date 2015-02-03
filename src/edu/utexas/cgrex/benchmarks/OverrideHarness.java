@@ -16,6 +16,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.utils.SootUtils;
 
 /**
  * The harness for dead code detection.
@@ -38,10 +39,20 @@ public class OverrideHarness extends SceneTransformer{
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
-		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
+//		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
+//		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
+//		String targetMain = "org.dacapo.harness.ChordHarness";
+		
+//		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/luindex/classes";
+//		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/luindex/jar/lucene-core-2.4.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/luindex/jar/lucene-demos-2.4.jar";
+//		String targetMain = "org.dacapo.harness.ChordHarness";
+		
+		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/sunflow/classes";
+		String cp = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/sunflow/jar/janino-2.5.12.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/sunflow/jar/sunflow-0.07.2.jar";
 		String targetMain = "org.dacapo.harness.ChordHarness";
+		
 		System.out.println("benchmark----------" + targetLoc);
+		
 		try {
 
 			PackManager.v().getPack("wjtp")
@@ -76,36 +87,21 @@ public class OverrideHarness extends SceneTransformer{
 		Set<String> querySet = new HashSet<String>();
 		
 		QueueReader qe = qm.getReachableMethods().listener();
-		CallGraph cg = Scene.v().getCallGraph();
 		while(qe.hasNext()) {
 			SootMethod meth = (SootMethod)qe.next();
-
-			Set<Edge> inSet = getBs(cg.edgesInto(meth));
-			Set<Edge> outSet = getBs(cg.edgesOutOf(meth));
-
-			if (inSet.size() > 1
-					&& outSet.size() > 1 && !meth.isConstructor()
-					&& (meth.isPublic() || meth.isProtected())) {
-				for(Edge s : inSet) {
-					SootMethod src = (SootMethod)s.getSrc();
-					if(src.isJavaLibraryMethod())
-						continue;
-					
-					if(src.equals(main))
-						continue;
-					
-					for(Edge t : outSet) {
-						SootMethod tgt = (SootMethod)t.getTgt();
-						if(tgt.isJavaLibraryMethod())
-							continue;
-						String query = main.getSignature() + ".*"
-								+ src.getSignature() + ".*"
-								+ tgt.getSignature();
-						querySet.add(query);
-					}
+			SootClass declareClz = meth.getDeclaringClass();
+			if(meth.isJavaLibraryMethod())
+				continue;
+			
+			for (SootClass sub : SootUtils.subTypesOf(declareClz)) {
+				if (sub.declaresMethod(meth.getSubSignature())
+						&& !sub.equals(declareClz)) {
+					String query = main.getSignature() + ".*"
+							+ meth.getSignature() + ".*"
+							+ sub.getMethod(meth.getSubSignature());
+					querySet.add(query);
 				}
 			}
-			
 		}
 		
 		int f = 0;
@@ -113,26 +109,21 @@ public class OverrideHarness extends SceneTransformer{
 		for(String q : querySet) {
 			String regx = qm.getValidExprBySig(q);
 			regx = regx.replaceAll("\\s+", "");
-			cnt++;
 			boolean res1 = qm.queryRegx(regx);
+			if(!qm.defaultAns())
+				continue;
+			
+			cnt++;
 			System.out.println(q + " Query result:" + res1 + " " + cnt
 					+ " out of " + querySet.size() + " false:" + f);
 			
 			if (!res1) {
+				assert false;
 				f++;
 			}
 			
-			if(cnt == 200)
+			if(cnt == 20)
 				break;
 		}
 	}
-	
-	public static Set<Edge> getBs(Iterator it){
-	    Set<Edge> result = new HashSet<Edge>();
-	    while (it.hasNext()) {
-	        result.add((Edge) it.next());
-	    }
-	    return result;
-	}
-
 }
