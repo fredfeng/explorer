@@ -2168,7 +2168,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				myStack = myStack.push(callSite);
 				refineP2Set(new VarAndContext(v, myStack), null);
 				contextSensitiveResult = pointsTo;
-				System.out.println("@@@@@@@@@ctxt:" + myStack + " var:" + v + " result:" + pointsTo);
 			} catch (TerminateEarlyException e) {
 			}
 			if (!fieldCheckHeuristic.runNewPass()) {

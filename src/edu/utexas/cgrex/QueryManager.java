@@ -660,7 +660,7 @@ public class QueryManager {
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
 			return true;
 
-		assert (calleeMeth.isConcrete());
+//		assert calleeMeth.isConcrete() : calleeMeth;
 		List<Type> typeSet = SootUtils.compatibleTypeList(
 				calleeMeth.getDeclaringClass(), calleeMeth);
 
@@ -685,14 +685,13 @@ public class QueryManager {
 				System.out.println("#######query ctxt:" + ctxt + " var: " + l
 						+ " result:" + types);
 				ptTypeSet.addAll(types);
-
 			} else {
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 			}
 		}
 
 		if (ptTypeSet.size() == 0)
-			return true;
+			return false;
 
 		ptTypeSet.retainAll(typeSet);
 

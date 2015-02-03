@@ -22,7 +22,7 @@ import edu.utexas.cgrex.QueryManager;
  * @author yufeng
  *
  */
-public class DeadCodeHarness extends SceneTransformer{
+public class OverrideHarness extends SceneTransformer{
 
 	public static int benchmarkSize = 10;
 	
@@ -45,7 +45,7 @@ public class DeadCodeHarness extends SceneTransformer{
 		try {
 
 			PackManager.v().getPack("wjtp")
-					.add(new Transform("wjtp.dead", new DeadCodeHarness()));
+					.add(new Transform("wjtp.dead", new OverrideHarness()));
 
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
