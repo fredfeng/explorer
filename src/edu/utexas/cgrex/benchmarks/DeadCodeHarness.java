@@ -39,7 +39,7 @@ public class DeadCodeHarness extends SceneTransformer{
 	 */
 	public static void main(String[] args) {
 		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
-		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
+		String cp = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
 		String targetMain = "org.dacapo.harness.ChordHarness";
 		System.out.println("benchmark----------" + targetLoc);
 		try {
@@ -50,7 +50,7 @@ public class DeadCodeHarness extends SceneTransformer{
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-allow-phantom-refs", "-soot-classpath", cp,
-							"-main-class", targetMain,
+							"-main-class", targetMain, "-no-bodies-for-excluded",
 							/*
 							 * "-no-bodies-for-excluded", "-exclude", "java",
 							 * "-exclude", "javax", "-output-format", "none",

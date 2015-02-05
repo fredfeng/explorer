@@ -100,7 +100,8 @@ public class QueryManager {
 	Map<String, SootMethod> uidToMethMap = new HashMap<String, SootMethod>();
 	
 	Map<SootMethod, String> methToUidMap = new HashMap<SootMethod, String>();
-
+	
+	SootMethod mainMethod;
 
 	// automaton for call graph.
 	CGAutomaton cgAuto;
@@ -127,7 +128,6 @@ public class QueryManager {
 	
 	//reachable methods
 	private Set<SootMethod> reachableMethSet = new HashSet<SootMethod>();
- 
 
 	public QueryManager(CallGraph cg) {
 		final int DEFAULT_MAX_PASSES = 10;
@@ -316,15 +316,13 @@ public class QueryManager {
 			regAuto.addStates(fsmState);
 		}
 		// dump current result.
-//		System.out.println("dump regular graph.");
-//		regAuto.dump();
+		// System.out.println("dump regular graph.");
+		// regAuto.dump();
 	}
 	
 	public void setMainMethod(SootMethod meth) {
 		mainMethod = meth;
 	}
-	
-	SootMethod mainMethod;
 	
 	private void buildCGAutomaton() {
 		// Start from the main entry.
@@ -496,7 +494,7 @@ public class QueryManager {
 	}
 	
 	private boolean isValidEdge(CallGraph cg, Edge e) {
-		SootMethod caller = (SootMethod)e.getSrc();
+		SootMethod caller = (SootMethod) e.getSrc();
 		if (!caller.isConcrete())
 			return true;
 		Body body = caller.retrieveActiveBody();
@@ -508,21 +506,20 @@ public class QueryManager {
 				InvokeExpr ie = stmt.getInvokeExpr();
 				if ((ie instanceof VirtualInvokeExpr)
 						|| (ie instanceof InterfaceInvokeExpr)) {
-					Local receiver = (Local) ie.getUseBoxes().get(0)
-							.getValue();
+					Local receiver = (Local) ie.getUseBoxes().get(0).getValue();
 					SootMethod callee = ie.getMethod();
 					Iterator<Edge> it = cg.edgesOutOf(stmt);
-					while(it.hasNext()) {
+					while (it.hasNext()) {
 						Edge tgt = it.next();
-						if( e.equals(tgt) ) {
-							//is this edge exist?
-                            Set<Type> pTypes = ptsEager.reachingObjects(receiver).possibleTypes();
+						if (e.equals(tgt)) {
+							// is this edge exist?
+							Set<Type> pTypes = ptsEager.reachingObjects(
+									receiver).possibleTypes();
 
 							List<Type> typeSet = SootUtils.compatibleTypeList(
 									callee.getDeclaringClass(), callee);
 							pTypes.retainAll(typeSet);
-							if(pTypes.size() == 0) {
-								//System.out.println("REFUTE THIS EDGE--------------------" + e);
+							if (pTypes.size() == 0) {
 								return false;
 							}
 							break;
@@ -531,7 +528,7 @@ public class QueryManager {
 				}
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -566,8 +563,8 @@ public class QueryManager {
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
 
-//		interAuto.validate();
-//		interAuto.dump();
+		// interAuto.validate();
+		// interAuto.dump();
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
@@ -633,6 +630,9 @@ public class QueryManager {
 			}
 		}
 		
+		System.out.println(edgeMap);
+		System.out.println(visited);
+		System.out.println(interAuto.getFinalStates().iterator().next().getIncomingStatesKeySet());
 		visited.retainAll(interAuto.getFinalStates());
 		boolean reach = !visited.isEmpty();
 		long stopExhau = System.nanoTime();
@@ -691,7 +691,7 @@ public class QueryManager {
 		long endRefine = System.nanoTime();
 		StringUtil.reportInfo("Time on PT: " + ptTime);
 		StringUtil.reportSec("min-refute:" + answer, startRefine, endRefine);
-		assert answer == reach;
+//		assert answer == reach;
 
 		return answer;
 	}
@@ -736,8 +736,8 @@ public class QueryManager {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
-				System.out.println("#######query ctxt:" + ctxt + " var: " + l
-						+ " result:" + types);
+//				System.out.println("#######query ctxt:" + ctxt + " var: " + l
+//						+ " result:" + types);
 				ptTypeSet.addAll(types);
 			} else {
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
