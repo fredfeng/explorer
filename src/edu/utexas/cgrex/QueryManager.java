@@ -722,7 +722,7 @@ public class QueryManager {
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		Stmt st = e.getSrcStmt();
-		assert st != null : calleeMeth;
+		// assert st != null : calleeMeth;
 		Local l = getVarList(st);
 		// get the context of l. This could be optimized later.
 		for (AutoEdge in : inEdges) {
