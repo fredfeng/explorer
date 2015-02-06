@@ -1,21 +1,41 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import soot.CompilationDeathException;
+import soot.G;
+import soot.MethodOrMethodContext;
 import soot.PackManager;
+import soot.PointsToAnalysis;
 import soot.Scene;
 import soot.SceneTransformer;
-import soot.SootClass;
 import soot.SootMethod;
+import soot.SourceLocator;
 import soot.Transform;
+import soot.jimple.ReachingTypeDumper;
+import soot.jimple.spark.builder.ContextInsensitiveBuilder;
+import soot.jimple.spark.geom.geomPA.GeomPointsTo;
+import soot.jimple.spark.ondemand.DemandCSPointsTo;
+import soot.jimple.spark.pag.PAG;
+import soot.jimple.spark.pag.PAG2HTML;
+import soot.jimple.spark.pag.PAGDumper;
+import soot.jimple.spark.solver.EBBCollapser;
+import soot.jimple.spark.solver.PropAlias;
+import soot.jimple.spark.solver.PropCycle;
+import soot.jimple.spark.solver.PropIter;
+import soot.jimple.spark.solver.PropMerge;
+import soot.jimple.spark.solver.PropWorklist;
+import soot.jimple.spark.solver.Propagator;
+import soot.jimple.spark.solver.SCCCollapser;
 import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.Edge;
+import soot.jimple.toolkits.callgraph.CallGraphBuilder;
+import soot.options.SparkOptions;
 import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.utils.SootUtils;
 
 /**
  * The harness for dead code detection.
@@ -39,7 +59,7 @@ public class DeadCodeHarness extends SceneTransformer{
 	 */
 	public static void main(String[] args) {
 		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
-		String cp = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
+		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
 		String targetMain = "org.dacapo.harness.ChordHarness";
 		System.out.println("benchmark----------" + targetLoc);
 		try {
@@ -50,12 +70,15 @@ public class DeadCodeHarness extends SceneTransformer{
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-allow-phantom-refs", "-soot-classpath", cp,
-							"-main-class", targetMain, "-no-bodies-for-excluded",
+							"-main-class", targetMain,
+							// "-no-bodies-for-excluded",
 							/*
 							 * "-no-bodies-for-excluded", "-exclude", "java",
 							 * "-exclude", "javax", "-output-format", "none",
 							 */
-							"-p", "cg.spark", "enabled:true", });
+							"-p", "cg.spark", "enabled:true",
+
+					});
 
 		} catch (CompilationDeathException e) {
 			e.printStackTrace();
@@ -71,68 +94,36 @@ public class DeadCodeHarness extends SceneTransformer{
 	protected void internalTransform(String phaseName,
 			Map<String, String> options) {
 		// TODO Auto-generated method stub
+		CallGraph cha = SootUtils.getCHA();
 		SootMethod main = Scene.v().getMainMethod();
-		QueryManager qm = new QueryManager(Scene.v().getCallGraph(), main);
+		QueryManager qm = new QueryManager(cha, main);
 		Set<String> querySet = new HashSet<String>();
-		
-		QueueReader qe = qm.getReachableMethods().listener();
-		CallGraph cg = Scene.v().getCallGraph();
-		while(qe.hasNext()) {
-			SootMethod meth = (SootMethod)qe.next();
 
-			Set<Edge> inSet = getBs(cg.edgesInto(meth));
-			Set<Edge> outSet = getBs(cg.edgesOutOf(meth));
+		QueueReader<MethodOrMethodContext> qe = qm.getReachableMethods()
+				.listener();
+		while (qe.hasNext()) {
+			SootMethod meth = (SootMethod) qe.next();
 
-			if (inSet.size() > 1
-					&& outSet.size() > 1 && !meth.isConstructor()
-					&& (meth.isPublic() || meth.isProtected())) {
-				for(Edge s : inSet) {
-					SootMethod src = (SootMethod)s.getSrc();
-					if(src.isJavaLibraryMethod())
-						continue;
-					
-					if(src.equals(main))
-						continue;
-					
-					for(Edge t : outSet) {
-						SootMethod tgt = (SootMethod)t.getTgt();
-						if(tgt.isJavaLibraryMethod())
-							continue;
-						String query = main.getSignature() + ".*"
-								+ src.getSignature() + ".*"
-								+ tgt.getSignature();
-						querySet.add(query);
-					}
-				}
-			}
-			
+			if (meth.isJavaLibraryMethod()
+					|| Scene.v().getEntryPoints().contains(meth))
+				continue;
+
+			String query = main.getSignature() + ".*" + meth.getSignature();
+			querySet.add(query);
 		}
 		
-		int f = 0;
+		int falseCnt = 0;
 		int cnt = 0;
-		for(String q : querySet) {
+		for (String q : querySet) {
+			cnt++; 
 			String regx = qm.getValidExprBySig(q);
 			regx = regx.replaceAll("\\s+", "");
-			cnt++;
 			boolean res1 = qm.queryRegx(regx);
-			System.out.println(q + " Query result:" + res1 + " " + cnt
-					+ " out of " + querySet.size() + " false:" + f);
-			
 			if (!res1) {
-				f++;
+				falseCnt++;
+				System.out.println(falseCnt + " || " + cnt +  "--****-out of---" + querySet.size());
+				System.out.println(q + " Query result:" + res1);
 			}
-			
-			if(cnt == 200)
-				break;
 		}
 	}
-	
-	public static Set<Edge> getBs(Iterator it){
-	    Set<Edge> result = new HashSet<Edge>();
-	    while (it.hasNext()) {
-	        result.add((Edge) it.next());
-	    }
-	    return result;
-	}
-
 }

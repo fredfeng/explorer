@@ -65,6 +65,8 @@ import edu.utexas.cgrex.utils.StringUtil;
 public class QueryManager {
 
 	private int INFINITY = 9999;
+	
+	private static boolean exhaust = false;
 
 	// default CHA-based call graph or on-the-fly.
 	CallGraph cg;
@@ -569,48 +571,103 @@ public class QueryManager {
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
 		if (interAuto.getFinalStates().size() == 0) {
-			//eager version much also be false in this case.
+			// eager version much also be false in this case.
 			return false;
 		}
-		
-		if(debug)
-			GraphUtil.checkValidInterAuto(interAuto);
-		
-		//need to append a super final state, otherwise the result is wrong.
-		createSuperNode(interAuto);
 
+		if (debug)
+			GraphUtil.checkValidInterAuto(interAuto);
+
+		// need to append a super final state, otherwise the result is wrong.
+		createSuperNode(interAuto);
+		boolean answer = checkByMincut();
 		// exhaustive checking.
+		if (exhaust) {
+			boolean ansExhau = true;
+			ansExhau = this.checkExhaust();
+			assert answer == ansExhau : "Exhaustive: " + ansExhau + " Mincut: "
+					+ answer;
+		}
+		return answer;
+	}
+	
+	// checking validity using mincut.
+	private boolean checkByMincut() {
+		// Stop conditions:
+		// 1. Refute all edges in current cut set;(Yes)
+		// 2. Can not find a mincut without infinity anymore.(No)
+		long startRefine = System.nanoTime();
+		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
+		System.out.println("cutset:" + cutset);
+		long endCut = System.nanoTime();
+		StringUtil.reportSec("min-cut:", startRefine, endCut);
+
+		boolean answer = true;
+		// contains infinity edge?
+		double ptTime = 0.0;
+		while (!hasInfinityEdges(cutset)) {
+			boolean refuteAll = true;
+			long beginPt = System.nanoTime();
+			for (CutEntity e : cutset) {
+				if (isValidEdge(e.edge, e.getSrc())) {
+					refuteAll = false;
+					e.edge.setInfinityWeight();
+					break;
+				} else {
+					// TODO:e is a false positive.
+				}
+			}
+			long endPt = System.nanoTime();
+			ptTime = ptTime + ((endPt - beginPt) / 1e6);
+
+			// all edges are refute, stop.
+			if (refuteAll) {
+				answer = false;
+				break;
+			}
+			// modify visited edges and continue.
+			cutset = GraphUtil.minCut(interAuto);
+		}
+		// interAuto.dump();
+		long endRefine = System.nanoTime();
+		StringUtil.reportInfo("Time on PT: " + ptTime);
+		StringUtil.reportSec("min-refute:" + answer, startRefine, endRefine);
+		return answer;
+	}
+
+	// checking every edge along the path eagerly.
+	private boolean checkExhaust() {
 		long startExhau = System.nanoTime();
 		HashMap<AutoEdge, Boolean> edgeMap = new HashMap<AutoEdge, Boolean>();
-		//step 1: check all edges
+		// step 1: check all edges
 		LinkedList<AutoState> worklist = new LinkedList<AutoState>();
 		worklist.addAll(interAuto.getInitStates());
 		Set<AutoState> visited = new HashSet<AutoState>();
 		while (!worklist.isEmpty()) {
 			AutoState worker = worklist.pollFirst();
-			if(visited.contains(worker))
+			if (visited.contains(worker))
 				continue;
-			
+
 			visited.add(worker);
 			worklist.addAll(worker.getOutgoingStatesKeySet());
-			if(interAuto.getInitStates().contains(worker))
+			if (interAuto.getInitStates().contains(worker))
 				continue;
-			
-			for(AutoEdge e : worker.getOutgoingStatesInvKeySet()) {
+
+			for (AutoEdge e : worker.getOutgoingStatesInvKeySet()) {
 				// check each edge.
 				Set<AutoState> sts = worker.outgoingStatesInvLookup(e);
 				assert sts.size() == 1 : e;
 				AutoState tgt = sts.iterator().next();
-				if(tgt.isFinalState())
+				if (tgt.isFinalState())
 					continue;
-				
+
 				SootMethod callee = uidToMethMap.get(((InterAutoEdge) e)
 						.getTgtCGAutoStateId());
 				assert callee != null : tgt;
 				edgeMap.put(e, isValidEdge(e, worker));
 			}
 		}
-		//step 2: perform dfs
+		// step 2: perform dfs
 		worklist.clear();
 		worklist.addAll(interAuto.getInitStates());
 		visited.clear();
@@ -629,70 +686,11 @@ public class QueryManager {
 				}
 			}
 		}
-		
-		System.out.println(edgeMap);
-		System.out.println(visited);
-		System.out.println(interAuto.getFinalStates().iterator().next().getIncomingStatesKeySet());
+
 		visited.retainAll(interAuto.getFinalStates());
-		boolean reach = !visited.isEmpty();
+		boolean answer = !visited.isEmpty();
 		long stopExhau = System.nanoTime();
-		StringUtil.reportSec("exhau: " + reach, startExhau, stopExhau);
-		
-		// Stop conditions:
-		// 1. Refute all edges in current cut set;(Yes)
-		// 2. Can not find a mincut without infinity anymore.(No)
-		long startRefine = System.nanoTime();
-		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
-		System.out.println("cutset:" + cutset);
-		long endCut = System.nanoTime();
-
-		StringUtil.reportSec("min-cut:", startRefine, endCut);
-		
-//		for(CutEntity ct : cutset) {
-//			assert ct.edge.getWeight() != AutoEdge.INFINITY : ct.edge;
-//			assert !ct.edge.isInvEdge();
-//			assert ct.getStmt() != null : ct.edge;
-//		}
-
-		boolean answer = true;
-		// contains infinity edge?
-		double ptTime = 0.0;
-		while (!hasInfinityEdges(cutset)) {
-
-			boolean refuteAll = true;
-			long beginPt = System.nanoTime();
-			for (CutEntity e : cutset) {
-				if (isValidEdge(e.edge, e.getSrc())) {
-					refuteAll = false;
-					e.edge.setInfinityWeight();
-					break;
-				} else { // e is a false positive.
-					// remove this edge and refine call graph.
-					//Edge callEdge = this.getEdgeFromCallgraph(e);
-					// System.out.println("---------Refine call edge: " +
-					// callEdge);
-					//cg.removeEdge(callEdge);
-					// remove this edge from interauto.
-					//interAuto.refine(e.edge);
-				}
-			}
-			long endPt = System.nanoTime();
-			ptTime = ptTime + ((endPt - beginPt)/1e6);
-
-			// all edges are refute, stop.
-			if (refuteAll) {
-				answer = false;
-				break;
-			}
-			// modify visited edges and continue.
-			cutset = GraphUtil.minCut(interAuto);
-		}
-		// interAuto.dump();
-		long endRefine = System.nanoTime();
-		StringUtil.reportInfo("Time on PT: " + ptTime);
-		StringUtil.reportSec("min-refute:" + answer, startRefine, endRefine);
-//		assert answer == reach;
-
+		StringUtil.reportSec("exhau: " + answer, startExhau, stopExhau);
 		return answer;
 	}
 
@@ -947,7 +945,7 @@ public class QueryManager {
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
 
-		interAuto.dumpFile();
+		// interAuto.dumpFile();
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.

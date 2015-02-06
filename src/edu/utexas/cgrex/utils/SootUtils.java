@@ -17,7 +17,9 @@ import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
 import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.jimple.toolkits.callgraph.Edge;
+import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
 
 /**
  * @author Saswat Anand
@@ -25,6 +27,8 @@ import soot.jimple.toolkits.callgraph.Edge;
 public class SootUtils {
 
 	private static HashMap<SootClass, Set<SootClass>> classToSubtypes = new HashMap();
+	
+	private static CallGraph cha;
 
 	public static void reportTime(String desc, Date start, Date end) {
 		long time = end.getTime() - start.getTime();
@@ -215,5 +219,18 @@ public class SootUtils {
 			}
 		}
 		return visited.contains(tgt);
+	}
+	
+	// generate the CHA-based call graph
+	public static CallGraph getCHA() {
+		if (cha == null) {
+			CallGraphBuilder cg = new CallGraphBuilder(DumbPointerAnalysis.v());
+			cg.build();
+			System.out.println("CHA Number**** of reachable methods: "
+					+ Scene.v().getReachableMethods().size());
+			cha = cg.getCallGraph();
+		}
+
+		return cha;
 	}
 }
