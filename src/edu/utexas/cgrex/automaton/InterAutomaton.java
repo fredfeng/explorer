@@ -8,6 +8,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import edu.utexas.cgrex.utils.CutEntity;
+import edu.utexas.cgrex.utils.StringUtil;
+
 public class InterAutomaton extends Automaton {
 
 	protected InterAutoOpts options; // control optimization options
@@ -128,7 +131,6 @@ public class InterAutomaton extends Automaton {
 			}
 		}
 
-		// test();
 	}
 
 	protected Map<AutoState, Map<AutoState, Boolean>> debugAnnot = new HashMap<AutoState, Map<AutoState, Boolean>>();

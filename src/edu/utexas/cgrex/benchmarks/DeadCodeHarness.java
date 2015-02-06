@@ -1,38 +1,17 @@
 package edu.utexas.cgrex.benchmarks;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import soot.CompilationDeathException;
-import soot.G;
 import soot.MethodOrMethodContext;
 import soot.PackManager;
-import soot.PointsToAnalysis;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootMethod;
-import soot.SourceLocator;
 import soot.Transform;
-import soot.jimple.ReachingTypeDumper;
-import soot.jimple.spark.builder.ContextInsensitiveBuilder;
-import soot.jimple.spark.geom.geomPA.GeomPointsTo;
-import soot.jimple.spark.ondemand.DemandCSPointsTo;
-import soot.jimple.spark.pag.PAG;
-import soot.jimple.spark.pag.PAG2HTML;
-import soot.jimple.spark.pag.PAGDumper;
-import soot.jimple.spark.solver.EBBCollapser;
-import soot.jimple.spark.solver.PropAlias;
-import soot.jimple.spark.solver.PropCycle;
-import soot.jimple.spark.solver.PropIter;
-import soot.jimple.spark.solver.PropMerge;
-import soot.jimple.spark.solver.PropWorklist;
-import soot.jimple.spark.solver.Propagator;
-import soot.jimple.spark.solver.SCCCollapser;
 import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.jimple.toolkits.callgraph.CallGraphBuilder;
-import soot.options.SparkOptions;
 import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.utils.SootUtils;
@@ -101,8 +80,13 @@ public class DeadCodeHarness extends SceneTransformer{
 
 		QueueReader<MethodOrMethodContext> qe = qm.getReachableMethods()
 				.listener();
+		int java = 0;
+		int cc = 0;
 		while (qe.hasNext()) {
+			cc++;
 			SootMethod meth = (SootMethod) qe.next();
+			if(meth.isJavaLibraryMethod())
+				java++;
 
 			if (meth.isJavaLibraryMethod()
 					|| Scene.v().getEntryPoints().contains(meth))
@@ -111,6 +95,8 @@ public class DeadCodeHarness extends SceneTransformer{
 			String query = main.getSignature() + ".*" + meth.getSignature();
 			querySet.add(query);
 		}
+		
+		assert false : java + " " + cc;
 		
 		int falseCnt = 0;
 		int cnt = 0;
@@ -122,8 +108,9 @@ public class DeadCodeHarness extends SceneTransformer{
 			if (!res1) {
 				falseCnt++;
 				System.out.println(falseCnt + " || " + cnt +  "--****-out of---" + querySet.size());
-				System.out.println(q + " Query result:" + res1);
+				System.out.println(" Query result:" + res1);
 			}
+			assert false;
 		}
 	}
 }

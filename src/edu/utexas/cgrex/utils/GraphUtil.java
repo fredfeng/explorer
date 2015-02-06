@@ -153,14 +153,13 @@ public class GraphUtil {
 	 * @param init
 	 */
 	public static Set<CutEntity> minCut(Automaton auto) {
-
 		// reset all flow values to 0
 		resetAuto(auto);
 		// build the residual graph
 		auto.initResidualEdges();
 		auto.genResidualGraph();
-		
-		assert(auto.getFinalStates().size() == 1);
+
+		assert (auto.getFinalStates().size() == 1);
 
 		// we should continue if there is a path to final state in residual
 		// graph.
@@ -198,9 +197,10 @@ public class GraphUtil {
 		// collect all the vertices(As set S) that are reachable from the
 		// initial node
 		LinkedList<AutoState> spath = dfs(auto);
-		Set<AutoState> orgStates = new HashSet(auto.getStates());
+		Set<AutoState> orgStates = new HashSet<AutoState>(auto.getStates());
 		orgStates.retainAll(spath);
-		LinkedList<AutoState> tpath = new LinkedList(auto.getStates());
+		LinkedList<AutoState> tpath = new LinkedList<AutoState>(
+				auto.getStates());
 		tpath.removeAll(orgStates);
 		// collect all the edges that cross between S and T
 		Set<CutEntity> cutset = new HashSet<CutEntity>();
@@ -209,13 +209,16 @@ public class GraphUtil {
 			for (Iterator<AutoEdge> cIt = s.outgoingStatesInvIterator(); cIt
 					.hasNext();) {
 				AutoEdge outEdge = cIt.next();
-				if(outEdge.isInvEdge()) continue;
+				if (outEdge.isInvEdge())
+					continue;
 				AutoState tgt = s.outgoingStatesInvLookup(outEdge).iterator()
 						.next();
 				if (tpath.contains(tgt) && (outEdge.getWeight() > 0)) {
-					 /*System.out.println(s + "->" + tgt + " " +
-					 outEdge.getWeight());*/
-					assert(outEdge.isInvEdge() == false);
+					/*
+					 * System.out.println(s + "->" + tgt + " " +
+					 * outEdge.getWeight());
+					 */
+					assert (outEdge.isInvEdge() == false);
 					cutset.add(new CutEntity(s, outEdge, tgt));
 				}
 			}
@@ -224,25 +227,25 @@ public class GraphUtil {
 					.hasNext();) {
 				// incoming edges.
 				AutoEdge inEdge = cIt.next();
-				if(inEdge.isInvEdge()) continue;
+				if (inEdge.isInvEdge())
+					continue;
 
 				AutoState src = s.incomingStatesInvLookup(inEdge).iterator()
 						.next();
 				if (tpath.contains(src) && (inEdge.getWeight() > 0)) {
-//					 System.out.println(src + "-*>" + s + " " +
-//					 inEdge.getWeight());
-					assert(inEdge.isInvEdge() == false);
+					// System.out.println(src + "-*>" + s + " " +
+					// inEdge.getWeight());
+					assert (inEdge.isInvEdge() == false);
 					cutset.add(new CutEntity(src, inEdge, s));
 				}
 			}
 		}
-		
-		//make sure this is a valid mincut.
-		if(debug)
-			assert(isValidCut(auto, cutset));
+
+		// make sure this is a valid mincut.
+		if (debug)
+			assert (isValidCut(auto, cutset));
 
 		return cutset;
-
 	}
 	
 	//check if it's a valid mincut.
