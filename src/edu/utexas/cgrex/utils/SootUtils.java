@@ -12,6 +12,7 @@ import java.util.Stack;
 
 import soot.FastHierarchy;
 import soot.G;
+import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -20,15 +21,18 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.CallGraphBuilder;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.pointer.DumbPointerAnalysis;
+import soot.util.queue.QueueReader;
 
 /**
  * @author Saswat Anand
  **/
 public class SootUtils {
 
-	private static HashMap<SootClass, Set<SootClass>> classToSubtypes = new HashMap();
+	private static HashMap<SootClass, Set<SootClass>> classToSubtypes = new HashMap<SootClass, Set<SootClass>>();
 	
 	private static CallGraph cha;
+	
+	private static Set<SootMethod> chaReachableMethods = new HashSet<SootMethod>();
 
 	public static void reportTime(String desc, Date start, Date end) {
 		long time = end.getTime() - start.getTime();
@@ -222,15 +226,23 @@ public class SootUtils {
 	}
 	
 	// generate the CHA-based call graph
-	public static CallGraph getCHA() {
+	public static Set<SootMethod> getChaReachableMethods() {
 		if (cha == null) {
 			CallGraphBuilder cg = new CallGraphBuilder(DumbPointerAnalysis.v());
 			cg.build();
 			System.out.println("CHA Number**** of reachable methods: "
 					+ Scene.v().getReachableMethods().size());
 			cha = cg.getCallGraph();
-		}
 
-		return cha;
+			// collect reachable methods based on CHA.
+			QueueReader<MethodOrMethodContext> qr = Scene.v()
+					.getReachableMethods().listener();
+			while (qr.hasNext()) {
+				chaReachableMethods.add(qr.next().method());
+			}
+		}
+		assert !chaReachableMethods.isEmpty();
+		return chaReachableMethods;
 	}
+	
 }

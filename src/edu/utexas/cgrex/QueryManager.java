@@ -732,6 +732,7 @@ public class QueryManager {
 					&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
 							.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
+				System.out.println("ctxt:" + ctxt +  " var:" + l);
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
 //				System.out.println("#######query ctxt:" + ctxt + " var: " + l

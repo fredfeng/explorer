@@ -5,14 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import soot.CompilationDeathException;
-import soot.MethodOrMethodContext;
 import soot.PackManager;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootMethod;
 import soot.Transform;
 import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.utils.SootUtils;
 
@@ -21,7 +19,7 @@ import edu.utexas.cgrex.utils.SootUtils;
  * @author yufeng
  *
  */
-public class DeadCodeHarness extends SceneTransformer{
+public class DeadCodeHarness extends SceneTransformer {
 
 	public static int benchmarkSize = 10;
 	
@@ -40,7 +38,15 @@ public class DeadCodeHarness extends SceneTransformer{
 		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
 		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
 		String targetMain = "org.dacapo.harness.ChordHarness";
-		System.out.println("benchmark----------" + targetLoc);
+//		System.out.println("benchmark----------" + targetLoc);
+		
+//		String prefix = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/";
+//		String targetLoc = prefix + "benchmarks/antlr/classes";
+//		String cp = "lib/rt.jar:"
+//				+ prefix + "/shared/dacapo-2006-10-MR2/classes:" + prefix
+//				+ "benchmarks/antlr/jar/antlr.jar:";
+//		String targetMain = "dacapo.antlr.Main";
+
 		try {
 
 			PackManager.v().getPack("wjtp")
@@ -72,20 +78,16 @@ public class DeadCodeHarness extends SceneTransformer{
 	@Override
 	protected void internalTransform(String phaseName,
 			Map<String, String> options) {
-		// TODO Auto-generated method stub
-		CallGraph cha = SootUtils.getCHA();
+		CallGraph cicg = Scene.v().getCallGraph();
 		SootMethod main = Scene.v().getMainMethod();
-		QueryManager qm = new QueryManager(cha, main);
+		QueryManager qm = new QueryManager(cicg, main);
 		Set<String> querySet = new HashSet<String>();
 
-		QueueReader<MethodOrMethodContext> qe = qm.getReachableMethods()
-				.listener();
 		int java = 0;
 		int cc = 0;
-		while (qe.hasNext()) {
+		for (SootMethod meth : SootUtils.getChaReachableMethods()) {
 			cc++;
-			SootMethod meth = (SootMethod) qe.next();
-			if(meth.isJavaLibraryMethod())
+			if (meth.isJavaLibraryMethod())
 				java++;
 
 			if (meth.isJavaLibraryMethod()
@@ -95,22 +97,21 @@ public class DeadCodeHarness extends SceneTransformer{
 			String query = main.getSignature() + ".*" + meth.getSignature();
 			querySet.add(query);
 		}
-		
-		assert false : java + " " + cc;
-		
+//		 assert false : java + " " + cc;
+
 		int falseCnt = 0;
 		int cnt = 0;
 		for (String q : querySet) {
-			cnt++; 
+			cnt++;
 			String regx = qm.getValidExprBySig(q);
 			regx = regx.replaceAll("\\s+", "");
 			boolean res1 = qm.queryRegx(regx);
 			if (!res1) {
 				falseCnt++;
-				System.out.println(falseCnt + " || " + cnt +  "--****-out of---" + querySet.size());
+				System.out.println(falseCnt + " || " + cnt + "--****-out of---"
+						+ querySet.size());
 				System.out.println(" Query result:" + res1);
 			}
-			assert false;
 		}
 	}
 }
