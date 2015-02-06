@@ -11,8 +11,7 @@ import java.util.Set;
 import chord.util.graph.IGraph;
 import chord.util.graph.MutableGraph;
 import chord.util.tuple.object.Pair;
-
-
+import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.automaton.AutoEdge;
 import edu.utexas.cgrex.automaton.AutoState;
 import edu.utexas.cgrex.automaton.Automaton;
@@ -154,6 +153,8 @@ public class GraphUtil {
 	 */
 	public static Set<CutEntity> minCut(Automaton auto) {
 		// reset all flow values to 0
+		long start = System.nanoTime();
+
 		resetAuto(auto);
 		// build the residual graph
 		auto.initResidualEdges();
@@ -244,6 +245,9 @@ public class GraphUtil {
 		// make sure this is a valid mincut.
 		if (debug)
 			assert (isValidCut(auto, cutset));
+
+		long end = System.nanoTime();
+		QueryManager.cutTime = QueryManager.cutTime + (end - start);
 
 		return cutset;
 	}

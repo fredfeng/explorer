@@ -38,7 +38,6 @@ public class DeadCodeHarness extends SceneTransformer {
 		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
 		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
 		String targetMain = "org.dacapo.harness.ChordHarness";
-//		System.out.println("benchmark----------" + targetLoc);
 		
 //		String prefix = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/";
 //		String targetLoc = prefix + "benchmarks/antlr/classes";
@@ -57,10 +56,6 @@ public class DeadCodeHarness extends SceneTransformer {
 							"-allow-phantom-refs", "-soot-classpath", cp,
 							"-main-class", targetMain,
 							// "-no-bodies-for-excluded",
-							/*
-							 * "-no-bodies-for-excluded", "-exclude", "java",
-							 * "-exclude", "javax", "-output-format", "none",
-							 */
 							"-p", "cg.spark", "enabled:true",
 
 					});
@@ -83,13 +78,7 @@ public class DeadCodeHarness extends SceneTransformer {
 		QueryManager qm = new QueryManager(cicg, main);
 		Set<String> querySet = new HashSet<String>();
 
-		int java = 0;
-		int cc = 0;
 		for (SootMethod meth : SootUtils.getChaReachableMethods()) {
-			cc++;
-			if (meth.isJavaLibraryMethod())
-				java++;
-
 			if (meth.isJavaLibraryMethod()
 					|| Scene.v().getEntryPoints().contains(meth))
 				continue;
@@ -97,7 +86,6 @@ public class DeadCodeHarness extends SceneTransformer {
 			String query = main.getSignature() + ".*" + meth.getSignature();
 			querySet.add(query);
 		}
-//		 assert false : java + " " + cc;
 
 		int falseCnt = 0;
 		int cnt = 0;
@@ -111,6 +99,7 @@ public class DeadCodeHarness extends SceneTransformer {
 				System.out.println(falseCnt + " || " + cnt + "--****-out of---"
 						+ querySet.size());
 				System.out.println(" Query result:" + res1);
+				System.out.println("unreach:" + q);
 			}
 		}
 	}

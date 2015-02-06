@@ -76,6 +76,9 @@ public class QueryManager {
 	private int offset = 100;
 	
 	private InterAutomaton egAuto;
+	
+	public static long ptTime = 0;
+	public static long cutTime = 0;
 
 	private ReachableMethods reachableMethods;
 
@@ -147,7 +150,7 @@ public class QueryManager {
 	
 	public QueryManager(CallGraph cg, SootMethod meth) {
 		final int DEFAULT_MAX_PASSES = 10;
-		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final int DEFAULT_MAX_TRAVERSAL = 750;
 		final boolean DEFAULT_LAZY = false;
 		
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
@@ -593,21 +596,18 @@ public class QueryManager {
 	
 	// checking validity using mincut.
 	private boolean checkByMincut() {
+		ptTime = 0;
+		cutTime = 0;
 		// Stop conditions:
 		// 1. Refute all edges in current cut set;(Yes)
 		// 2. Can not find a mincut without infinity anymore.(No)
-		long startRefine = System.nanoTime();
 		Set<CutEntity> cutset = GraphUtil.minCut(interAuto);
-		System.out.println("cutset:" + cutset);
-		long endCut = System.nanoTime();
-		StringUtil.reportSec("min-cut:", startRefine, endCut);
+		// System.out.println("cutset:" + cutset);
 
 		boolean answer = true;
 		// contains infinity edge?
-		double ptTime = 0.0;
 		while (!hasInfinityEdges(cutset)) {
 			boolean refuteAll = true;
-			long beginPt = System.nanoTime();
 			for (CutEntity e : cutset) {
 				if (isValidEdge(e.edge, e.getSrc())) {
 					refuteAll = false;
@@ -617,9 +617,6 @@ public class QueryManager {
 					// TODO:e is a false positive.
 				}
 			}
-			long endPt = System.nanoTime();
-			ptTime = ptTime + ((endPt - beginPt) / 1e6);
-
 			// all edges are refute, stop.
 			if (refuteAll) {
 				answer = false;
@@ -627,11 +624,11 @@ public class QueryManager {
 			}
 			// modify visited edges and continue.
 			cutset = GraphUtil.minCut(interAuto);
+			// System.out.println("cutset:" + cutset);
 		}
 		// interAuto.dump();
-		long endRefine = System.nanoTime();
-		StringUtil.reportInfo("Time on PT: " + ptTime);
-		StringUtil.reportSec("min-refute:" + answer, startRefine, endRefine);
+		StringUtil.reportDiff("Time on PT: ", ptTime);
+		StringUtil.reportDiff("Cut time:" + answer, cutTime);
 		return answer;
 	}
 
@@ -703,13 +700,15 @@ public class QueryManager {
 	}
 	
 	private boolean isValidEdge(AutoEdge e, AutoState src) {
-		
+		long start = System.nanoTime();
+
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
 		
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 
 		assert (calleeMeth != null);
+		
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
@@ -720,28 +719,34 @@ public class QueryManager {
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		Stmt st = e.getSrcStmt();
-		// assert st != null : calleeMeth;
-		Local l = getVarList(st);
+		assert st != null : calleeMeth;
+		Local l = getReceiver(st);
 		// get the context of l. This could be optimized later.
+
 		for (AutoEdge in : inEdges) {
 			if (in.isInvEdge())
 				continue;
 			Stmt stmt = in.getSrcStmt();
+
 			if (stmt != null
 					&& stmt.containsInvokeExpr()
 					&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
 							.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
-				System.out.println("ctxt:" + ctxt +  " var:" + l);
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
 //				System.out.println("#######query ctxt:" + ctxt + " var: " + l
 //						+ " result:" + types);
 				ptTypeSet.addAll(types);
+
 			} else {
+				// Since we limit k=1, if the context is static, we ignore
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 			}
 		}
+		
+		long end = System.nanoTime();
+		ptTime = ptTime + (end - start);
 
 		if (ptTypeSet.size() == 0)
 			return false;
@@ -977,7 +982,7 @@ public class QueryManager {
 	}
 
 	// get a list of vars that can invoke method tgt.
-	private Local getVarList(Stmt stmt) {
+	private Local getReceiver(Stmt stmt) {
 
 		if (stmt.containsInvokeExpr()) {
 			InvokeExpr ie = stmt.getInvokeExpr();

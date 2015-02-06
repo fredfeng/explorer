@@ -28,6 +28,11 @@ public class StringUtil {
 		G.v().out.println("[CGrex] " + desc + " in " + difference + " ms.");
 	}
 	
+	public static void reportDiff(String desc, long total) {
+		double difference = (total)/1e6;
+		G.v().out.println("[CGrex] " + desc + " in " + difference + " ms.");
+	}
+	
 	public static void reportTime(String desc, Date start, Date end) {
 		long time = end.getTime() - start.getTime();
 		G.v().out.println("[CGrex] " + desc + " in " + time / 1000 + "."
