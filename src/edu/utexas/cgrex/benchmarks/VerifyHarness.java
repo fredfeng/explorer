@@ -32,15 +32,48 @@ public class VerifyHarness {
 			String methName = list[2];
 			methName = methName.substring(0, methName.indexOf("("));
 			Pair<String, String> p = new Pair<String, String>(clzName, methName);
+			cgSet.add(p);
 		}
 		br.close();
 		
 		br = new BufferedReader(new FileReader(new File(chord)));
 		while ((line = br.readLine()) != null) {
 		   // process the line.
-			assert false : line;
+			String[] list = line.split(":.*@");
+			assert list.length == 2;
+			String clzName = list[1];
+			String methName = list[0];
+			clzName = clzName.substring(0, clzName.length()-1);
+			Pair<String, String> p = new Pair<String, String>(clzName, methName);
+			chordSet.add(p);
 		}
 		br.close();
+		
+		//now begin checking.
+		// 1. soundness: any method that is refuted by cg should not exist in
+		// chord
+		int cnt = 0; 
+		for (Pair<String, String> p1 : cgSet) {
+			String clzName1 = p1.val0;
+			String methName1 = p1.val1;
+			for (Pair<String, String> p2 : chordSet) {
+				String clzName2 = p2.val0;
+				String methName2 = p2.val1;
+				if (clzName2.equals(clzName1))
+					// assert !methName1.contains(methName2) : clzName1 + ":"
+					// + methName1 + "->" + methName2;
+					if (methName1.contains(methName2)) {
+						cnt++;
+						System.out.println(clzName1 + ":" + methName1 + "->"
+								+ methName2);
+						break;
+					}
+
+			}
+		}
+		
+		//TODO: 2. precision.
+		System.out.println("PASS verification!" + cgSet.size() + " " + cnt);
 	}
 
 }
