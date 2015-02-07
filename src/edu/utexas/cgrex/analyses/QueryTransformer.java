@@ -25,10 +25,11 @@ public class QueryTransformer extends SceneTransformer {
 		// TODO Auto-generated method stub
 		qm = new QueryManager(Scene.v().getCallGraph(), Scene.v()
 				.getMainMethod());
-		this.runBenchmark();
+		this.runRegression();
 	}
-
-	private void runBenchmark() {
+	
+	// perform regression tests.
+	protected void runRegression() {
 		HashMap<String, Boolean> testbed = new HashMap<String, Boolean>();
 		if (Scene.v().getMainClass().getName().equals("Test1")) {
 			testbed.put(".*<Test1: void main2()>.*<B: void bar()>", true);
