@@ -51,6 +51,7 @@ import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
+import edu.utexas.cgrex.benchmarks.DeadCodeHarness;
 import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
@@ -569,6 +570,9 @@ public class QueryManager {
 		interAuto.build();
 		long endInter = System.nanoTime();
 		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
+		double difference = (endInter - startInter)/1e6;
+		DeadCodeHarness.totalInter += difference;	
+
 
 		// interAuto.validate();
 		// interAuto.dump();
@@ -585,7 +589,12 @@ public class QueryManager {
 
 		// need to append a super final state, otherwise the result is wrong.
 		createSuperNode(interAuto);
+		long startCut = System.nanoTime();
 		boolean answer = checkByMincut();
+		long endCut = System.nanoTime();
+		double diff2 = (endCut - startCut)/1e6;
+		DeadCodeHarness.totalCut += diff2;	
+
 		// exhaustive checking.
 		if (exhaust) {
 			boolean ansExhau = true;

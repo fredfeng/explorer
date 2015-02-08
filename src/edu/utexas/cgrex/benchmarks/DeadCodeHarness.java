@@ -138,9 +138,17 @@ public class DeadCodeHarness extends SceneTransformer {
 				falseCnt++;
 				System.out.println(falseCnt + " || " + cnt + "--****-out of---"
 						+ querySet.size());
-				System.out.println(" Query result:" + res1);
 				System.out.println("unreach:" + q);
 			}
+			if(cnt > 100)
+				break;
 		}
+		//dump info.
+		System.out.println("total time on product: " + totalInter);
+		System.out.println("total time on cut: " + totalCut);
+		System.out.println(falseCnt + " out of 100");
 	}
+	
+	public static double totalCut = 0.0;
+	public static double totalInter = 0.0;
 }
