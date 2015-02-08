@@ -92,6 +92,12 @@ def main():
     print 'Summary information for ' + benName
     print 'unsound: ' + str(unsound) + ' out of ' + str(len(cgNoSet))
     print 'precise: ' + str(imprecise) + ' out of ' + str(len(cgYesSet))
+    with open(cgLoc) as f:
+        for line in f:
+            if 'Total' in line:
+                line = line.replace('\n','')
+                print line
+
 
 if __name__ == "__main__":
     benName = sys.argv[1]
