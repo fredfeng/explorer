@@ -1,6 +1,8 @@
 package edu.utexas.cgrex.benchmarks;
 
-import java.util.Arrays;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -31,21 +33,55 @@ public class DeadCodeHarness extends SceneTransformer {
 	public static int mode = 1;
 	
 	public static String queryLoc = "";
+	
+	public static String outLoc = "";
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String targetLoc = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/classes";
-		String cp = "lib/rt.jar:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/shared/dacapo-9.12/classes:/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/lusearch/jar/lucene-core-2.4.jar";
-		String targetMain = "org.dacapo.harness.ChordHarness";
-		
-//		String prefix = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/";
-//		String targetLoc = prefix + "benchmarks/antlr/classes";
-//		String cp = "lib/rt.jar:"
-//				+ prefix + "/shared/dacapo-2006-10-MR2/classes:" + prefix
-//				+ "benchmarks/antlr/jar/antlr.jar:";
-//		String targetMain = "dacapo.antlr.Main";
+		String prefix = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/";
+		String targetLoc = "", cp = "", targetMain = "org.dacapo.harness.ChordHarness";
+		outLoc = prefix + "benchmarks/"; 
+		if (args.length > 0) {
+			// run from shell.
+			String benName = args[0];
+			outLoc = outLoc + benName + "/cgoutput.txt";
+			if (benName.equals("luindex")) {
+				targetLoc = prefix + "benchmarks/luindex/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix
+						+ "benchmarks/luindex/jar/lucene-core-2.4.jar:"
+						+ prefix
+						+ "benchmarks/luindex/jar/lucene-demos-2.4.jar";
+			} else if (benName.equals("lusearch")) {
+				targetLoc = prefix + "benchmarks/lusearch/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix
+						+ "benchmarks/lusearch/jar/lucene-core-2.4.jar";
+			} else if (benName.equals("antlr")) {
+				targetLoc = prefix + "benchmarks/antlr/classes";
+				cp = "lib/rt.jar:" + prefix
+						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
+						+ "benchmarks/antlr/jar/antlr.jar:";
+				targetMain = "dacapo.antlr.Main";
+			} else if (benName.equals("avrora")) {
+				targetLoc = prefix + "benchmarks/avrora/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix
+						+ "benchmarks/avrora/jar/avrora-cvs-20091224.jar";
+			} else {
+				assert benName.equals("pmd") : "unknown benchmark" + benName;
+				targetLoc = prefix + "benchmarks/pmd/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/pmd/jar/asm-3.1.jar:" + prefix
+						+ "benchmarks/pmd/jar/jaxen-1.1.1.jar:" + prefix
+						+ "benchmarks/pmd/jar/pmd-4.2.5.jar:" + prefix
+						+ "benchmarks/pmd/jar/junit-3.8.1.jar:" + prefix
+						+ "benchmarks/pmd/jar/ant.jar";
+			}
+		}
+
 
 		try {
 
@@ -102,33 +138,33 @@ public class DeadCodeHarness extends SceneTransformer {
 		SootMethod main = Scene.v().getMainMethod();
 		QueryManager qm = new QueryManager(cicg, main);
 		Set<String> querySet = new HashSet<String>();
+		
+//		SootMethod testMeth = Scene.v().getMethod(
+//				"<org.apache.lucene.index.SegmentTermPositions: void <clinit>()>");
+//		Iterator<Edge> it = cicg.edgesInto(testMeth);
+//		while(it.hasNext()) {
+//			System.out.println(it.next());
+//		}
+//		assert false;
 
+		int appSize = 0;
 		for (SootMethod meth : SootUtils.getChaReachableMethods()) {
+			if(!meth.isJavaLibraryMethod()) 
+				appSize++;
 			if (meth.isJavaLibraryMethod()
-					|| Scene.v().getEntryPoints().contains(meth))
+					|| Scene.v().getEntryPoints().contains(meth)
+					|| meth.isConstructor()
+					|| meth.getName().contains("toString")
+					|| meth.getName().contains("<clinit>"))
 				continue;
 			
 			String query = main.getSignature() + ".*" + meth.getSignature();
 			querySet.add(query);
 		}
 		
-		
-		// Set<String> remain = new HashSet<String>();
-		// for (String tmp : Arrays.asList(arr)) {
-		// String my = main.getSignature() + ".*" + tmp;
-		// my = qm.getValidExprBySig(my);
-		// boolean res11 = qm.queryRegx(my);
-		// if (!res11)
-		// remain.add(tmp);
-		// }
-		//
-		// for (String re : remain) {
-		// System.out.println("Fail:" + re);
-		// }
-		// assert false : remain.size();
-
 		int falseCnt = 0;
 		int cnt = 0;
+		Set<String> outSet = new HashSet<String>();
 		for (String q : querySet) {
 			cnt++;
 			String regx = qm.getValidExprBySig(q);
@@ -136,17 +172,41 @@ public class DeadCodeHarness extends SceneTransformer {
 			boolean res1 = qm.queryRegx(regx);
 			if (!res1) {
 				falseCnt++;
-				System.out.println(falseCnt + " || " + cnt + "--****-out of---"
-						+ querySet.size());
 				System.out.println("unreach:" + q);
+				outSet.add("unreach:" + q);
+			} else {
+				System.out.println("yesreach:" + q);
+				outSet.add("yesreach:" + q);
 			}
-			if(cnt > 100)
+				
+			if(cnt >= 100)
 				break;
 		}
 		//dump info.
-		System.out.println("total time on product: " + totalInter);
-		System.out.println("total time on cut: " + totalCut);
-		System.out.println(falseCnt + " out of 100");
+		System.out.println("----------DeadCode report-------------------------");
+		System.out.println("Total time on product: " + totalInter);
+		System.out.println("Total time on cut: " + totalCut);
+		System.out.println("Total methods in App: " + appSize);
+		System.out.println("Total refutations: " + falseCnt);
+		
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(outLoc, "UTF-8");
+			writer.println("----------DeadCode report-------------------------");
+			writer.println("Total time on product: " + totalInter);
+			writer.println("Total time on cut: " + totalCut);
+			writer.println("Total methods in App: " + appSize);
+			writer.println("Total refutations: " + falseCnt);
+			writer.println("Method detaisl----");
+			for(String out : outSet) {
+				writer.println(out);
+			}
+			writer.close();
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	public static double totalCut = 0.0;

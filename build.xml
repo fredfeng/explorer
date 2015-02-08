@@ -105,10 +105,7 @@
 			<pathelement location="lib/slf4j-api-1.7.5.jar"/>
 			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
 	      </classpath>
-	      <arg value="${target.loc}"/>
-	      <arg value="${target.main}"/>
-	      <arg value="${query.loc}"/>
-	      <arg value="${alg}"/>
+	      <arg value="${target.name}"/>
 		</java>
 	  </target>
 

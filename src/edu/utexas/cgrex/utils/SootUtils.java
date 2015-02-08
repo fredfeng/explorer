@@ -228,6 +228,7 @@ public class SootUtils {
 	// generate the CHA-based call graph
 	public static Set<SootMethod> getChaReachableMethods() {
 		if (cha == null) {
+			long start = System.nanoTime();
 			CallGraphBuilder cg = new CallGraphBuilder(DumbPointerAnalysis.v());
 			cg.build();
 			System.out.println("CHA Number**** of reachable methods: "
@@ -240,6 +241,8 @@ public class SootUtils {
 			while (qr.hasNext()) {
 				chaReachableMethods.add(qr.next().method());
 			}
+			long end = System.nanoTime();
+			StringUtil.reportSec("CHA Construction Time: ", start, end);
 		}
 		assert !chaReachableMethods.isEmpty();
 		return chaReachableMethods;

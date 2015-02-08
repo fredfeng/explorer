@@ -60,6 +60,7 @@ public class VerifyHarness {
 		for (Pair<String, String> p1 : cgSet) {
 			String clzName1 = p1.val0;
 			String methName1 = p1.val1;
+			boolean flag = true;
 			for (Pair<String, String> p2 : chordSet) {
 				String clzName2 = p2.val0;
 				String methName2 = p2.val1;
@@ -71,10 +72,13 @@ public class VerifyHarness {
 //						System.out.println(clzName1 + ":" + methName1 + "->"
 //								+ methName2);
 						System.out.println(map.get(p1));
+						flag = false;
 						break;
 					}
 
 			}
+//			if (flag)
+//				System.out.println("fuck:" + map.get(p1));
 		}
 		
 		//TODO: 2. precision.
