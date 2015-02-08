@@ -1,5 +1,6 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +70,30 @@ public class DeadCodeHarness extends SceneTransformer {
 		}
 
 	}
+	
+	static String[] arr = {
+		"<org.apache.commons.cli.Parser: java.util.List getRequiredOptions()>",
+		"<org.apache.lucene.index.MultiSegmentReader: org.apache.lucene.index.TermEnum terms()>",
+		"<org.apache.lucene.search.DisjunctionSumScorer: void <init>(java.util.List)>",
+		"<org.apache.lucene.store.IndexInput: void <init>()>",
+		"<org.apache.commons.cli.Options: org.apache.commons.cli.Options addOption(org.apache.commons.cli.Option)>",
+		"<org.apache.lucene.store.ChecksumIndexInput: long getFilePointer()>",
+		"<org.apache.lucene.index.MultiSegmentReader$MultiTermPositions: void <init>(org.apache.lucene.index.IndexReader[],int[])>",
+		"<org.dacapo.harness.DacapoException: void <init>(java.lang.String)>",
+		"<org.dacapo.parser.ConfigFileTokenManager: void <init>(org.dacapo.parser.SimpleCharStream)>",
+		"<org.apache.commons.cli.ParseException: void <init>(java.lang.String)>",
+		"<org.apache.lucene.index.SegmentInfos: long generationFromSegmentsFileName(java.lang.String)>",
+		"<org.apache.lucene.index.SegmentReader: org.apache.lucene.index.SegmentReader get(boolean,org.apache.lucene.store.Directory,org.apache.lucene.index.SegmentInfo,org.apache.lucene.index.SegmentInfos,boolean,boolean,int,boolean)>",
+		"<org.dacapo.harness.CommandLineArgs: void defineCallback()>",
+		"<org.dacapo.parser.SimpleCharStream: void <init>(java.io.Reader,int,int,int)>",
+		"<org.apache.lucene.util.ScorerDocQueue$HeapedScorerDoc: void <init>(org.apache.lucene.util.ScorerDocQueue,org.apache.lucene.search.Scorer)>",
+		"<org.apache.lucene.index.CorruptIndexException: void <init>(java.lang.String)>",
+		"<org.apache.lucene.search.IndexSearcher: void <init>(org.apache.lucene.index.IndexReader,boolean)>",
+		"<org.apache.commons.cli.Option: void clearValues()>",
+		"<org.apache.lucene.analysis.CharArraySet: boolean contains(java.lang.Object)>",
+		"<org.apache.lucene.search.MultiTermQuery: boolean equals(java.lang.Object)>",
+		"<org.apache.lucene.index.DirectoryIndexReader$1: void <init>(org.apache.lucene.store.Directory,boolean,org.apache.lucene.index.IndexDeletionPolicy,boolean)>"
+	};
 
 	@Override
 	protected void internalTransform(String phaseName,
@@ -82,15 +107,31 @@ public class DeadCodeHarness extends SceneTransformer {
 			if (meth.isJavaLibraryMethod()
 					|| Scene.v().getEntryPoints().contains(meth))
 				continue;
-
+			
 			String query = main.getSignature() + ".*" + meth.getSignature();
 			querySet.add(query);
 		}
+		
+		
+		// Set<String> remain = new HashSet<String>();
+		// for (String tmp : Arrays.asList(arr)) {
+		// String my = main.getSignature() + ".*" + tmp;
+		// my = qm.getValidExprBySig(my);
+		// boolean res11 = qm.queryRegx(my);
+		// if (!res11)
+		// remain.add(tmp);
+		// }
+		//
+		// for (String re : remain) {
+		// System.out.println("Fail:" + re);
+		// }
+		// assert false : remain.size();
 
 		int falseCnt = 0;
 		int cnt = 0;
 		for (String q : querySet) {
 			cnt++;
+			q = main.getSignature() + "";
 			String regx = qm.getValidExprBySig(q);
 			regx = regx.replaceAll("\\s+", "");
 			boolean res1 = qm.queryRegx(regx);

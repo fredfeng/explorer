@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import soot.AnySubType;
 import soot.Body;
 import soot.Local;
 import soot.MethodOrMethodContext;
@@ -23,6 +24,7 @@ import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
@@ -609,6 +611,12 @@ public class QueryManager {
 		while (!hasInfinityEdges(cutset)) {
 			boolean refuteAll = true;
 			for (CutEntity e : cutset) {
+				//Heuristic: Too many edges from libs.
+//				if (e.getStmt() != null
+//						&& e.getStmt().getInvokeExpr().getMethod()
+//								.isJavaLibraryMethod() && cutset.size() > 20)
+//					return true;
+				
 				if (isValidEdge(e.edge, e.getSrc())) {
 					refuteAll = false;
 					e.edge.setInfinityWeight();
@@ -626,7 +634,6 @@ public class QueryManager {
 			cutset = GraphUtil.minCut(interAuto);
 			// System.out.println("cutset:" + cutset);
 		}
-		// interAuto.dump();
 		StringUtil.reportDiff("Time on PT: ", ptTime);
 		StringUtil.reportDiff("Cut time:" + answer, cutTime);
 		return answer;
@@ -704,11 +711,11 @@ public class QueryManager {
 
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
-		
+
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 
 		assert (calleeMeth != null);
-		
+
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
@@ -722,7 +729,6 @@ public class QueryManager {
 		assert st != null : calleeMeth;
 		Local l = getReceiver(st);
 		// get the context of l. This could be optimized later.
-
 		for (AutoEdge in : inEdges) {
 			if (in.isInvEdge())
 				continue;
@@ -735,8 +741,8 @@ public class QueryManager {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
-//				System.out.println("#######query ctxt:" + ctxt + " var: " + l
-//						+ " result:" + types);
+				// System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
+				// + l + " types:" + types);
 				ptTypeSet.addAll(types);
 
 			} else {
@@ -744,15 +750,30 @@ public class QueryManager {
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 			}
 		}
-		
+
 		long end = System.nanoTime();
 		ptTime = ptTime + (end - start);
 
 		if (ptTypeSet.size() == 0)
 			return false;
 
+		if (hasAnyType(ptTypeSet))
+			return true;
+
 		ptTypeSet.retainAll(typeSet);
 		return !ptTypeSet.isEmpty();
+	}
+	
+	private boolean hasAnyType(Set<Type> types) {
+		for (Type t : types) {
+			if (t instanceof AnySubType) {
+				AnySubType any = (AnySubType) t;
+				Type base = any.getBase();
+				if (base.toString().equals("java.lang.Object"))
+					return true;
+			}
+		}
+		return false;
 	}
 
 	// return the edge from soot's call graph
@@ -986,8 +1007,7 @@ public class QueryManager {
 
 		if (stmt.containsInvokeExpr()) {
 			InvokeExpr ie = stmt.getInvokeExpr();
-			if ((ie instanceof VirtualInvokeExpr)
-					|| (ie instanceof InterfaceInvokeExpr)) {
+			if ((ie instanceof InstanceInvokeExpr)) {
 				int len = ie.getUseBoxes().size();
 				assert len > 0;
 				Value var = ie.getUseBoxes().get(len - 1).getValue();

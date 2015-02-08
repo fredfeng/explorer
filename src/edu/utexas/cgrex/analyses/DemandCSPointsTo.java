@@ -2127,16 +2127,20 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	 *             always
 	 */
 	public PointsToSet reachingObjects(Context c, Local l) {
+		if (fieldToStores == null) {
+			init();
+		}
+
 		assert c instanceof CgContext : "should be instance of CgContext";
 		CgContext ctx = (CgContext) c;
 		InvokeExpr stmt = ctx.getCallsite();
 		assert stmt != null : "null context";
 		assert callSiteToInt != null : callSiteToInt;
-		if(!callSiteToInt.containsKey(stmt)) {
-//			System.err.println("ERROR ctxt:" + stmt);
+		if (!callSiteToInt.containsKey(stmt)) {
+			// System.err.println("ERROR ctxt:" + stmt);
 			return this.reachingObjects(l);
 		}
-		
+
 		int callSite = callSiteToInt.get(stmt);
 		assert callSite > 0;
 

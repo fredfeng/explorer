@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import chord.util.tuple.object.Pair;
@@ -21,6 +23,7 @@ public class VerifyHarness {
 		String chord = "/home/yufeng/research/CallsiteResolver/chord.txt";
 		Set<Pair<String, String>> cgSet = new HashSet<Pair<String, String>>();
 		Set<Pair<String, String>> chordSet = new HashSet<Pair<String, String>>();
+		Map<Pair<String, String>, String> map = new HashMap<Pair<String, String>, String>();
 
 		BufferedReader br = new BufferedReader(new FileReader(new File(cg)));
 		String line;
@@ -32,6 +35,7 @@ public class VerifyHarness {
 			String methName = list[2];
 			methName = methName.substring(0, methName.indexOf("("));
 			Pair<String, String> p = new Pair<String, String>(clzName, methName);
+			map.put(p, line);
 			cgSet.add(p);
 		}
 		br.close();
@@ -62,10 +66,11 @@ public class VerifyHarness {
 				if (clzName2.equals(clzName1))
 					// assert !methName1.contains(methName2) : clzName1 + ":"
 					// + methName1 + "->" + methName2;
-					if (methName1.contains(methName2)) {
+					if (methName1.equals(methName2)) {
 						cnt++;
-						System.out.println(clzName1 + ":" + methName1 + "->"
-								+ methName2);
+//						System.out.println(clzName1 + ":" + methName1 + "->"
+//								+ methName2);
+						System.out.println(map.get(p1));
 						break;
 					}
 
