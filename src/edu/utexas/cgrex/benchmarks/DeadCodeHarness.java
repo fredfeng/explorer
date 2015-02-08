@@ -131,7 +131,6 @@ public class DeadCodeHarness extends SceneTransformer {
 		int cnt = 0;
 		for (String q : querySet) {
 			cnt++;
-			q = main.getSignature() + "";
 			String regx = qm.getValidExprBySig(q);
 			regx = regx.replaceAll("\\s+", "");
 			boolean res1 = qm.queryRegx(regx);

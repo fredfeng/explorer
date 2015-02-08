@@ -123,7 +123,7 @@ public class AutoEdge {
 	
 	public void setSrcStmt(Stmt srcStmt) {
 		this.srcStmt = srcStmt;
-		if(srcStmt == null)
+		if (srcStmt == null)
 			this.weight = INFINITY;
 	}
 
