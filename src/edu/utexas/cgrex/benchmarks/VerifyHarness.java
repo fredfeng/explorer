@@ -78,7 +78,7 @@ public class VerifyHarness {
 
 			}
 //			if (flag)
-//				System.out.println("fuck:" + map.get(p1));
+//				System.out.println("Imprecise:" + map.get(p1));
 		}
 		
 		//TODO: 2. precision.
