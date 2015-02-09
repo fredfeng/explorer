@@ -382,16 +382,16 @@ public class QueryManager {
 				}
 				// how about SCC? FIXME!!
 				if (tgtMeth.equals(worker)) {// recursive call, add self-loop
-					AutoEdge outEdge = invkToEdgeMap.get(new Pair<>(srcStmt,
-							worker));
+					AutoEdge outEdge = invkToEdgeMap
+							.get(new Pair<Stmt, SootMethod>(srcStmt, worker));
 					assert outEdge != null : e;
 					// need fresh instance for each callsite but share same uid.
 					curState.addOutgoingStates(curState, outEdge);
 					curState.addIncomingStates(curState, outEdge);
 				} else {
 					worklist.add(tgtMeth);
-					AutoEdge outEdge = invkToEdgeMap.get(new Pair<>(srcStmt,
-							tgtMeth));
+					AutoEdge outEdge = invkToEdgeMap
+							.get(new Pair<Stmt, SootMethod>(srcStmt, tgtMeth));
 					assert outEdge != null : e;
 					// need fresh instance for each callsite but share same uid.
 					CGAutoState tgtState = methToStateMap.get(tgtMeth);

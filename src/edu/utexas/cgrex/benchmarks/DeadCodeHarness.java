@@ -202,8 +202,10 @@ public class DeadCodeHarness extends SceneTransformer {
 				writer.println(out);
 			}
 			writer.close();
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
 
