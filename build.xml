@@ -132,9 +132,6 @@
 			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
 	      </classpath>
 	      <arg value="${target.loc}"/>
-	      <arg value="${target.main}"/>
-	      <arg value="${query.loc}"/>
-	      <arg value="${alg}"/>
 		</java>
 	  </target>
 
