@@ -119,7 +119,7 @@ public class InterAutomaton extends Automaton {
 								.getTwoStepAnnot();
 						Map<AutoState, Map<AutoState, Boolean>> annots = ((CGAutomaton) slaveAutomaton)
 								.annotateTwoSteps(regExprOpts);
-						System.out.println("master:" + regExprOpts);
+						// System.out.println("master:" + regExprOpts);
 						debugAnnot = annots;
 
 						intersectAnnot(masterInitSt, slaveInitSt, interInitSt,

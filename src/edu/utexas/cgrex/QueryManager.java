@@ -858,6 +858,20 @@ public class QueryManager {
 		return res;
 	}
 	
+	public boolean querySig(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
+		myoptions.put("annot", true);
+		myoptions.put("two", true);
+		InterAutoOpts myopts = new InterAutoOpts(myoptions);
+
+		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
+		interAuto.build();
+		
+		return !interAuto.getFinalStates().isEmpty();
+	}
+	
 	// return the default answer based on interauto w/o refine.
 	public boolean defaultAns() {
 		return interAuto.getFinalStates().size() > 0;
@@ -1019,6 +1033,7 @@ public class QueryManager {
 			if ((ie instanceof InstanceInvokeExpr)) {
 				int len = ie.getUseBoxes().size();
 				assert len > 0;
+				//FIXME: check this!
 				Value var = ie.getUseBoxes().get(len - 1).getValue();
 				assert var instanceof Local : var + " in: " + ie;
 				return (Local) var;

@@ -225,6 +225,17 @@ public class SootUtils {
 		return visited.contains(tgt);
 	}
 	
+	public static CallGraph getCha() {
+		if (cha == null) {
+			CallGraphBuilder cg = new CallGraphBuilder(DumbPointerAnalysis.v());
+			cg.build();
+			System.out.println("CHA Number**** of reachable methods: "
+					+ Scene.v().getReachableMethods().size());
+			cha = cg.getCallGraph();
+		}
+		return cha;
+	}
+	
 	// generate the CHA-based call graph
 	public static Set<SootMethod> getChaReachableMethods() {
 		if (cha == null) {
