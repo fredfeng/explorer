@@ -188,6 +188,10 @@ public class QueryManager {
 		init();
 	}
 	
+	public PointsToAnalysis getDemandPointsTo() {
+		return ptsDemand;
+	}
+	
 	public ReachableMethods getReachableMethods() {
 		if (reachableMethods == null) {
 			reachableMethods = new ReachableMethods(cg,
