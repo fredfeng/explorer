@@ -10,9 +10,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import soot.AnySubType;
+import soot.ArrayType;
 import soot.FastHierarchy;
 import soot.G;
 import soot.MethodOrMethodContext;
+import soot.RefType;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -76,7 +79,7 @@ public class SootUtils {
 			}
 		}
 
-		List<Type> list = new ArrayList();
+		List<Type> list = new ArrayList<Type>();
 		list.addAll(subTypes);
 		return list;
 	}
@@ -86,7 +89,7 @@ public class SootUtils {
 		if (subTypes != null)
 			return subTypes;
 
-		classToSubtypes.put(cl, subTypes = new HashSet());
+		classToSubtypes.put(cl, subTypes = new HashSet<SootClass>());
 
 		subTypes.add(cl);
 
@@ -121,24 +124,6 @@ public class SootUtils {
 		return subTypes;
 	}
 
-	// src equals tgt, or, tgt is the superclass of src.
-	public static boolean compatibleWith(SootMethod src, SootMethod tgt) {
-		boolean b = false;
-		if (src.equals(tgt))
-			b = true;
-        return b;
-		/*SootClass srcClazz = src.getDeclaringClass();
-		while (srcClazz.hasSuperclass()) {
-			SootClass superClazz = srcClazz.getSuperclass();
-			if (superClazz.declaresMethod(tgt.getName(),
-					tgt.getParameterTypes()))
-				return true;
-
-			srcClazz = superClazz;
-		}
-
-		return b;*/
-	}
 
 	public static String getSootSubsigFor(String chordSubsig) {
 		String name = chordSubsig.substring(0, chordSubsig.indexOf(':'));
@@ -234,6 +219,44 @@ public class SootUtils {
 			cha = cg.getCallGraph();
 		}
 		return cha;
+	}
+	
+	public static boolean castSafe(Type castType, Set<Type> types) {
+		if (castType instanceof ArrayType) {
+			for (Type tgt : types) {
+				if (!(tgt instanceof ArrayType)) {
+					return false;
+				}
+			}
+		} else if (castType instanceof RefType) {
+			SootClass castClass = ((RefType) castType).getSootClass();
+			Set<SootClass> subClasses = subTypesOf(castClass);
+			for (Type tgt : types) {
+				if (tgt instanceof AnySubType) {
+					AnySubType any = (AnySubType) tgt;
+					Type anyType = any.getBase();
+					assert anyType instanceof RefType;
+					SootClass anyBaseClz = ((RefType) anyType).getSootClass();
+					Set<SootClass> anySubClasses = subTypesOf(anyBaseClz);
+					for (SootClass sub : anySubClasses) {
+						if (!subClasses.contains(sub))
+							return false;
+					}
+				}
+				if(tgt instanceof ArrayType)
+					return false;
+				assert tgt instanceof RefType : tgt;
+				SootClass tgtClz = ((RefType) tgt).getSootClass();
+				
+				if (!subClasses.contains(tgtClz))
+					return false;
+
+			}
+		} else {
+			assert false : castType;
+		}
+
+		return true;
 	}
 	
 	// generate the CHA-based call graph

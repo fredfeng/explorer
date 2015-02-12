@@ -18,9 +18,6 @@
  */
 package edu.utexas.cgrex.analyses;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,7 +42,6 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
 import soot.jimple.InvokeExpr;
-import soot.jimple.Stmt;
 import soot.jimple.spark.ondemand.AllocAndContext;
 import soot.jimple.spark.ondemand.AllocAndContextSet;
 import soot.jimple.spark.ondemand.CallSiteException;

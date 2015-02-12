@@ -10,6 +10,7 @@ import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.PackManager;
 import soot.PointsToAnalysis;
+import soot.PrimType;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootMethod;
@@ -24,6 +25,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.util.Chain;
 import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.utils.SootUtils;
 
 /**
  * Sanity check for the precision of Manu's pointer analysis.
@@ -111,7 +113,9 @@ public class SanityCheckHarness extends SceneTransformer {
 		PAG spark = (PAG) Scene.v().getPointsToAnalysis();
 		PointsToAnalysis pt = qm.getDemandPointsTo();
 		int totalCast = 0;
-		int better = 0;
+		int castSafeBySpark = 0;
+		int castSafeByManu = 0;
+
 		while (queue.hasNext()) {
 			SootMethod meth = (SootMethod) queue.next();
 			if (meth.isJavaLibraryMethod())
@@ -127,15 +131,22 @@ public class SanityCheckHarness extends SceneTransformer {
 						&& ((JAssignStmt) stmt).getRightOp() instanceof CastExpr) {
 					CastExpr cast = (CastExpr) ((JAssignStmt) stmt)
 							.getRightOp();
+					if (cast.getType() instanceof PrimType) {
+						System.out.println("Ignore primitive: "
+								+ cast.getCastType());
+						continue;
+					}
 					Local rhs = (Local) cast.getOp();
 					Set<Type> sparkTypes = spark.reachingObjects(rhs)
 							.possibleTypes();
 					Set<Type> ddTypes = pt.reachingObjects(rhs).possibleTypes();
-					if (sparkTypes.size() > ddTypes.size()) {
-						System.out.println("Good:" + sparkTypes + " ***"
-								+ ddTypes);
-						better++;
-					}
+					if (SootUtils.castSafe(cast.getCastType(), sparkTypes))
+						castSafeBySpark++;
+
+					if (SootUtils.castSafe(cast.getCastType(), ddTypes))
+						castSafeByManu++;
+					else 
+						System.out.println("cast fail:" + ddTypes + "||stmt:" + stmt);
 
 					Type castType = cast.getCastType();
 					totalCast++;
@@ -144,7 +155,8 @@ public class SanityCheckHarness extends SceneTransformer {
 			}
 
 		}
-		
-		assert false : totalCast + " " + better;
+
+		assert false : totalCast + " spark: " + castSafeBySpark + " Manu: "
+				+ castSafeByManu;
 	}
 }
