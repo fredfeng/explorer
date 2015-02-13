@@ -105,7 +105,7 @@ public class QueryManager {
 	Map<State, RegAutoState> jsaToAutostate = new HashMap<State, RegAutoState>();
 
 	// each sootmethod will be represented by the unicode of its number.
-	Map<String, SootMethod> uidToMethMap = new HashMap<String, SootMethod>();
+	public static Map<String, SootMethod> uidToMethMap = new HashMap<String, SootMethod>();
 	
 	Map<SootMethod, String> methToUidMap = new HashMap<SootMethod, String>();
 	
@@ -153,7 +153,7 @@ public class QueryManager {
 	
 	public QueryManager(CallGraph cg, SootMethod meth) {
 		final int DEFAULT_MAX_PASSES = 10;
-		final int DEFAULT_MAX_TRAVERSAL = 750;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
 		final boolean DEFAULT_LAZY = false;
 		
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
@@ -1044,6 +1044,10 @@ public class QueryManager {
 			}
 		}
 		return null;
+	}
+	
+	public CGAutomaton getCGAuto() {
+		return this.cgAuto;
 	}
 
 }

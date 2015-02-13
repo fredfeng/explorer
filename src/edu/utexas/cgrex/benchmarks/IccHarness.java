@@ -18,6 +18,7 @@ import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
+import soot.util.cfgcmd.CFGToDotGraph;
 import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.android.SetupApplication;
@@ -106,7 +107,7 @@ public class IccHarness {
 			Scene.v().setEntryPoints(entries);
 			QueryManager qm = new QueryManager(Scene.v().getCallGraph(), main);
 			Set<String> querySet = new HashSet<String>();
-
+			CFGToDotGraph cfgToDot = new CFGToDotGraph();
 			QueueReader qe = qm.getReachableMethods().listener();
 			CallGraph cg = Scene.v().getCallGraph();
 			while (qe.hasNext()) {

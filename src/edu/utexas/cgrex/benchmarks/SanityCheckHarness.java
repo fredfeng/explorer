@@ -24,7 +24,7 @@ import soot.jimple.spark.pag.PAG;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.util.Chain;
 import soot.util.queue.QueueReader;
-import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.analyses.DemandCSPointsTo;
 import edu.utexas.cgrex.utils.SootUtils;
 
 /**
@@ -107,20 +107,30 @@ public class SanityCheckHarness extends SceneTransformer {
 			Map<String, String> options) {
 		CallGraph cicg = Scene.v().getCallGraph();
 		SootMethod main = Scene.v().getMainMethod();
-		QueryManager qm = new QueryManager(cicg, main);
+//		QueryManager qm = new QueryManager(cicg, main);
 		QueueReader<MethodOrMethodContext> queue = Scene.v()
 				.getReachableMethods().listener();
 		PAG spark = (PAG) Scene.v().getPointsToAnalysis();
-		PointsToAnalysis pt = qm.getDemandPointsTo();
+//		PointsToAnalysis pt = qm.getDemandPointsTo();
+		
+		final int DEFAULT_MAX_PASSES = 10;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final boolean DEFAULT_LAZY = false;
+		
+		PointsToAnalysis pt = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		
 		int totalCast = 0;
 		int castSafeBySpark = 0;
 		int castSafeByManu = 0;
-
+		int empty = 0;
 		while (queue.hasNext()) {
 			SootMethod meth = (SootMethod) queue.next();
 			if (meth.isJavaLibraryMethod())
 				continue;
-
+			if(!meth.isConcrete()) {
+				continue;
+			}
 			assert meth.isConcrete() : meth;
 			Body body = meth.retrieveActiveBody();
 			Chain<Unit> units = body.getUnits();
@@ -131,32 +141,34 @@ public class SanityCheckHarness extends SceneTransformer {
 						&& ((JAssignStmt) stmt).getRightOp() instanceof CastExpr) {
 					CastExpr cast = (CastExpr) ((JAssignStmt) stmt)
 							.getRightOp();
+					Type castType = cast.getCastType();
+
 					if (cast.getType() instanceof PrimType) {
-						System.out.println("Ignore primitive: "
-								+ cast.getCastType());
+						System.out.println("Ignore primitive: " + castType);
 						continue;
 					}
 					Local rhs = (Local) cast.getOp();
 					Set<Type> sparkTypes = spark.reachingObjects(rhs)
 							.possibleTypes();
 					Set<Type> ddTypes = pt.reachingObjects(rhs).possibleTypes();
-					if (SootUtils.castSafe(cast.getCastType(), sparkTypes))
+					if (SootUtils.castSafe(castType, sparkTypes))
 						castSafeBySpark++;
 
-					if (SootUtils.castSafe(cast.getCastType(), ddTypes))
+					if (SootUtils.castSafe(castType, ddTypes)) {
 						castSafeByManu++;
-					else 
-						System.out.println("cast fail:" + ddTypes + "||stmt:" + stmt);
-
-					Type castType = cast.getCastType();
+						if(ddTypes.size() == 0)
+							empty++;
+					} else {
+						System.out.println("------------------" + stmt);
+						System.out.println(ddTypes);
+					}
 					totalCast++;
-					System.out.println(meth);
 				}
 			}
 
 		}
 
 		assert false : totalCast + " spark: " + castSafeBySpark + " Manu: "
-				+ castSafeByManu;
+				+ castSafeByManu + " empty:" + empty;
 	}
 }
