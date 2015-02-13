@@ -769,5 +769,58 @@ public class InterAutomaton extends Automaton {
 		b.append("}\n");
 		System.out.println(b.toString());
 	}
+	
+	public void dumpFile() {
+		StringBuilder b = new StringBuilder("digraph Automaton {\n");
+		b.append("  rankdir = LR;\n");
+		for (AutoState s : states) {
+			b.append("  ").append("\"" + s.id + "\"");
+
+			if (s.isFinalState) {
+				b.append(" [shape=doublecircle,label=\"");
+				b.append(s.getDesc());
+				b.append("\"];\n");
+			} else {
+				b.append(" [shape=circle,label=\"");
+				b.append(s.getDesc());
+				b.append("\"];\n");
+			}
+
+			if (s.isInitState) {
+				b.append("  \"initial\" [shape=plaintext,label=\"");
+				b.append(s.getDesc());
+				b.append("\"];\n");
+				b.append("  \"initial\" -> ").append("\"" + s.id + "\"")
+						.append("\n");
+			}
+
+			for (AutoState tgt : s.getOutgoingStates().keySet()) {
+				for (AutoEdge outEdge : s.outgoingStatesLookup(tgt)) {
+					b.append("  ").append("\"" + s.id + "\"");
+
+					b.append(" -> ").append("\"" + tgt.id + "\"")
+							.append(" [label=\"");
+					if (outEdge.isDotEdge())
+						b.append(".");
+					else {
+						if(outEdge.getSrcStmt() != null) 
+							b.append(outEdge.getSrcStmt().toString());
+					}
+					b.append("\"]\n");
+				}
+
+			}
+		}
+		b.append("}\n");
+		try {
+			BufferedWriter bufw = new BufferedWriter(new FileWriter(
+					"src/inter.dot"));
+			bufw.write(b.toString());
+			bufw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
 
 }

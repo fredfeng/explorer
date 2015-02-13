@@ -15,6 +15,8 @@ public abstract class AutoState {
 	protected boolean isInitState = false;
 
 	protected boolean isFinalState = false;
+	
+	protected String desc;
 
 	private boolean visited = false;
 
@@ -67,6 +69,14 @@ public abstract class AutoState {
 
 	public boolean isFinalState() {
 		return isFinalState;
+	}
+	
+	public String getDesc() {
+		return desc;
+	}
+	
+	public void setDesc(String s) {
+		desc = s;
 	}
 
 	@Override

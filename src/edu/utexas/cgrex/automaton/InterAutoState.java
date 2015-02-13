@@ -157,6 +157,11 @@ public class InterAutoState extends AutoState {
 	public boolean hasMasterandSlaveState(AutoState master, AutoState slave) {
 		return hasMasterState(master) && hasSlaveState(slave);
 	}
+	
+	@Override
+	public String getDesc() {
+		return slaveState.getDesc();
+	}
 
 	@Override
 	public boolean equals(Object other) {

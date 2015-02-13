@@ -217,6 +217,7 @@ public class QueryManager {
 		uidToMethMap.put(mainId, mainMethod);
 		methToUidMap.put(mainMethod, mainId);
 		CGAutoState mst = new CGAutoState(mainId, false, true);
+		mst.setDesc(mainMethod.getName());
 		methToStateMap.put(mainMethod, mst);
 		
 		while (mIt.hasNext()) {
@@ -229,6 +230,7 @@ public class QueryManager {
 			methToUidMap.put(meth, uid);
 
 			CGAutoState st = new CGAutoState(uid, false, true);
+			st.setDesc(meth.getName());
 
 			methToStateMap.put(meth, st);
 			
@@ -348,6 +350,7 @@ public class QueryManager {
 
 		// 0 is the initial id.
 		CGAutoState initState = new CGAutoState(0, true, true);
+		initState.setDesc("init");
 		CGAutoState mainState = methToStateMap.get(mainMeth);
 		initState.addOutgoingStates(mainState, callEdgeMain);
 		mainState.addIncomingStates(initState, callEdgeMain);
@@ -546,7 +549,7 @@ public class QueryManager {
 
 	private void createSuperNode(InterAutomaton auto) {
 		CGAutoState superFinalSt = new CGAutoState("SuperFinal", false, true);
-
+		superFinalSt.setDesc("Final");
 
 		for(AutoState autoSt : auto.getFinalStates()) {
 			AutoEdge superEdge = new AutoEdge(autoSt.getId() + "@superFinal");
@@ -579,7 +582,7 @@ public class QueryManager {
 
 
 		// interAuto.validate();
-		// interAuto.dump();
+		// interAuto.dumpFile();
 
 		// before we do the mincut, we need to exclude some trivial cases
 		// such as special invoke, static invoke and certain virtual invoke.
