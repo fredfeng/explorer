@@ -729,11 +729,6 @@ public class QueryManager {
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 
 		assert (calleeMeth != null);
-		
-		//super.<init> always true;
-		if ((st instanceof SpecialInvokeExpr) && calleeMeth.isConstructor())
-			return true;
-
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
@@ -773,6 +768,10 @@ public class QueryManager {
 
 		if (ptTypeSet.size() == 0)
 			return false;
+		
+		//super.<init> always true;
+		if (calleeMeth.isConstructor())
+			return true;
 
 		if (hasAnyType(ptTypeSet))
 			return true;
