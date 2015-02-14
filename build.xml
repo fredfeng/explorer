@@ -111,7 +111,7 @@
 
      <target name="perf" depends="jar">
 	    <java classname="edu.utexas.cgrex.benchmarks.PerfDetectHarness"
-	          maxmemory="8g"
+	          maxmemory="16g"
 	          fork="true"
 	          failonerror="true">
 	          <jvmarg value="-ea" />

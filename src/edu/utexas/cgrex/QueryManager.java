@@ -864,20 +864,6 @@ public class QueryManager {
 		return res;
 	}
 	
-	public boolean querySig(String regx) {
-		regx = regx.replaceAll("\\s+", "");
-		buildRegAutomaton(regx);
-		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
-		myoptions.put("annot", true);
-		myoptions.put("two", true);
-		InterAutoOpts myopts = new InterAutoOpts(myoptions);
-
-		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
-		interAuto.build();
-		
-		return !interAuto.getFinalStates().isEmpty();
-	}
-	
 	// return the default answer based on interauto w/o refine.
 	public boolean defaultAns() {
 		return interAuto.getFinalStates().size() > 0;
@@ -999,15 +985,8 @@ public class QueryManager {
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
 		long endInter = System.nanoTime();
-		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
-
-		// interAuto.dumpFile();
-
-		// before we do the mincut, we need to exclude some trivial cases
-		// such as special invoke, static invoke and certain virtual invoke.
-		if (interAuto.getFinalStates().size() == 0)
-			return false;
-		return true;
+		StringUtil.reportSec("Building InterAuto w/o refine:", startInter, endInter);
+		return !interAuto.getFinalStates().isEmpty();
 	}
 
 	// return a valid regular expression based on method's signature.
@@ -1033,16 +1012,12 @@ public class QueryManager {
 
 	// get a list of vars that can invoke method tgt.
 	private Local getReceiver(Stmt stmt) {
-
 		if (stmt.containsInvokeExpr()) {
 			InvokeExpr ie = stmt.getInvokeExpr();
 			if ((ie instanceof InstanceInvokeExpr)) {
-				int len = ie.getUseBoxes().size();
-				assert len > 0;
-				//FIXME: check this!
-				Value var = ie.getUseBoxes().get(len - 1).getValue();
-				assert var instanceof Local : var + " in: " + ie;
-				return (Local) var;
+                InstanceInvokeExpr iie = (InstanceInvokeExpr) ie;
+		        Local receiver = (Local) iie.getBase();
+		        return receiver;
 			}
 		}
 		return null;
