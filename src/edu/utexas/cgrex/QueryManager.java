@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +22,10 @@ import soot.Scene;
 import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
-import soot.Value;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
+import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -723,13 +722,17 @@ public class QueryManager {
 	
 	private boolean isValidEdge(AutoEdge e, AutoState src) {
 		long start = System.nanoTime();
-
+		Stmt st = e.getSrcStmt();
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
 
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 
 		assert (calleeMeth != null);
+		
+		//super.<init> always true;
+		if ((st instanceof SpecialInvokeExpr) && calleeMeth.isConstructor())
+			return true;
 
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
@@ -740,7 +743,6 @@ public class QueryManager {
 				calleeMeth.getDeclaringClass(), calleeMeth);
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
-		Stmt st = e.getSrcStmt();
 		assert st != null : calleeMeth;
 		Local l = getReceiver(st);
 		// get the context of l. This could be optimized later.
@@ -791,71 +793,6 @@ public class QueryManager {
 		return false;
 	}
 
-	// return the edge from soot's call graph
-	private Edge getEdgeFromCallgraph(CutEntity cut) {
-		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) cut.edge)
-				.getTgtCGAutoStateId());
-		AutoEdge inEdge = null;
-		for (AutoEdge e : cut.state.getIncomingStatesInvKeySet()) {
-			if (!e.isInvEdge()) {
-				inEdge = e;
-				break;
-			}
-		}
-		SootMethod callerMeth = uidToMethMap.get(((InterAutoEdge) inEdge)
-				.getTgtCGAutoStateId());
-		// System.out.println("look for an edge from " + callerMeth + " to " +
-		// calleeMeth);
-		for (Iterator<Edge> cIt = cg.edgesOutOf(callerMeth); cIt.hasNext();) {
-			Edge outEdge = cIt.next();
-			if (outEdge.getTgt().equals(calleeMeth))
-				return outEdge;
-		}
-		// assert(false);
-		// System.err.println("CAN not find the right call edge.------------");
-		return null;
-	}
-
-	// entry method for the query. Only for debug purpose.
-	public boolean doQuery() {
-		String regx = "";
-
-		// ignore user input, run our own batch test.
-		switch (Harness.mode) {
-		case 0:// benchmark mode.
-			while (true) {
-				Scanner in = new Scanner(System.in);
-				System.out.println("Please Enter a string:");
-				regx = in.nextLine();
-				// press "q" to exit the program
-				if (regx.equals("q"))
-					System.exit(0);
-				else {
-					System.out.println("You entered string: " + regx);
-					regx = this.getValidExprBySig(regx);
-					System.out.println("Actual expression......" + regx);
-					buildRegAutomaton(regx);
-					buildInterAutomaton(cgAuto, regAuto);
-				}
-			}
-		case 1:// interactive mode.
-//			RegularExpGenerator generator = new RegularExpGenerator(this);
-//			for (int i = 0; i < Harness.benchmarkSize; i++) {
-//				regx = generator.genRegx();
-//				regx = regx.replaceAll("\\s+", "");
-//				System.out.println("Random regx------" + regx);
-//				buildRegAutomaton(regx);
-//				buildInterAutomaton(cgAuto, regAuto);
-//			}
-			break;
-		default:
-			System.exit(0);
-			break;
-		}
-
-		return false;
-	}
-
 	// interface for query
 	public boolean queryRegx(String regx) {
 		regx = regx.replaceAll("\\s+", "");
@@ -868,85 +805,6 @@ public class QueryManager {
 	public boolean defaultAns() {
 		return interAuto.getFinalStates().size() > 0;
 	}
-	
-	//Return all m's callers.
-//	public Set<String> queryEagerCallers(String callee) {
-//		Set<String> callers = new HashSet();
-//		
-//		SootMethod calleeMeth = Scene.v().getMethod(callee);
-//		
-//		AutoState calleeSt = methToEagerStateMap.get(calleeMeth);
-//		for (AutoState callerSt : calleeSt.getIncomingStatesKeySet()){
-//			SootMethod callerMeth = eagerStateToMethMap.get(callerSt);
-//			
-//			Set<Value> varSet = getVarList(callerMeth, calleeMeth);
-//			List<Type> typeSet = SootUtils.compatibleTypeList(
-//					calleeMeth.getDeclaringClass(), calleeMeth);
-//
-//			// to be conservative.
-//			if (varSet.size() == 0) {
-//				callers.add(callerMeth.getSignature());
-//				continue;
-//			}
-//			
-//			Set<Type> ptTypeSet = new HashSet<Type>();
-//			for(Value v : varSet) {
-//				assert(v instanceof Local);
-//				Local l = (Local) v;
-//				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
-//			}
-//
-//	        if(ptTypeSet.size() == 0) {
-//				callers.add(callerMeth.getSignature());
-//				continue;
-//	        }
-//
-//			ptTypeSet.retainAll(typeSet);
-//			if(!ptTypeSet.isEmpty())
-//				callers.add(callerMeth.getSignature());
-//			
-//		}
-//		return callers;
-//	}
-	
-	//Return all m's callers.
-//	public Set<String> queryCallers(String callee) {
-//		Set<String> callers = new HashSet();
-//		SootMethod calleeMeth = Scene.v().getMethod(callee);
-//		Iterator<Edge> it = cg.edgesInto(calleeMeth);
-//		while(it.hasNext()) {
-//			Edge callEdge = it.next();
-//			SootMethod callerMeth = (SootMethod)callEdge.getSrc();
-//			
-//			Set<Value> varSet = getVarList(callerMeth, calleeMeth);
-//			List<Type> typeSet = SootUtils.compatibleTypeList(
-//					calleeMeth.getDeclaringClass(), calleeMeth);
-//
-//			// to be conservative.
-//			if (varSet.size() == 0) {
-//				callers.add(callerMeth.getSignature());
-//				continue;
-//			}
-//			
-//			Set<Type> ptTypeSet = new HashSet<Type>();
-//			for(Value v : varSet) {
-//				assert(v instanceof Local);
-//				Local l = (Local) v;
-//				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
-//			}
-//
-//	        if(ptTypeSet.size() == 0) {
-//				callers.add(callerMeth.getSignature());
-//				continue;
-//	        }
-//
-//			ptTypeSet.retainAll(typeSet);
-//			if(!ptTypeSet.isEmpty())
-//				callers.add(callerMeth.getSignature());
-//
-//		}
-//		return callers;
-//	}
 	
 	public boolean queryRegxEager(String regx) {
 		regx = regx.replaceAll("\\s+", "");
