@@ -7,10 +7,8 @@ import java.util.Map;
 import java.util.Random;
 
 import soot.MethodOrMethodContext;
-import soot.Scene;
 import soot.SootMethod;
 import edu.utexas.cgrex.QueryManager;
-import edu.utexas.cgrex.analyses.AutoPAG;
 import edu.utexas.cgrex.automaton.AutoEdge;
 
 /**

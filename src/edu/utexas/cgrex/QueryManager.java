@@ -52,7 +52,6 @@ import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
 import edu.utexas.cgrex.benchmarks.DeadCodeHarness;
-import edu.utexas.cgrex.test.RegularExpGenerator;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.SootUtils;
@@ -840,14 +839,14 @@ public class QueryManager {
 				}
 			}
 		case 1:// interactive mode.
-			RegularExpGenerator generator = new RegularExpGenerator(this);
-			for (int i = 0; i < Harness.benchmarkSize; i++) {
-				regx = generator.genRegx();
-				regx = regx.replaceAll("\\s+", "");
-				System.out.println("Random regx------" + regx);
-				buildRegAutomaton(regx);
-				buildInterAutomaton(cgAuto, regAuto);
-			}
+//			RegularExpGenerator generator = new RegularExpGenerator(this);
+//			for (int i = 0; i < Harness.benchmarkSize; i++) {
+//				regx = generator.genRegx();
+//				regx = regx.replaceAll("\\s+", "");
+//				System.out.println("Random regx------" + regx);
+//				buildRegAutomaton(regx);
+//				buildInterAutomaton(cgAuto, regAuto);
+//			}
 			break;
 		default:
 			System.exit(0);
@@ -1051,6 +1050,10 @@ public class QueryManager {
 	
 	public CGAutomaton getCGAuto() {
 		return this.cgAuto;
+	}
+
+	public InterAutomaton getInterAuto() {
+		return this.interAuto;
 	}
 
 }

@@ -781,7 +781,7 @@ public class InterAutomaton extends Automaton {
 				b.append(s.getDesc());
 				b.append("\"];\n");
 			} else {
-				b.append(" [shape=circle,label=\"");
+				b.append(" [shape=rectangle,label=\"");
 				b.append(s.getDesc());
 				b.append("\"];\n");
 			}
