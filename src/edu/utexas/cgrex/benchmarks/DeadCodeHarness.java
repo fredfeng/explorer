@@ -92,8 +92,9 @@ public class DeadCodeHarness extends SceneTransformer {
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-allow-phantom-refs", "-soot-classpath", cp,
 							"-main-class", targetMain,
-							// "-no-bodies-for-excluded",
+//							 "-no-bodies-for-excluded",
 							"-p", "cg.spark", "enabled:true",
+							"-p", "cg.spark", "simulate-natives:false",
 
 					});
 
@@ -107,30 +108,6 @@ public class DeadCodeHarness extends SceneTransformer {
 
 	}
 	
-	static String[] arr = {
-		"<org.apache.commons.cli.Parser: java.util.List getRequiredOptions()>",
-		"<org.apache.lucene.index.MultiSegmentReader: org.apache.lucene.index.TermEnum terms()>",
-		"<org.apache.lucene.search.DisjunctionSumScorer: void <init>(java.util.List)>",
-		"<org.apache.lucene.store.IndexInput: void <init>()>",
-		"<org.apache.commons.cli.Options: org.apache.commons.cli.Options addOption(org.apache.commons.cli.Option)>",
-		"<org.apache.lucene.store.ChecksumIndexInput: long getFilePointer()>",
-		"<org.apache.lucene.index.MultiSegmentReader$MultiTermPositions: void <init>(org.apache.lucene.index.IndexReader[],int[])>",
-		"<org.dacapo.harness.DacapoException: void <init>(java.lang.String)>",
-		"<org.dacapo.parser.ConfigFileTokenManager: void <init>(org.dacapo.parser.SimpleCharStream)>",
-		"<org.apache.commons.cli.ParseException: void <init>(java.lang.String)>",
-		"<org.apache.lucene.index.SegmentInfos: long generationFromSegmentsFileName(java.lang.String)>",
-		"<org.apache.lucene.index.SegmentReader: org.apache.lucene.index.SegmentReader get(boolean,org.apache.lucene.store.Directory,org.apache.lucene.index.SegmentInfo,org.apache.lucene.index.SegmentInfos,boolean,boolean,int,boolean)>",
-		"<org.dacapo.harness.CommandLineArgs: void defineCallback()>",
-		"<org.dacapo.parser.SimpleCharStream: void <init>(java.io.Reader,int,int,int)>",
-		"<org.apache.lucene.util.ScorerDocQueue$HeapedScorerDoc: void <init>(org.apache.lucene.util.ScorerDocQueue,org.apache.lucene.search.Scorer)>",
-		"<org.apache.lucene.index.CorruptIndexException: void <init>(java.lang.String)>",
-		"<org.apache.lucene.search.IndexSearcher: void <init>(org.apache.lucene.index.IndexReader,boolean)>",
-		"<org.apache.commons.cli.Option: void clearValues()>",
-		"<org.apache.lucene.analysis.CharArraySet: boolean contains(java.lang.Object)>",
-		"<org.apache.lucene.search.MultiTermQuery: boolean equals(java.lang.Object)>",
-		"<org.apache.lucene.index.DirectoryIndexReader$1: void <init>(org.apache.lucene.store.Directory,boolean,org.apache.lucene.index.IndexDeletionPolicy,boolean)>"
-	};
-
 	@Override
 	protected void internalTransform(String phaseName,
 			Map<String, String> options) {
@@ -138,15 +115,6 @@ public class DeadCodeHarness extends SceneTransformer {
 		SootMethod main = Scene.v().getMainMethod();
 		QueryManager qm = new QueryManager(cicg, main);
 		Set<String> querySet = new HashSet<String>();
-		
-//		SootMethod testMeth = Scene.v().getMethod(
-//				"<org.apache.lucene.index.SegmentTermPositions: void <clinit>()>");
-//		Iterator<Edge> it = cicg.edgesInto(testMeth);
-//		while(it.hasNext()) {
-//			System.out.println(it.next());
-//		}
-//		assert false;
-
 		int appSize = 0;
 		for (SootMethod meth : SootUtils.getChaReachableMethods()) {
 			if(!meth.isJavaLibraryMethod()) 
@@ -197,7 +165,7 @@ public class DeadCodeHarness extends SceneTransformer {
 			writer.println("Total time on cut: " + totalCut);
 			writer.println("Total methods in App: " + appSize);
 			writer.println("Total refutations: " + falseCnt);
-			writer.println("Method detaisl----");
+			writer.println("Method detail----");
 			for(String out : outSet) {
 				writer.println(out);
 			}
@@ -208,7 +176,6 @@ public class DeadCodeHarness extends SceneTransformer {
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
-
 	}
 	
 	public static double totalCut = 0.0;

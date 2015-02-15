@@ -86,12 +86,13 @@ def main():
 
         if flag:
             imprecise = imprecise + 1
+            print 'imprecise method:' + yes
 
 
     print '------------------------------------------'
     print 'Summary information for ' + benName
     print 'unsound: ' + str(unsound) + ' out of ' + str(len(cgNoSet))
-    print 'precise: ' + str(imprecise) + ' out of ' + str(len(cgYesSet))
+    print 'imprecise: ' + str(imprecise) + ' out of ' + str(len(cgYesSet))
     with open(cgLoc) as f:
         for line in f:
             if 'Total' in line:

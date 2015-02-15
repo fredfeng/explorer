@@ -74,6 +74,9 @@ public class QueryManager {
 	
 	public static long ptTime = 0;
 	public static long cutTime = 0;
+	
+	//want to get a conservative result in the present of reflection?
+	public final boolean includeAnyType = false;
 
 	private ReachableMethods reachableMethods;
 
@@ -639,7 +642,7 @@ public class QueryManager {
 		if (calleeMeth.isConstructor())
 			return true;
 
-		if (hasAnyType(ptTypeSet))
+		if (includeAnyType && hasAnyType(ptTypeSet))
 			return true;
 
 		ptTypeSet.retainAll(typeSet);
