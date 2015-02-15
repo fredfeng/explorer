@@ -215,7 +215,8 @@ public class QueryManager {
 		uidToMethMap.put(mainId, mainMethod);
 		methToUidMap.put(mainMethod, mainId);
 		CGAutoState mst = new CGAutoState(mainId, false, true);
-		mst.setDesc(mainMethod.getName());
+		mst.setDesc(mainMethod.getName() + "|"
+				+ mainMethod.getDeclaringClass().getName());
 		methToStateMap.put(mainMethod, mst);
 		
 		while (mIt.hasNext()) {
@@ -228,7 +229,8 @@ public class QueryManager {
 			methToUidMap.put(meth, uid);
 
 			CGAutoState st = new CGAutoState(uid, false, true);
-			st.setDesc(meth.getName());
+			st.setDesc(meth.getName() + "|"
+					+ meth.getDeclaringClass().getName());
 
 			methToStateMap.put(meth, st);
 			
