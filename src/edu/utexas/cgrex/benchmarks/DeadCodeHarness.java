@@ -15,7 +15,9 @@ import soot.SootMethod;
 import soot.Transform;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import edu.utexas.cgrex.QueryManager;
+import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.utils.SootUtils;
+import edu.utexas.cgrex.utils.StringUtil;
 
 /**
  * The harness for dead code detection.
@@ -24,18 +26,19 @@ import edu.utexas.cgrex.utils.SootUtils;
  */
 public class DeadCodeHarness extends SceneTransformer {
 
-	public static int benchmarkSize = 10;
-	
-	//we will collect the running time at each interval.
-	public static int interval = 5;
-
-	// 0: interactive mode; 1: benchmark mode
-	public static int mode = 1;
-	
 	public static String queryLoc = "";
 	
 	public static String outLoc = "";
 
+	double totalTimeOnCha = 0;
+	
+	double totalTimeOnNoOpt = 0;
+	
+	double totalTimeNormal = 0;
+	
+    double totalNoCut = 0.0;
+    
+    int maxQueries = 100;
 	/**
 	 * @param args
 	 */
@@ -92,7 +95,7 @@ public class DeadCodeHarness extends SceneTransformer {
 					new String[] { "-W", "-process-dir", targetLoc,
 							"-allow-phantom-refs", "-soot-classpath", cp,
 							"-main-class", targetMain,
-//							 "-no-bodies-for-excluded",
+							// "-no-bodies-for-excluded",
 							"-p", "cg.spark", "enabled:true",
 							"-p", "cg.spark", "simulate-natives:false",
 
@@ -114,11 +117,13 @@ public class DeadCodeHarness extends SceneTransformer {
 		CallGraph cicg = Scene.v().getCallGraph();
 		SootMethod main = Scene.v().getMainMethod();
 		QueryManager qm = new QueryManager(cicg, main);
+
 		Set<String> querySet = new HashSet<String>();
 		int appSize = 0;
 		for (SootMethod meth : SootUtils.getChaReachableMethods()) {
 			if(!meth.isJavaLibraryMethod()) 
 				appSize++;
+			//ignore trivial methods.
 			if (meth.isJavaLibraryMethod()
 					|| Scene.v().getEntryPoints().contains(meth)
 					|| meth.isConstructor()
@@ -132,12 +137,33 @@ public class DeadCodeHarness extends SceneTransformer {
 		
 		int falseCnt = 0;
 		int cnt = 0;
+		QueryManager qmCha = new QueryManager(SootUtils.getCha(), main);
+
 		Set<String> outSet = new HashSet<String>();
 		for (String q : querySet) {
 			cnt++;
+			long startNormal = System.nanoTime();
 			String regx = qm.getValidExprBySig(q);
-			regx = regx.replaceAll("\\s+", "");
 			boolean res1 = qm.queryRegx(regx);
+			long endNormal = System.nanoTime();
+			totalTimeNormal += (endNormal - startNormal);
+			
+			long startNoOpt = System.nanoTime();
+			boolean res2 = qm.queryRegxNoLookahead(regx);
+			long endNoOpt = System.nanoTime();
+			totalTimeOnNoOpt += (endNoOpt - startNoOpt);
+			
+			long startNoCut = System.nanoTime();
+			boolean res4 = qm.queryRegxNoMincut(regx);
+			long endNoCut = System.nanoTime();
+			totalNoCut += (endNoCut - startNoCut);
+
+			long startCha = System.nanoTime();
+			String regxCha = qmCha.getValidExprBySig(q);
+			boolean res3 = qmCha.queryWithoutRefine(regxCha);
+			long endCha = System.nanoTime();
+			totalTimeOnCha += (endCha - startCha);
+			
 			if (!res1) {
 				falseCnt++;
 				System.out.println("unreach:" + q);
@@ -147,24 +173,29 @@ public class DeadCodeHarness extends SceneTransformer {
 				outSet.add("yesreach:" + q);
 			}
 				
-			if(cnt >= 100)
+			if(cnt >= maxQueries)
 				break;
 		}
 		//dump info.
 		System.out.println("----------DeadCode report-------------------------");
-		System.out.println("Total time on product: " + totalInter);
-		System.out.println("Total time on cut: " + totalCut);
 		System.out.println("Total methods in App: " + appSize);
 		System.out.println("Total refutations: " + falseCnt);
+		System.out.println("Total time on Normal: " + totalTimeNormal/1e6);
+		System.out.println("Total time on no cut: " + totalNoCut/1e6);
+		System.out.println("Total time on CHA: " + (totalTimeOnCha/1e6));
+		System.out.println("Total time w/o look ahead: " + (totalTimeOnNoOpt/1e6));
 		
 		PrintWriter writer;
 		try {
 			writer = new PrintWriter(outLoc, "UTF-8");
 			writer.println("----------DeadCode report-------------------------");
-			writer.println("Total time on product: " + totalInter);
-			writer.println("Total time on cut: " + totalCut);
+			writer.println("Total time on Normal: " + totalTimeNormal/1e6);
+			writer.println("Total time on no cut: " + totalNoCut/1e6);
 			writer.println("Total methods in App: " + appSize);
 			writer.println("Total refutations: " + falseCnt);
+			writer.println("Total time on CHA: " + (totalTimeOnCha/1e6));
+			writer.println("Total time w/o look ahead: " + (totalTimeOnNoOpt/1e6));
+
 			writer.println("Method detail----");
 			for(String out : outSet) {
 				writer.println(out);
@@ -178,6 +209,4 @@ public class DeadCodeHarness extends SceneTransformer {
 		}
 	}
 	
-	public static double totalCut = 0.0;
-	public static double totalInter = 0.0;
 }

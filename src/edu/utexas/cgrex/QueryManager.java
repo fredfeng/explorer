@@ -46,7 +46,6 @@ import edu.utexas.cgrex.automaton.InterAutoOpts;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
-import edu.utexas.cgrex.benchmarks.DeadCodeHarness;
 import edu.utexas.cgrex.utils.CutEntity;
 import edu.utexas.cgrex.utils.GraphUtil;
 import edu.utexas.cgrex.utils.SootUtils;
@@ -63,8 +62,6 @@ public class QueryManager {
 
 	private int INFINITY = 9999;
 	
-	private static boolean exhaust = false;
-
 	// default CHA-based call graph or on-the-fly.
 	CallGraph cg;
 	
@@ -78,12 +75,9 @@ public class QueryManager {
 	//want to get a conservative result in the present of reflection?
 	public final boolean includeAnyType = false;
 
-	private ReachableMethods reachableMethods;
+	ReachableMethods reachableMethods;
 
 	Map<SootMethod, CGAutoState> methToStateMap = new HashMap<SootMethod, CGAutoState>();
-	Map<SootMethod, CGAutoState> methToEagerStateMap = new HashMap<SootMethod, CGAutoState>();
-	Map<CGAutoState, SootMethod> eagerStateToMethMap = new HashMap<CGAutoState, SootMethod>();
-
 
 	/**
 	 * @return the methToEdgeMap only for the purpose of generating random regx.
@@ -136,9 +130,6 @@ public class QueryManager {
 		
 		ptsDemand = DemandCSPointsTo.makeWithBudget(
 				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		
-//		ptsEager = DemandCSPointsTo.makeWithBudget(
-//				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
 		
 		this.initQM(cg, false);
 	}
@@ -227,10 +218,6 @@ public class QueryManager {
 					+ meth.getDeclaringClass().getName());
 
 			methToStateMap.put(meth, st);
-			
-			CGAutoState stEager = new CGAutoState(uid, false, true);
-			methToEagerStateMap.put(meth, stEager);
-			eagerStateToMethMap.put(stEager, meth);
 		}
 		
 		QueueReader<Edge> qr = cg.listener();
@@ -433,20 +420,15 @@ public class QueryManager {
 		auto.addStates(superFinalSt);
 	}
 	
-	private boolean buildInterAutomaton(CGAutomaton cgAuto, RegAutomaton regAuto) {
+	private boolean buildInterAutomaton(CGAutomaton cgAuto,
+			RegAutomaton regAuto, boolean annot, boolean stepTwo, boolean exhaust) {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
-		myoptions.put("annot", true);
-		myoptions.put("two", true);
+		myoptions.put("annot", annot);
+		myoptions.put("two", stepTwo);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 
-		long startInter = System.nanoTime();
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-		long endInter = System.nanoTime();
-		StringUtil.reportSec("Building InterAuto:", startInter, endInter);
-		double difference = (endInter - startInter)/1e6;
-		DeadCodeHarness.totalInter += difference;	
-
 
 		// interAuto.validate();
 		// interAuto.dumpFile();
@@ -463,18 +445,13 @@ public class QueryManager {
 
 		// need to append a super final state, otherwise the result is wrong.
 		createSuperNode(interAuto);
-		long startCut = System.nanoTime();
-		boolean answer = checkByMincut();
-		long endCut = System.nanoTime();
-		double diff2 = (endCut - startCut)/1e6;
-		DeadCodeHarness.totalCut += diff2;	
 
+		boolean answer;
 		// exhaustive checking.
 		if (exhaust) {
-			boolean ansExhau = true;
-			ansExhau = this.checkExhaust();
-			assert answer == ansExhau : "Exhaustive: " + ansExhau + " Mincut: "
-					+ answer;
+			answer = checkExhaust();
+		} else {
+			answer = checkByMincut();
 		}
 		return answer;
 	}
@@ -592,6 +569,8 @@ public class QueryManager {
 	private boolean isValidEdge(AutoEdge e, AutoState src) {
 		long start = System.nanoTime();
 		Stmt st = e.getSrcStmt();
+		if(st == null)
+			return true;
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
 
@@ -665,7 +644,21 @@ public class QueryManager {
 	public boolean queryRegx(String regx) {
 		regx = regx.replaceAll("\\s+", "");
 		buildRegAutomaton(regx);
-		boolean res = buildInterAutomaton(cgAuto, regAuto);
+		boolean res = buildInterAutomaton(cgAuto, regAuto, true, true, false);
+		return res;
+	}
+	
+	public boolean queryRegxNoLookahead(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+		boolean res = buildInterAutomaton(cgAuto, regAuto, false, false, false);
+		return res;
+	}
+	
+	public boolean queryRegxNoMincut(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+		boolean res = buildInterAutomaton(cgAuto, regAuto, true, true, true);
 		return res;
 	}
 	
@@ -683,11 +676,8 @@ public class QueryManager {
 		myoptions.put("two", true);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 
-		long startInter = System.nanoTime();
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-		long endInter = System.nanoTime();
-		StringUtil.reportSec("Building InterAuto w/o refine:", startInter, endInter);
 		return !interAuto.getFinalStates().isEmpty();
 	}
 
@@ -709,6 +699,7 @@ public class QueryManager {
                 sig = sig.replace(matcher.group(0), unknown);
             }
 		}
+		sig = sig.replaceAll("\\s+", "");
 		return sig;
 	}
 
