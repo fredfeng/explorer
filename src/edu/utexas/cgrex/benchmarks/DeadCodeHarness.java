@@ -32,6 +32,8 @@ public class DeadCodeHarness extends SceneTransformer {
 
 	double totalTimeOnCha = 0;
 	
+	double totalTimeOnCipa = 0;
+	
 	double totalTimeOnNoOpt = 0;
 	
 	double totalTimeNormal = 0;
@@ -148,6 +150,7 @@ public class DeadCodeHarness extends SceneTransformer {
 			long endNormal = System.nanoTime();
 			totalTimeNormal += (endNormal - startNormal);
 			
+			//cipt w/o opt.
 			long startNoOpt = System.nanoTime();
 			boolean res2 = qm.queryRegxNoLookahead(regx);
 			long endNoOpt = System.nanoTime();
@@ -157,6 +160,11 @@ public class DeadCodeHarness extends SceneTransformer {
 			boolean res4 = qm.queryRegxNoMincut(regx);
 			long endNoCut = System.nanoTime();
 			totalNoCut += (endNoCut - startNoCut);
+			
+			long startCipa = System.nanoTime();
+			boolean res5 = qm.queryRegxNoMincut(regx);
+			long endCipa = System.nanoTime();
+			totalTimeOnCipa += (endCipa - startCipa);
 
 			long startCha = System.nanoTime();
 			String regxCha = qmCha.getValidExprBySig(q);
