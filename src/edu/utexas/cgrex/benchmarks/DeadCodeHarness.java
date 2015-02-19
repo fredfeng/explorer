@@ -15,9 +15,7 @@ import soot.SootMethod;
 import soot.Transform;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import edu.utexas.cgrex.QueryManager;
-import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.utils.SootUtils;
-import edu.utexas.cgrex.utils.StringUtil;
 
 /**
  * The harness for dead code detection.
@@ -138,6 +136,8 @@ public class DeadCodeHarness extends SceneTransformer {
 		}
 		
 		int falseCnt = 0;
+		int falseCipa = 0;
+
 		int cnt = 0;
 		QueryManager qmCha = new QueryManager(SootUtils.getCha(), main);
 
@@ -162,7 +162,7 @@ public class DeadCodeHarness extends SceneTransformer {
 			totalNoCut += (endNoCut - startNoCut);
 			
 			long startCipa = System.nanoTime();
-			boolean res5 = qm.queryRegxNoMincut(regx);
+			boolean res5 = qm.queryWithoutRefine(regx);
 			long endCipa = System.nanoTime();
 			totalTimeOnCipa += (endCipa - startCipa);
 
@@ -180,6 +180,9 @@ public class DeadCodeHarness extends SceneTransformer {
 				System.out.println("yesreach:" + q);
 				outSet.add("yesreach:" + q);
 			}
+			
+			if(!res5)
+				falseCipa++;
 				
 			if(cnt >= maxQueries)
 				break;
@@ -188,7 +191,9 @@ public class DeadCodeHarness extends SceneTransformer {
 		System.out.println("----------DeadCode report-------------------------");
 		System.out.println("Total methods in App: " + appSize);
 		System.out.println("Total refutations: " + falseCnt);
+		System.out.println("Total refutations(cipa): " + falseCipa);
 		System.out.println("Total time on Normal: " + totalTimeNormal/1e6);
+		System.out.println("Total time on no Cipa: " + totalTimeOnCipa/1e6);
 		System.out.println("Total time on no cut: " + totalNoCut/1e6);
 		System.out.println("Total time on CHA: " + (totalTimeOnCha/1e6));
 		System.out.println("Total time w/o look ahead: " + (totalTimeOnNoOpt/1e6));
@@ -197,13 +202,14 @@ public class DeadCodeHarness extends SceneTransformer {
 		try {
 			writer = new PrintWriter(outLoc, "UTF-8");
 			writer.println("----------DeadCode report-------------------------");
+			writer.println("Total refutations: " + falseCnt);
+			writer.println("Total refutations(cipa): " + falseCipa);
 			writer.println("Total time on Normal: " + totalTimeNormal/1e6);
+			writer.println("Total time on no Cipa: " + totalTimeOnCipa/1e6);
 			writer.println("Total time on no cut: " + totalNoCut/1e6);
 			writer.println("Total methods in App: " + appSize);
-			writer.println("Total refutations: " + falseCnt);
 			writer.println("Total time on CHA: " + (totalTimeOnCha/1e6));
 			writer.println("Total time w/o look ahead: " + (totalTimeOnNoOpt/1e6));
-
 			writer.println("Method detail----");
 			for(String out : outSet) {
 				writer.println(out);
