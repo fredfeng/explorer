@@ -1,10 +1,12 @@
 package edu.utexas.cgrex.analyses;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import soot.Scene;
 import soot.SceneTransformer;
+import soot.SootMethod;
 import edu.utexas.cgrex.QueryManager;
 
 /**
@@ -31,18 +33,23 @@ public class QueryTransformer extends SceneTransformer {
 	// perform regression tests.
 	protected void runRegression() {
 		HashMap<String, Boolean> testbed = new HashMap<String, Boolean>();
-		if (Scene.v().getMainClass().getName().equals("Test1")) {
+		String mainName = Scene.v().getMainClass().getName();
+		if (mainName.equals("Test1")) {
 			testbed.put(".*<Test1: void main2()>.*<B: void bar()>", true);
 			testbed.put(".*<Test1: void main1()>.*<A: void bar()>", true);
 
 			testbed.put(".*<Test1: void main2()>.*<A: void bar()>", false);
 			testbed.put(".*<Test1: void main1()>.*<B: void bar()>", false);
-		} else {
+		} else if (mainName.equals("Test2")) {
 			testbed.put(
 					"<Test2: void main(java.lang.String[])>.*<A: void goo()>",
 					false);
 			testbed.put(
 					"<Test2: void main(java.lang.String[])>.*<B: void goo()>",
+					true);
+		} else {
+			testbed.put(
+					"<Test3: void main(java.lang.String[])>.*<B: void bar()>",
 					true);
 		}
 		for (String key : testbed.keySet()) {

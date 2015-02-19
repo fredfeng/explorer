@@ -18,11 +18,13 @@ import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.PointsToAnalysis;
 import soot.Scene;
+import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InterfaceInvokeExpr;
 import soot.jimple.InvokeExpr;
+import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.toolkits.callgraph.CallGraph;
@@ -569,10 +571,11 @@ public class QueryManager {
 	private boolean isValidEdge(AutoEdge e, AutoState src) {
 		long start = System.nanoTime();
 		Stmt st = e.getSrcStmt();
-		if(st == null)
+		if (st == null)
 			return true;
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
+		SootClass calleeClz = calleeMeth.getDeclaringClass();
 
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 
@@ -582,8 +585,14 @@ public class QueryManager {
 				|| calleeMeth.isPrivate() || calleeMeth.isPhantom())
 			return true;
 
-		List<Type> typeSet = SootUtils.compatibleTypeList(
-				calleeMeth.getDeclaringClass(), calleeMeth);
+		List<Type> typeSet = SootUtils
+				.compatibleTypeList(calleeClz, calleeMeth);
+		if (st.getInvokeExpr() instanceof SpecialInvokeExpr) {
+			// handle super.foo();
+			for (SootClass sub : SootUtils.subTypesOf(calleeClz)) {
+				typeSet.add(sub.getType());
+			}
+		}
 
 		Set<Type> ptTypeSet = new HashSet<Type>();
 		assert st != null : calleeMeth;
@@ -604,7 +613,6 @@ public class QueryManager {
 				// System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
 				// + l + " types:" + types);
 				ptTypeSet.addAll(types);
-
 			} else {
 				// Since we limit k=1, if the context is static, we ignore
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
@@ -616,8 +624,8 @@ public class QueryManager {
 
 		if (ptTypeSet.size() == 0)
 			return false;
-		
-		//super.<init> always true;
+
+		// super.<init> always true;
 		if (calleeMeth.isConstructor())
 			return true;
 

@@ -65,9 +65,6 @@ public class SootUtils {
 						worklist.add(c);
 				}
 			} else {
-				// if (cl.isConcrete()) {
-				// subTypes.add(cl);
-				// }
 				for (Iterator<SootClass> cIt = fh.getSubclassesOf(cl)
 						.iterator(); cIt.hasNext();) {
 					final SootClass c = cIt.next();
