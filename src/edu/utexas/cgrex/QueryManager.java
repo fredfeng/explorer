@@ -576,9 +576,7 @@ public class QueryManager {
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
 		SootClass calleeClz = calleeMeth.getDeclaringClass();
-
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
-
 		assert (calleeMeth != null);
 		// main method is always reachable.
 		if (calleeMeth.isMain() || calleeMeth.isStatic()
