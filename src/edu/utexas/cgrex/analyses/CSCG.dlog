@@ -14,6 +14,7 @@ reachableCM(c:C,m:M) input
 
 ##output
 CSMM(m:M,i:I,n:M) output 
+reachM(m:M) output 
 
 CSMM(m,i,n) :- MI(m,i),CICM(_,i,_,n). 
 reachM(m) :- reachableCM(_,m). 
