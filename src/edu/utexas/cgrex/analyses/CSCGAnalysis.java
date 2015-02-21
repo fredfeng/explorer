@@ -139,7 +139,7 @@ public class CSCGAnalysis extends JavaAnalysis {
 			totalPerf++;
 			long startNormal = System.nanoTime();
 			String regx = qm.getValidExprBySig(query);
-			boolean res1 = qm.queryRegx(regx);
+			boolean res1 = qm.queryByCfa(regx);
 			long endNormal = System.nanoTime();
 			totalTimePerfSen += (endNormal - startNormal);
 
