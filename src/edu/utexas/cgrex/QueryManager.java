@@ -160,8 +160,9 @@ public class QueryManager {
 		this.initQM(cg, flag);
 	}
 	
-	public QueryManager(Set<SootMethod> setM,
+	public QueryManager(SootMethod main, Set<SootMethod> setM,
 			Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet) {
+		mainMethod = main;
 		cgAuto = new CGAutomaton();
 		regAuto = new RegAutomaton();
 		

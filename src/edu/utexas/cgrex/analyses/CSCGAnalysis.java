@@ -21,7 +21,6 @@ import edu.utexas.cgrex.QueryManager;
 public class CSCGAnalysis extends JavaAnalysis {
 
 	private ProgramRel relCSMM;
-    protected ProgramRel relRootM;
     protected ProgramRel relReachM;
     protected QueryManager qm;
     double totalTimeSen = 0;
@@ -32,7 +31,6 @@ public class CSCGAnalysis extends JavaAnalysis {
 	// total pairs;
 	public void run() {
 		relCSMM = (ProgramRel) ClassicProject.g().getTrgt("CSMM");
-		relRootM = (ProgramRel) ClassicProject.g().getTrgt("rootM");
 		relReachM = (ProgramRel) ClassicProject.g().getTrgt("reachM");
 
 		if (!relCSMM.isOpen())
@@ -50,8 +48,7 @@ public class CSCGAnalysis extends JavaAnalysis {
 		Set<SootMethod> setMeths = SetUtils
 				.iterableToSet(itm, relReachM.size());
 		
-		qm = new QueryManager(setMeths, set);
-		qm.setMainMethod(Scene.v().getMainMethod());
+		qm = new QueryManager(Scene.v().getMainMethod(), setMeths, set);
 		
 		iccQuery();
 	}
