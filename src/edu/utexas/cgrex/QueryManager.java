@@ -207,7 +207,7 @@ public class QueryManager {
 		
 		// only build cgauto once.
 		long startDd = System.nanoTime();
-		buildCGAutomaton(setM, edgeSet);
+		buildCGAutomaton(edgeSet);
 		long endDd = System.nanoTime();
 		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
 	}
@@ -366,8 +366,8 @@ public class QueryManager {
 	}
 	
 	/* Build cg automaton from chord's call graph.*/
-	private void buildCGAutomaton(Set<SootMethod> setM,
-				Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet) {
+	private void buildCGAutomaton(
+			Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet) {
 		// Start from the main entry.
 		assert mainMethod != null;
 		SootMethod mainMeth = mainMethod;
@@ -796,6 +796,20 @@ public class QueryManager {
 		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
 		myoptions.put("annot", true);
 		myoptions.put("two", true);
+		InterAutoOpts myopts = new InterAutoOpts(myoptions);
+
+		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
+		interAuto.build();
+		return !interAuto.getFinalStates().isEmpty();
+	}
+	
+	public boolean queryByCfa(String regx) {
+		regx = regx.replaceAll("\\s+", "");
+		buildRegAutomaton(regx);
+
+		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
+		myoptions.put("annot", false);
+		myoptions.put("two", false);
 		InterAutoOpts myopts = new InterAutoOpts(myoptions);
 
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);

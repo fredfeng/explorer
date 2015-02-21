@@ -11,7 +11,7 @@ benName = ''
 def main():
     print "begin generate report for deadcode experiment"
     cgLoc = '/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/' + benName + '/cgoutput.txt'
-    chordLoc = '/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/' + benName + '/chord_output/reachableCM.txt'
+    chordLoc = '/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/benchmarks/' + benName + '/chord_output/reachableCM_kobj.txt'
     assert os.path.exists(cgLoc)
     assert os.path.exists(chordLoc)
     chordSet = []
