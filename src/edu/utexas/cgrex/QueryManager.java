@@ -32,6 +32,7 @@ import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
 import soot.util.queue.QueueReader;
 import chord.util.tuple.object.Pair;
+import chord.util.tuple.object.Trio;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import dk.brics.automaton.State;
@@ -157,6 +158,57 @@ public class QueryManager {
 		ptsDemand = ddPt;
 //		ptsEager = eagerPt;
 		this.initQM(cg, flag);
+	}
+	
+	public QueryManager(Set<SootMethod> setM,
+			Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet) {
+		cgAuto = new CGAutomaton();
+		regAuto = new RegAutomaton();
+		
+		System.out.println("init reachables: " + setM.size());
+		
+		String mainId = "\\u" + String.format("%04x", mainMethod.getNumber() + offset);
+		uidToMethMap.put(mainId, mainMethod);
+		methToUidMap.put(mainMethod, mainId);
+		CGAutoState mst = new CGAutoState(mainId, false, true);
+		mst.setDesc(mainMethod.getName() + "|"
+				+ mainMethod.getDeclaringClass().getName());
+		methToStateMap.put(mainMethod, mst);
+		
+		for (SootMethod meth : setM) {
+			reachableMethSet.add(meth);
+			// map each method to a unicode.
+			String uid = "\\u"
+					+ String.format("%04x", meth.getNumber() + offset);
+			uidToMethMap.put(uid, meth);
+			methToUidMap.put(meth, uid);
+
+			CGAutoState st = new CGAutoState(uid, false, true);
+			st.setDesc(meth.getName() + "|"
+					+ meth.getDeclaringClass().getName());
+
+			methToStateMap.put(meth, st);
+		}
+		
+		for(Trio<SootMethod,Stmt,SootMethod> trio : edgeSet) {
+			SootMethod tgtMethod = trio.val2;
+			if(!reachableMethSet.contains(tgtMethod))
+				continue;
+
+			Stmt st = trio.val1;
+			String uid = methToUidMap.get(tgtMethod);
+			assert uid != null : "tgt method: " + tgtMethod;
+			CGAutoEdge inEdge = new CGAutoEdge(uid, st);
+			inEdge.setShortName(st != null ? st.toString() : "null");
+			invkToEdgeMap
+					.put(new Pair<Stmt, SootMethod>(st, tgtMethod), inEdge);
+		}
+		
+		// only build cgauto once.
+		long startDd = System.nanoTime();
+		buildCGAutomaton(setM, edgeSet);
+		long endDd = System.nanoTime();
+		StringUtil.reportSec("Time To build Demand CG:", startDd, endDd);
 	}
 	
 	public void initQM(CallGraph cg, boolean flag) {
@@ -310,6 +362,69 @@ public class QueryManager {
 	
 	public void setMainMethod(SootMethod meth) {
 		mainMethod = meth;
+	}
+	
+	/* Build cg automaton from chord's call graph.*/
+	private void buildCGAutomaton(Set<SootMethod> setM,
+				Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet) {
+		// Start from the main entry.
+		assert mainMethod != null;
+		SootMethod mainMeth = mainMethod;
+		// init FSM
+		String mainId = methToUidMap.get(mainMeth);
+		assert mainId != null : "empty main id.";
+		CGAutoEdge callEdgeMain = new CGAutoEdge(mainId, null);
+		callEdgeMain.setShortName("init");
+
+		// 0 is the initial id.
+		CGAutoState initState = new CGAutoState(0, true, true);
+		initState.setDesc("init");
+		CGAutoState mainState = methToStateMap.get(mainMeth);
+		initState.addOutgoingStates(mainState, callEdgeMain);
+		mainState.addIncomingStates(initState, callEdgeMain);
+
+		// no incoming edge for initstate.
+		cgAuto.addInitState(initState);
+		cgAuto.addStates(initState);
+
+		Set<CGAutoState> reachableState = new HashSet<CGAutoState>();
+
+		for (Trio<SootMethod, Stmt, SootMethod> trio : edgeSet) {
+			SootMethod worker = trio.val0;
+			CGAutoState curState = methToStateMap.get(worker);
+			reachableState.add(curState);
+
+			Stmt srcStmt = trio.val1;
+			SootMethod tgtMeth = trio.val2;
+			CGAutoState tgtState = methToStateMap.get(tgtMeth);
+			reachableState.add(tgtState);
+
+			// how about SCC? FIXME!!
+			if (tgtMeth.equals(worker)) {// recursive call, add self-loop
+				AutoEdge outEdge = invkToEdgeMap
+						.get(new Pair<Stmt, SootMethod>(srcStmt, worker));
+				// need fresh instance for each callsite but share same uid.
+				curState.addOutgoingStates(curState, outEdge);
+				curState.addIncomingStates(curState, outEdge);
+			} else {
+				AutoEdge outEdge = invkToEdgeMap
+						.get(new Pair<Stmt, SootMethod>(srcStmt, tgtMeth));
+				// need fresh instance for each callsite but share same uid.
+				curState.addOutgoingStates(tgtState, outEdge);
+				// add incoming state.
+				assert outEdge != null : outEdge;
+				assert curState != null : curState;
+				tgtState.addIncomingStates(curState, outEdge);
+			}
+		}
+
+		// only add reachable methods.
+		for (CGAutoState rs : reachableState)
+			cgAuto.addStates(rs);
+
+		// dump automaton of the call graph.
+		// cgAuto.validate();
+		// cgAuto.dump();
 	}
 	
 	private void buildCGAutomaton() {

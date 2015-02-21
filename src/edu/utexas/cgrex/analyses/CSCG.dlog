@@ -1,0 +1,19 @@
+# name=cscg-dlog
+
+.include "C.dom"
+.include "M.dom"
+.include "I.dom"
+
+.bddvarorder I0_M0xM1_I1_C0xC1
+
+##input
+MI(m:M,i:I) input
+CICM(c:C,i:I,d:C,m:M) input
+reachableCM(c:C,m:M) input
+
+
+##output
+CSMM(m:M,i:I,n:M) output 
+
+CSMM(m,i,n) :- MI(m,i),CICM(_,i,_,n). 
+reachM(m) :- reachableCM(_,m). 
