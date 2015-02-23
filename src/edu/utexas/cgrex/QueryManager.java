@@ -418,9 +418,22 @@ public class QueryManager {
 				tgtState.addIncomingStates(curState, outEdge);
 			}
 		}
-
+		
+		//prune all states that can not be reached from main.
+		LinkedList<AutoState> worklist = new LinkedList<AutoState>();
+		Set<AutoState> visited = new HashSet<AutoState>();
+		worklist.add(mainState);
+		while(!worklist.isEmpty()) {
+			AutoState worker = worklist.poll();
+			if(visited.contains(worker))
+				continue;
+			
+			visited.add(worker);
+			worklist.addAll(worker.getOutgoingStatesKeySet());
+		}
+		
 		// only add reachable methods.
-		for (CGAutoState rs : reachableState)
+		for (AutoState rs : visited)
 			cgAuto.addStates(rs);
 
 		// dump automaton of the call graph.
@@ -803,20 +816,6 @@ public class QueryManager {
 		return !interAuto.getFinalStates().isEmpty();
 	}
 	
-	public boolean queryByCfa(String regx) {
-		regx = regx.replaceAll("\\s+", "");
-		buildRegAutomaton(regx);
-
-		Map<String, Boolean> myoptions = new HashMap<String, Boolean>();
-		myoptions.put("annot", false);
-		myoptions.put("two", false);
-		InterAutoOpts myopts = new InterAutoOpts(myoptions);
-
-		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
-		interAuto.build();
-		return !interAuto.getFinalStates().isEmpty();
-	}
-
 	// return a valid regular expression based on method's signature.
 	public String getValidExprBySig(String sig) {
 		Pattern pattern = Pattern.compile("<[^\\s]*:\\s[^:]*>");

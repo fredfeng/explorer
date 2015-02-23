@@ -84,7 +84,7 @@ public class CSCGAnalysis extends JavaAnalysis {
 
             long startNormal = System.nanoTime();
             String regx = qm.getValidExprBySig(query);
-            boolean res1 = qm.queryByCfa(regx);
+            boolean res1 = qm.queryWithoutRefine(regx);
             long endNormal = System.nanoTime();
             totalTimeSen += (endNormal - startNormal);
             if(!res1)
@@ -139,7 +139,7 @@ public class CSCGAnalysis extends JavaAnalysis {
 			totalPerf++;
 			long startNormal = System.nanoTime();
 			String regx = qm.getValidExprBySig(query);
-			boolean res1 = qm.queryByCfa(regx);
+			boolean res1 = qm.queryWithoutRefine(regx);
 			long endNormal = System.nanoTime();
 			totalTimePerfSen += (endNormal - startNormal);
 
@@ -149,7 +149,7 @@ public class CSCGAnalysis extends JavaAnalysis {
 
         long sNormal = System.nanoTime();
         String regxBig = qm.getValidExprBySig(bigQuery);
-        boolean res11 = qm.queryByCfa(regxBig);
+        boolean res11 = qm.queryWithoutRefine(regxBig);
         long eNormal = System.nanoTime();
         StringUtil.reportSec("Big query(SEN):", sNormal, eNormal);
         System.out.println("Result(SEN):" + res11);
