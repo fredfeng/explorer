@@ -720,7 +720,7 @@ public class QueryManager {
 			}
 		}
 
-		Set<SootMethod> ptTypeSet = new HashSet<SootMethod>();
+		Set<Type> ptTypeSet = new HashSet<Type>();
 		assert st != null : calleeMeth;
 		Local l = getReceiver(st);
 		// get the context of l. This could be optimized later.
@@ -736,17 +736,12 @@ public class QueryManager {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
-				
-			
-				 System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
-				 + l + " types:" + types);
-				 
-				 System.out.println("resolve virtual: " + ptsDemand.resolveVirt(ctxt, st.getInvokeExpr()));
-				ptTypeSet.addAll(ptsDemand.resolveVirt(ctxt, st.getInvokeExpr()));
+				// System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
+				// + l + " types:" + types);
+				ptTypeSet.addAll(types);
 			} else {
 				// Since we limit k=1, if the context is static, we ignore
-				System.out.println("stmt" + st);
-				ptTypeSet.addAll(ptsDemand.resolveVirt(null, st.getInvokeExpr()));
+				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 			}
 		}
 
@@ -755,18 +750,16 @@ public class QueryManager {
 
 		if (ptTypeSet.size() == 0)
 			return false;
-		
-		return ptTypeSet.contains(calleeMeth);
 
 		// super.<init> always true;
-//		if (calleeMeth.isConstructor())
-//			return true;
-//
-//		if (includeAnyType && hasAnyType(ptTypeSet))
-//			return true;
-//
-//		ptTypeSet.retainAll(typeSet);
-//		return !ptTypeSet.isEmpty();
+		if (calleeMeth.isConstructor())
+			return true;
+
+		if (includeAnyType && hasAnyType(ptTypeSet))
+			return true;
+
+		ptTypeSet.retainAll(typeSet);
+		return !ptTypeSet.isEmpty();
 	}
 	
 	private boolean hasAnyType(Set<Type> types) {
