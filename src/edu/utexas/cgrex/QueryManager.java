@@ -128,17 +128,6 @@ public class QueryManager {
 	//reachable methods
 	private Set<SootMethod> reachableMethSet = new HashSet<SootMethod>();
 
-	public QueryManager(CallGraph cg) {
-		final int DEFAULT_MAX_PASSES = 10;
-		final int DEFAULT_MAX_TRAVERSAL = 75000;
-		final boolean DEFAULT_LAZY = false;
-		
-		ptsDemand = DemandCSPointsTo.makeWithBudget(
-				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
-		
-		this.initQM(cg, false);
-	}
-	
 	public QueryManager(CallGraph cg, SootMethod meth) {
 		final int DEFAULT_MAX_PASSES = 10;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
@@ -150,23 +139,25 @@ public class QueryManager {
 		this.initQM(cg, false);
 	}
 	
-	public QueryManager(CallGraph cg, boolean flag, DemandCSPointsTo dcsp) {
-		this.initQM(cg, flag);
-		ptsDemand = dcsp;
-	}
-	
-	public QueryManager(CallGraph cg, boolean flag,
-			DemandCSPointsTo eagerPt, DemandCSPointsTo ddPt) {	
-		ptsDemand = ddPt;
-//		ptsEager = eagerPt;
-		this.initQM(cg, flag);
+	public QueryManager(CallGraph cg, SootMethod meth, boolean flag) {
+		final int DEFAULT_MAX_PASSES = 10;
+		final int DEFAULT_MAX_TRAVERSAL = 75000;
+		final boolean DEFAULT_LAZY = false;
+		
+		ignoreAsync(flag);
+		
+		ptsDemand = DemandCSPointsTo.makeWithBudget(
+				DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
+		this.setMainMethod(meth);
+		this.initQM(cg, false);
 	}
 	
 	public QueryManager(SootMethod main, Set<SootMethod> setM,
-			Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet) {
+			Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet, boolean flag) {
 		mainMethod = main;
 		cgAuto = new CGAutomaton();
 		regAuto = new RegAutomaton();
+		ignoreAsync(flag);
 		
 		System.out.println("init reachables: " + setM.size());
 		

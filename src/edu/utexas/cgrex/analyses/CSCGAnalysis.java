@@ -29,7 +29,9 @@ public class CSCGAnalysis extends JavaAnalysis {
 
 	private ProgramRel relCSMM;
     protected ProgramRel relReachM;
-    protected QueryManager qm;
+    protected QueryManager qmIcc;
+    protected QueryManager qmPerf;
+
     double totalTimeSen = 0;
     int totalIcc = 0;
     int iccSen = 0;
@@ -59,7 +61,11 @@ public class CSCGAnalysis extends JavaAnalysis {
 		Set<SootMethod> setMeths = SetUtils
 				.iterableToSet(itm, relReachM.size());
 		
-		qm = new QueryManager(Scene.v().getMainMethod(), setMeths, set);
+		qmIcc = new QueryManager(Scene.v().getMainMethod(), setMeths, set,
+				false);
+		qmPerf = new QueryManager(Scene.v().getMainMethod(), setMeths, set,
+				true);
+
 		
 		iccQuery();
 		
@@ -83,8 +89,8 @@ public class CSCGAnalysis extends JavaAnalysis {
             String query = ".*" + m1.getSignature() + ".*" + m2.getSignature();
 
             long startNormal = System.nanoTime();
-            String regx = qm.getValidExprBySig(query);
-            boolean res1 = qm.queryWithoutRefine(regx);
+            String regx = qmIcc.getValidExprBySig(query);
+            boolean res1 = qmIcc.queryWithoutRefine(regx);
             long endNormal = System.nanoTime();
             totalTimeSen += (endNormal - startNormal);
             if(!res1)
@@ -138,8 +144,8 @@ public class CSCGAnalysis extends JavaAnalysis {
 
 			totalPerf++;
 			long startNormal = System.nanoTime();
-			String regx = qm.getValidExprBySig(query);
-			boolean res1 = qm.queryWithoutRefine(regx);
+			String regx = qmPerf.getValidExprBySig(query);
+			boolean res1 = qmPerf.queryWithoutRefine(regx);
 			long endNormal = System.nanoTime();
 			totalTimePerfSen += (endNormal - startNormal);
 
@@ -148,8 +154,8 @@ public class CSCGAnalysis extends JavaAnalysis {
 		}
 
         long sNormal = System.nanoTime();
-        String regxBig = qm.getValidExprBySig(bigQuery);
-        boolean res11 = qm.queryWithoutRefine(regxBig);
+        String regxBig = qmPerf.getValidExprBySig(bigQuery);
+        boolean res11 = qmPerf.queryWithoutRefine(regxBig);
         long eNormal = System.nanoTime();
         StringUtil.reportSec("Big query(SEN):", sNormal, eNormal);
         System.out.println("Result(SEN):" + res11);
