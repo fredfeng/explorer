@@ -279,13 +279,28 @@ public class SootUtils {
 		return chaReachableMethods;
 	}
 	
-	public static boolean asyncClass(SootClass clz) {
+	public static boolean asyncClass(SootMethod method) {
+		SootClass clz = method.getDeclaringClass();
+		String name = method.getName();
 		boolean flag = false;
+		Set<SootClass> subclz = new HashSet<SootClass>();
 		if (Scene.v().containsClass("android.os.AsyncTask")) {
 			SootClass async = Scene.v().getSootClass("android.os.AsyncTask");
-			return SootUtils.subTypesOf(async).contains(clz);
+			subclz.addAll(subTypesOf(async));
 		}
-		return flag;
+		if (Scene.v().containsClass("java.lang.Runnable")) {
+			SootClass async = Scene.v().getSootClass("java.lang.Runnable");
+			subclz.addAll(subTypesOf(async));
+		}
+		if (Scene.v().containsClass("java.lang.Runnable")) {
+			SootClass async = Scene.v().getSootClass("java.lang.Thread");
+			subclz.addAll(subTypesOf(async));
+		}
+
+		if (name.equals("run") || name.startsWith("doInBackground"))
+			return subclz.contains(clz);
+		else
+			return flag;
 	}
 	
 }

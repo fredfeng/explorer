@@ -387,7 +387,7 @@ public class QueryManager {
 			SootMethod worker = trio.val0;
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
-			if (ignoreAsync && SootUtils.asyncClass(worker.getDeclaringClass())) {
+			if (ignoreAsync && SootUtils.asyncClass(worker)) {
 				continue;
 			}
 
@@ -472,7 +472,7 @@ public class QueryManager {
 			if(visited.contains(worker))
 				continue;
 			visited.add(worker);
-			if (ignoreAsync && SootUtils.asyncClass(worker.getDeclaringClass())) {
+			if (ignoreAsync && SootUtils.asyncClass(worker)) {
 				continue;
 			}
 			CGAutoState curState = methToStateMap.get(worker);
