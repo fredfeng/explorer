@@ -279,4 +279,13 @@ public class SootUtils {
 		return chaReachableMethods;
 	}
 	
+	public static boolean asyncClass(SootClass clz) {
+		boolean flag = false;
+		if (Scene.v().containsClass("android.os.AsyncTask")) {
+			SootClass async = Scene.v().getSootClass("android.os.AsyncTask");
+			return SootUtils.subTypesOf(async).contains(clz);
+		}
+		return flag;
+	}
+	
 }

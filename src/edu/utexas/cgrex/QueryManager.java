@@ -72,6 +72,8 @@ public class QueryManager {
 	// \u0022
 	private int offset = 100;
 	
+	private boolean ignoreAsync = false;
+	
 	public static long ptTime = 0;
 	public static long cutTime = 0;
 	
@@ -116,7 +118,7 @@ public class QueryManager {
 	InterAutomaton interAuto;
 	
 	/*points-to analysis for eager version*/
-	private PointsToAnalysis ptsDemand;
+	private DemandCSPointsTo ptsDemand;
 	
 	private boolean debug = false;
 	
@@ -394,6 +396,9 @@ public class QueryManager {
 			SootMethod worker = trio.val0;
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
+			if (ignoreAsync && SootUtils.asyncClass(worker.getDeclaringClass())) {
+				continue;
+			}
 
 			Stmt srcStmt = trio.val1;
 			SootMethod tgtMeth = trio.val2;
@@ -476,6 +481,9 @@ public class QueryManager {
 			if(visited.contains(worker))
 				continue;
 			visited.add(worker);
+			if (ignoreAsync && SootUtils.asyncClass(worker.getDeclaringClass())) {
+				continue;
+			}
 			CGAutoState curState = methToStateMap.get(worker);
 			reachableState.add(curState);
 			
@@ -721,7 +729,7 @@ public class QueryManager {
 			}
 		}
 
-		Set<Type> ptTypeSet = new HashSet<Type>();
+		Set<SootMethod> ptTypeSet = new HashSet<SootMethod>();
 		assert st != null : calleeMeth;
 		Local l = getReceiver(st);
 		// get the context of l. This could be optimized later.
@@ -737,12 +745,17 @@ public class QueryManager {
 				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
-				// System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
-				// + l + " types:" + types);
-				ptTypeSet.addAll(types);
+				
+			
+				 System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
+				 + l + " types:" + types);
+				 
+				 System.out.println("resolve virtual: " + ptsDemand.resolveVirt(ctxt, st.getInvokeExpr()));
+				ptTypeSet.addAll(ptsDemand.resolveVirt(ctxt, st.getInvokeExpr()));
 			} else {
 				// Since we limit k=1, if the context is static, we ignore
-				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
+				System.out.println("stmt" + st);
+				ptTypeSet.addAll(ptsDemand.resolveVirt(null, st.getInvokeExpr()));
 			}
 		}
 
@@ -751,16 +764,18 @@ public class QueryManager {
 
 		if (ptTypeSet.size() == 0)
 			return false;
+		
+		return ptTypeSet.contains(calleeMeth);
 
 		// super.<init> always true;
-		if (calleeMeth.isConstructor())
-			return true;
-
-		if (includeAnyType && hasAnyType(ptTypeSet))
-			return true;
-
-		ptTypeSet.retainAll(typeSet);
-		return !ptTypeSet.isEmpty();
+//		if (calleeMeth.isConstructor())
+//			return true;
+//
+//		if (includeAnyType && hasAnyType(ptTypeSet))
+//			return true;
+//
+//		ptTypeSet.retainAll(typeSet);
+//		return !ptTypeSet.isEmpty();
 	}
 	
 	private boolean hasAnyType(Set<Type> types) {
@@ -857,6 +872,11 @@ public class QueryManager {
 
 	public InterAutomaton getInterAuto() {
 		return this.interAuto;
+	}
+	
+	//Should not consider async edges in performance exp.
+	public void ignoreAsync(boolean flag) {
+		ignoreAsync = flag;
 	}
 
 }
