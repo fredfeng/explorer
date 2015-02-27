@@ -290,16 +290,19 @@ public class SootUtils {
 		if (Scene.v().containsClass("java.lang.Runnable")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Runnable");
 			subclz.addAll(subTypesOf(async));
+			if (clz.implementsInterface("java.lang.Runnable"))
+				subclz.add(clz);
 		}
-		if (Scene.v().containsClass("java.lang.Runnable")) {
+		if (Scene.v().containsClass("java.lang.Thread")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Thread");
 			subclz.addAll(subTypesOf(async));
+			if (clz.hasSuperclass() && clz.getSuperclass().equals(async))
+				subclz.add(clz);
 		}
 
 		if (name.equals("run") || name.startsWith("doInBackground")
 				|| name.equals("subscribe") || name.equals("<init>"))
-			return (clz.implementsInterface("java.lang.Runnable") || subclz
-					.contains(clz));
+			return subclz.contains(clz);
 		else
 			return false;
 	}
