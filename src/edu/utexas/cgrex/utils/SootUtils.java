@@ -296,7 +296,8 @@ public class SootUtils {
 			subclz.addAll(subTypesOf(async));
 		}
 
-		if (name.equals("run") || name.startsWith("doInBackground"))
+		if (name.equals("run") || name.startsWith("doInBackground")
+				|| name.equals("subscribe") || name.equals("<init>"))
 			return (clz.implementsInterface("java.lang.Runnable") || subclz
 					.contains(clz));
 		else
