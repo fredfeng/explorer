@@ -287,7 +287,7 @@ public class SootUtils {
 			SootClass async = Scene.v().getSootClass("android.os.AsyncTask");
 			subclz.addAll(subTypesOf(async));
 			// mark all methods in async.
-			if(subclz.contains(clz))
+			if (subclz.contains(clz))
 				return true;
 		}
 		if (Scene.v().containsClass("java.lang.Runnable")) {
@@ -303,8 +303,16 @@ public class SootUtils {
 				subclz.add(clz);
 		}
 
+		if (Scene.v().containsClass("android.os.Handler")) {
+			SootClass async = Scene.v().getSootClass("android.os.Handler");
+			subclz.addAll(subTypesOf(async));
+			if (clz.hasSuperclass() && clz.getSuperclass().equals(async))
+				subclz.add(clz);
+		}
+
 		if (name.equals("run") || name.startsWith("doInBackground")
-				|| name.equals("subscribe") || name.equals("<init>"))
+				|| name.equals("handleMessage") || name.equals("subscribe")
+				|| name.equals("<init>"))
 			return subclz.contains(clz);
 		else
 			return false;
