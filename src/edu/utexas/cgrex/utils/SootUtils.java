@@ -286,6 +286,9 @@ public class SootUtils {
 		if (Scene.v().containsClass("android.os.AsyncTask")) {
 			SootClass async = Scene.v().getSootClass("android.os.AsyncTask");
 			subclz.addAll(subTypesOf(async));
+			// mark all methods in async.
+			if(subclz.contains(clz))
+				return true;
 		}
 		if (Scene.v().containsClass("java.lang.Runnable")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Runnable");
