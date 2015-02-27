@@ -282,7 +282,6 @@ public class SootUtils {
 	public static boolean asyncClass(SootMethod method) {
 		SootClass clz = method.getDeclaringClass();
 		String name = method.getName();
-		boolean flag = false;
 		Set<SootClass> subclz = new HashSet<SootClass>();
 		if (Scene.v().containsClass("android.os.AsyncTask")) {
 			SootClass async = Scene.v().getSootClass("android.os.AsyncTask");
@@ -298,9 +297,10 @@ public class SootUtils {
 		}
 
 		if (name.equals("run") || name.startsWith("doInBackground"))
-			return subclz.contains(clz);
+			return (clz.implementsInterface("java.lang.Runnable") || subclz
+					.contains(clz));
 		else
-			return flag;
+			return false;
 	}
 	
 }
