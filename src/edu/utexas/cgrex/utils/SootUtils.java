@@ -296,6 +296,13 @@ public class SootUtils {
 			if (clz.implementsInterface("java.lang.Runnable"))
 				subclz.add(clz);
 		}
+		if (Scene.v().containsClass("android.support.v4.app.DialogFragment")) {
+			SootClass async = Scene.v().getSootClass(
+					"android.support.v4.app.DialogFragment");
+			subclz.addAll(subTypesOf(async));
+			if (subclz.contains(clz))
+				return true;
+		}
 		if (Scene.v().containsClass("java.lang.Thread")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Thread");
 			subclz.addAll(subTypesOf(async));
