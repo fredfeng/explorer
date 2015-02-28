@@ -73,6 +73,57 @@ public class DeadCodeHarness extends SceneTransformer {
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix
 						+ "benchmarks/avrora/jar/avrora-cvs-20091224.jar";
+			} else if (benName.equals("chart")) {
+				targetMain = "dacapo.chart.Main";
+				cp = "lib/rt.jar:" + prefix
+						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
+						+ "benchmarks/chart/jar/chart.jar:" + prefix
+						+ "benchmarks/chart/jar/lowagie.jar:" + prefix
+						+ "benchmarks/chart/classes";
+
+			} else if (benName.equals("fop")) {
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/fop/jar/fop.jar:" + prefix
+						+ "benchmarks/fop/jar/serializer-2.7.0.jar:" + prefix
+						+ "benchmarks/fop/jar/avalon-framework-4.2.0.jar:"
+						+ prefix + "benchmarks/fop/jar/commons-io-1.3.1.jar:"
+						+ prefix
+						+ "benchmarks/fop/jar/xmlgraphics-commons-1.3.1.jar:"
+						+ prefix
+						+ "benchmarks/fop/jar/commons-logging-1.0.4.jar:"
+						+ prefix + "benchmarks/fop/jar/xml-apis-ext.jar:"
+						+ prefix + "benchmarks/fop/classes";
+
+			} else if (benName.equals("bloat")) {
+				targetMain = "dacapo.bloat.Main";
+				cp = "lib/rt.jar:" + prefix
+						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
+						+ "benchmarks/bloat/jar/bloat.jar:" + prefix
+						+ "benchmarks/bloat/classes";
+			} else if (benName.equals("hsqldb")) {
+				targetMain = "dacapo.hsqldb.Main";
+				cp = "lib/rt.jar:" + prefix
+						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
+						+ "benchmarks/hsqldb/jar/hsqldb.jar:" + prefix
+						+ "benchmarks/hsqldb/classes";
+			} else if (benName.equals("xalan")) {
+
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/xalan/jar/xalan.jar:" + prefix
+						+ "benchmarks/xalan/jar/serializer.jar:" + prefix
+						+ "benchmarks/xalan/classes";
+			} else if (benName.equals("batik")) {
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/batik/jar/batik-all.jar:"
+						+ prefix + "benchmarks/batik/jar/crimson-1.1.3.jar:"
+						+ prefix + "benchmarks/batik/jar/xml-apis-ext.jar:"
+						+ prefix + "benchmarks/batik/classes";
+
+			} else if (benName.equals("sunflow")) {
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/sunflow/jar/sunflow-0.07.2.jar:"
+						+ prefix + "benchmarks/sunflow/jar/janino-2.5.12.jar:"
+						+ prefix + "benchmarks/sunflow/classes";
 			} else {
 				assert benName.equals("pmd") : "unknown benchmark" + benName;
 				targetLoc = prefix + "benchmarks/pmd/classes";
@@ -156,10 +207,10 @@ public class DeadCodeHarness extends SceneTransformer {
 			long endNoOpt = System.nanoTime();
 			totalTimeOnNoOpt += (endNoOpt - startNoOpt);
 			
-			long startNoCut = System.nanoTime();
-			boolean res4 = qm.queryRegxNoMincut(regx);
-			long endNoCut = System.nanoTime();
-			totalNoCut += (endNoCut - startNoCut);
+//			long startNoCut = System.nanoTime();
+//			boolean res4 = qm.queryRegxNoMincut(regx);
+//			long endNoCut = System.nanoTime();
+//			totalNoCut += (endNoCut - startNoCut);
 			
 			long startCipa = System.nanoTime();
 			boolean res5 = qm.queryWithoutRefine(regx);
