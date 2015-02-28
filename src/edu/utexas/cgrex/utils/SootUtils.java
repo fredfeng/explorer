@@ -294,6 +294,12 @@ public class SootUtils {
 				&& name.equals("<clinit>")) {
 			return true;
 		}
+		
+		//normal log for printing exception is fine.
+		if (clz.getName().startsWith("de.schildbach.wallet.ui.InputParser")
+				|| clz.getName().startsWith("ch.qos.logback"))
+			return true;
+		
 		if (Scene.v().containsClass("java.lang.Runnable")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Runnable");
 			subclz.addAll(subTypesOf(async));
