@@ -290,6 +290,10 @@ public class SootUtils {
 			if (subclz.contains(clz))
 				return true;
 		}
+		if (clz.getName().startsWith("de.schildbach.wallet")
+				&& name.equals("<clinit>")) {
+			return true;
+		}
 		if (Scene.v().containsClass("java.lang.Runnable")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Runnable");
 			subclz.addAll(subTypesOf(async));
@@ -310,7 +314,7 @@ public class SootUtils {
 			if (subclz.contains(clz))
 				return true;
 		}
-		
+
 		if (Scene.v().containsClass("java.lang.Thread")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Thread");
 			subclz.addAll(subTypesOf(async));
