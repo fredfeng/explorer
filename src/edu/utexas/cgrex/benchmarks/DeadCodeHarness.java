@@ -75,13 +75,14 @@ public class DeadCodeHarness extends SceneTransformer {
 						+ "benchmarks/avrora/jar/avrora-cvs-20091224.jar";
 			} else if (benName.equals("chart")) {
 				targetMain = "dacapo.chart.Main";
+				targetLoc = prefix + "benchmarks/chart/classes";
 				cp = "lib/rt.jar:" + prefix
 						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
 						+ "benchmarks/chart/jar/chart.jar:" + prefix
-						+ "benchmarks/chart/jar/lowagie.jar:" + prefix
-						+ "benchmarks/chart/classes";
+						+ "benchmarks/chart/jar/lowagie.jar";
 
 			} else if (benName.equals("fop")) {
+				targetLoc = prefix + "benchmarks/fop/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/fop/jar/fop.jar:" + prefix
 						+ "benchmarks/fop/jar/serializer-2.7.0.jar:" + prefix
@@ -91,39 +92,36 @@ public class DeadCodeHarness extends SceneTransformer {
 						+ "benchmarks/fop/jar/xmlgraphics-commons-1.3.1.jar:"
 						+ prefix
 						+ "benchmarks/fop/jar/commons-logging-1.0.4.jar:"
-						+ prefix + "benchmarks/fop/jar/xml-apis-ext.jar:"
-						+ prefix + "benchmarks/fop/classes";
+						+ prefix + "benchmarks/fop/jar/xml-apis-ext.jar";
 
 			} else if (benName.equals("bloat")) {
+				targetLoc = prefix + "benchmarks/bloat/classes";
 				targetMain = "dacapo.bloat.Main";
 				cp = "lib/rt.jar:" + prefix
 						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
-						+ "benchmarks/bloat/jar/bloat.jar:" + prefix
-						+ "benchmarks/bloat/classes";
+						+ "benchmarks/bloat/jar/bloat.jar";
 			} else if (benName.equals("hsqldb")) {
 				targetMain = "dacapo.hsqldb.Main";
+				targetLoc = prefix + "benchmarks/hsqldb/classes";
 				cp = "lib/rt.jar:" + prefix
 						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
-						+ "benchmarks/hsqldb/jar/hsqldb.jar:" + prefix
-						+ "benchmarks/hsqldb/classes";
+						+ "benchmarks/hsqldb/jar/hsqldb.jar";
 			} else if (benName.equals("xalan")) {
-
+				targetLoc = prefix + "benchmarks/xalan/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/xalan/jar/xalan.jar:" + prefix
-						+ "benchmarks/xalan/jar/serializer.jar:" + prefix
-						+ "benchmarks/xalan/classes";
+						+ "benchmarks/xalan/jar/serializer.jar";
 			} else if (benName.equals("batik")) {
+				targetLoc = prefix + "benchmarks/batik/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/batik/jar/batik-all.jar:"
 						+ prefix + "benchmarks/batik/jar/crimson-1.1.3.jar:"
-						+ prefix + "benchmarks/batik/jar/xml-apis-ext.jar:"
-						+ prefix + "benchmarks/batik/classes";
-
+						+ prefix + "benchmarks/batik/jar/xml-apis-ext.jar";
 			} else if (benName.equals("sunflow")) {
+				targetLoc = prefix + "benchmarks/sunflow/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/sunflow/jar/sunflow-0.07.2.jar:"
-						+ prefix + "benchmarks/sunflow/jar/janino-2.5.12.jar:"
-						+ prefix + "benchmarks/sunflow/classes";
+						+ prefix + "benchmarks/sunflow/jar/janino-2.5.12.jar";
 			} else {
 				assert benName.equals("pmd") : "unknown benchmark" + benName;
 				targetLoc = prefix + "benchmarks/pmd/classes";
