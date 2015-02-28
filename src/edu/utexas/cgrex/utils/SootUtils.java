@@ -307,9 +307,9 @@ public class SootUtils {
 			if (subclz.contains(clz))
 				return true;
 		}
-		if (Scene.v().containsClass("android.app.AlertDialog.Builder")) {
+		if (Scene.v().containsClass("android.app.AlertDialog$Builder")) {
 			SootClass async = Scene.v().getSootClass(
-					"android.app.AlertDialog.Builder");
+					"android.app.AlertDialog$Builder");
 			subclz.addAll(subTypesOf(async));
 			if (subclz.contains(clz))
 				return true;
