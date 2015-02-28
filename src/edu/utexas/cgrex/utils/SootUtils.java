@@ -303,6 +303,14 @@ public class SootUtils {
 			if (subclz.contains(clz))
 				return true;
 		}
+		if (Scene.v().containsClass("android.app.AlertDialog.Builder")) {
+			SootClass async = Scene.v().getSootClass(
+					"android.app.AlertDialog.Builder");
+			subclz.addAll(subTypesOf(async));
+			if (subclz.contains(clz))
+				return true;
+		}
+		
 		if (Scene.v().containsClass("java.lang.Thread")) {
 			SootClass async = Scene.v().getSootClass("java.lang.Thread");
 			subclz.addAll(subTypesOf(async));
@@ -319,7 +327,7 @@ public class SootUtils {
 
 		if (name.equals("run") || name.startsWith("doInBackground")
 				|| name.equals("handleMessage") || name.equals("subscribe")
-				|| name.equals("<init>"))
+				|| name.equals("<init>") || name.equals("<clinit>"))
 			return subclz.contains(clz);
 		else
 			return false;
