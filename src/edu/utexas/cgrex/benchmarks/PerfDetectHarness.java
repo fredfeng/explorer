@@ -15,6 +15,7 @@ import java.util.Set;
 import org.xmlpull.v1.XmlPullParserException;
 
 import soot.Scene;
+import soot.SootClass;
 import soot.SootMethod;
 import edu.utexas.cgrex.QueryManager;
 import edu.utexas.cgrex.android.SetupApplication;
@@ -48,10 +49,13 @@ public class PerfDetectHarness {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		sdk = "/home/yufeng/lib/android-sdk-linux/platforms/android-16/android.jar";
 		if (args.length > 0) {
 			tmp = args[0];
 		}
 
+		tmp = "/home/yufeng/research/benchmarks/googleplay/com.eat24.app.apk";
+		tmp = "/home/yufeng/research/benchmarks/malware/oopsla15/ConnectBot.apk";
 		System.out.println("Analyzing app: ------------------" + tmp);
 		long startDd = System.nanoTime();
 		runAnalysis(tmp, sdk);
@@ -73,8 +77,9 @@ public class PerfDetectHarness {
 				lengthyOperations.add(line);
 			}
 			br.close();
-			String[] cbList = { "onCreate", "onResume", "onPause", "onStop" };
+			String[] cbList = { "onCreate", "onResume", "onPause", "onClick" };
 			Set<String> callbacks = new HashSet<String>();
+			
 
 			System.out.println("Analyzing app:" + fileName);
 			SetupApplication app = new SetupApplication(androidJar, fileName);
@@ -88,8 +93,14 @@ public class PerfDetectHarness {
 			Iterator<SootMethod> it = Scene.v().getMethodNumberer().iterator();
 			while (it.hasNext()) {
 				SootMethod cb = it.next();
-				if (Arrays.asList(cbList).contains(cb.getName()))
-					callbacks.add(cb.getSignature());
+				SootClass clz = cb.getDeclaringClass();
+				
+				if (Arrays.asList(cbList).contains(cb.getName())) {
+					String superName = clz.getSuperclass().getName();
+					if (superName.equals("android.app.Activity"))
+						callbacks.add(cb.getSignature());
+				}
+
 			}
 			QueryManager qmExplorer = new QueryManager(
 					Scene.v().getCallGraph(), main);
@@ -99,13 +110,16 @@ public class PerfDetectHarness {
 			int diff = 0;
 			int chaTrue = 0;
 			int exTrue = 0;
+			System.out.println("*****total queries: " + callbacks.size() * lengthyOperations.size());
 			for (String src : callbacks) {
 				for (String tgt : lengthyOperations) {
 					total++;
 					String query = dummyMain + ".*" + src + ".*" + tgt;
 					String regx = qmCha.getValidExprBySig(query);
 					regx = regx.replaceAll("\\s+", "");
-					boolean res1 = qmCha.querySig(regx);
+					boolean res1 = qmCha.queryWithoutRefine(regx);
+					if(!res1)
+						continue;
 					boolean res2 = qmExplorer.queryRegx(regx);
 					if (res1)
 						chaTrue++;
