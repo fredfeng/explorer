@@ -39,6 +39,13 @@ public class DeadCodeHarness extends SceneTransformer {
     double totalNoCut = 0.0;
     
     int maxQueries = 100;
+    
+    static double senCg = 0.0;
+    static double senUnit = 0.0;
+    static double expCg = 0.0;
+    
+    // trun on crossover?
+    boolean crossOver = false;
 	/**
 	 * @param args
 	 */
@@ -49,7 +56,7 @@ public class DeadCodeHarness extends SceneTransformer {
 		if (args.length > 0) {
 			// run from shell.
 			String benName = args[0];
-			outLoc = outLoc + benName + "/cgoutput.txt";
+			outLoc = outLoc + benName + "/cgoutput-interval.txt";
 			if (benName.equals("luindex")) {
 				targetLoc = prefix + "benchmarks/luindex/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
@@ -74,6 +81,9 @@ public class DeadCodeHarness extends SceneTransformer {
 						+ prefix
 						+ "benchmarks/avrora/jar/avrora-cvs-20091224.jar";
 			} else if (benName.equals("chart")) {
+				senCg = 3374.0;
+				senUnit = 0.52;
+				expCg = 46.0;
 				targetMain = "dacapo.chart.Main";
 				targetLoc = prefix + "benchmarks/chart/classes";
 				cp = "lib/rt.jar:" + prefix
@@ -82,6 +92,9 @@ public class DeadCodeHarness extends SceneTransformer {
 						+ "benchmarks/chart/jar/lowagie.jar";
 
 			} else if (benName.equals("fop")) {
+				senCg = 6688.0;
+				senUnit = 0.84;
+				expCg = 66.0;
 				targetLoc = prefix + "benchmarks/fop/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/fop/jar/fop.jar:" + prefix
@@ -95,29 +108,44 @@ public class DeadCodeHarness extends SceneTransformer {
 						+ prefix + "benchmarks/fop/jar/xml-apis-ext.jar";
 
 			} else if (benName.equals("bloat")) {
+				senCg = 1680.0;
+				senUnit = 1.29;
+				expCg = 32.0;
 				targetLoc = prefix + "benchmarks/bloat/classes";
 				targetMain = "dacapo.bloat.Main";
 				cp = "lib/rt.jar:" + prefix
 						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
 						+ "benchmarks/bloat/jar/bloat.jar";
 			} else if (benName.equals("hsqldb")) {
+				senCg = 1377.0;
+				senUnit = 0.3;
+				expCg = 38.0;
 				targetMain = "dacapo.hsqldb.Main";
 				targetLoc = prefix + "benchmarks/hsqldb/classes";
 				cp = "lib/rt.jar:" + prefix
 						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
 						+ "benchmarks/hsqldb/jar/hsqldb.jar";
 			} else if (benName.equals("xalan")) {
+				senCg = 409.0;
+				senUnit = 0.34;
+				expCg = 22.0;
 				targetLoc = prefix + "benchmarks/xalan/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/xalan/jar/xalan.jar:" + prefix
 						+ "benchmarks/xalan/jar/serializer.jar";
 			} else if (benName.equals("batik")) {
+				senCg = 3954.0;
+				senUnit = 0.7;
+				expCg = 68.0;
 				targetLoc = prefix + "benchmarks/batik/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/batik/jar/batik-all.jar:"
 						+ prefix + "benchmarks/batik/jar/crimson-1.1.3.jar:"
 						+ prefix + "benchmarks/batik/jar/xml-apis-ext.jar";
 			} else if (benName.equals("sunflow")) {
+				senCg = 9663.0;
+				senUnit = 1.01;
+				expCg = 48.0;
 				targetLoc = prefix + "benchmarks/sunflow/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/sunflow/jar/sunflow-0.07.2.jar:"
@@ -191,6 +219,7 @@ public class DeadCodeHarness extends SceneTransformer {
 		QueryManager qmCha = new QueryManager(SootUtils.getCha(), main);
 
 		Set<String> outSet = new HashSet<String>();
+		boolean flag = false;
 		for (String q : querySet) {
 			cnt++;
 			long startNormal = System.nanoTime();
@@ -200,26 +229,40 @@ public class DeadCodeHarness extends SceneTransformer {
 			totalTimeNormal += (endNormal - startNormal);
 			
 			//cipt w/o opt.
-			long startNoOpt = System.nanoTime();
-			boolean res2 = qm.queryRegxNoLookahead(regx);
-			long endNoOpt = System.nanoTime();
-			totalTimeOnNoOpt += (endNoOpt - startNoOpt);
-			
-//			long startNoCut = System.nanoTime();
-//			boolean res4 = qm.queryRegxNoMincut(regx);
-//			long endNoCut = System.nanoTime();
-//			totalNoCut += (endNoCut - startNoCut);
-			
-			long startCipa = System.nanoTime();
-			boolean res5 = qm.queryWithoutRefine(regx);
-			long endCipa = System.nanoTime();
-			totalTimeOnCipa += (endCipa - startCipa);
+			if (!crossOver) {
+				long startNoOpt = System.nanoTime();
+				boolean res2 = qm.queryRegxNoLookahead(regx);
+				long endNoOpt = System.nanoTime();
+				totalTimeOnNoOpt += (endNoOpt - startNoOpt);
 
-			long startCha = System.nanoTime();
-			String regxCha = qmCha.getValidExprBySig(q);
-			boolean res3 = qmCha.queryWithoutRefine(regxCha);
-			long endCha = System.nanoTime();
-			totalTimeOnCha += (endCha - startCha);
+				long startNoCut = System.nanoTime();
+				boolean res4 = qm.queryRegxNoMincut(regx);
+				long endNoCut = System.nanoTime();
+				totalNoCut += (endNoCut - startNoCut);
+
+				long startCipa = System.nanoTime();
+				boolean res5 = qm.queryWithoutRefine(regx);
+				long endCipa = System.nanoTime();
+				totalTimeOnCipa += (endCipa - startCipa);
+
+				long startCha = System.nanoTime();
+				String regxCha = qmCha.getValidExprBySig(q);
+				boolean res3 = qmCha.queryWithoutRefine(regxCha);
+				long endCha = System.nanoTime();
+				totalTimeOnCha += (endCha - startCha);
+
+				if (!res5)
+					falseCipa++;
+
+				double expTime = totalTimeNormal / 1e9;
+				double diff = (expTime + expCg) - (senCg + senUnit * cnt);
+				if (diff > 0) {
+					System.out.println("Crossing over point: " + cnt + " time:"
+							+ expTime);
+					flag = true;
+					break;
+				}
+			}
 			
 			if (!res1) {
 				falseCnt++;
@@ -230,12 +273,11 @@ public class DeadCodeHarness extends SceneTransformer {
 				outSet.add("yesreach:" + q);
 			}
 			
-			if(!res5)
-				falseCipa++;
-				
 			if(cnt >= maxQueries)
 				break;
 		}
+		if(!flag)
+			System.out.println("Crossing over point: N/A");
 		//dump info.
 		System.out.println("----------DeadCode report-------------------------");
 		System.out.println("Total methods in App: " + appSize);
