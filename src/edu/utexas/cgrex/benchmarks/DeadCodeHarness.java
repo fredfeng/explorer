@@ -24,28 +24,26 @@ import edu.utexas.cgrex.utils.SootUtils;
  */
 public class DeadCodeHarness extends SceneTransformer {
 
-	public static String queryLoc = "";
-	
-	public static String outLoc = "";
+	private static String outLoc = "";
 
-	double totalTimeOnCha = 0;
+	private double totalTimeOnCha = 0;
 	
-	double totalTimeOnCipa = 0;
+	private double totalTimeOnCipa = 0;
 	
-	double totalTimeOnNoOpt = 0;
+	private double totalTimeOnNoOpt = 0;
 	
-	double totalTimeNormal = 0;
+	private double totalTimeNormal = 0;
 	
-    double totalNoCut = 0.0;
+	private double totalNoCut = 0.0;
     
-    int maxQueries = 100;
+	private int maxQueries = 100;
     
-    static double senCg = 0.0;
-    static double senUnit = 0.0;
-    static double expCg = 0.0;
+	private static double senCg = 0.0;
+	private static double senUnit = 0.0;
+	private static double expCg = 0.0;
     
     // trun on crossover?
-    boolean crossOver = false;
+	private boolean crossOver = false;
 	/**
 	 * @param args
 	 */
