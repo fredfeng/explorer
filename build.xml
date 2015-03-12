@@ -86,7 +86,7 @@
 
      <target name="deadcode" depends="jar">
 	    <java classname="edu.utexas.cgrex.benchmarks.DeadCodeHarness"
-	          maxmemory="8g"
+	          maxmemory="16g"
 	          fork="true"
 	          failonerror="true">
 	          <jvmarg value="-ea" />
@@ -97,7 +97,15 @@
 			<pathelement location="lib/chord.jar"/>
 			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
 			<pathelement location="lib/cloning-1.9.0.jar"/>
-			<pathelement location="lib/soot-trunk.jar"/>
+			<!--pathelement location="lib/soot-trunk.jar"/-->
+			<pathelement location="/home/yufeng/research/others/soot/classes"/>
+			<pathelement location="/home/yufeng/research/others/soot/libs/dexlib2-2.0.3-dev.jar"/>
+			<pathelement location="/home/yufeng/research/others/soot/libs/AXMLPrinter.jar"/>
+			<pathelement location="/home/yufeng/research/others/soot/libs/util-2.0.3-dev.jar"/>
+			<pathelement location="/home/yufeng/research/others/soot/libs/asm-debug-all-5.0.3.jar"/>
+			<pathelement location="/home/yufeng/research/others/soot/libs/polyglot.jar"/>
+			<pathelement location="/home/yufeng/research/others/jasmin/lib/jasminclasses-2.2.1.jar"/>
+			<pathelement location="/home/yufeng/research/others/jasmin/libs/java_cup.jar"/>
 			<pathelement location="lib/objenesis-1.2.jar"/>
 			<pathelement location="lib/soot-infoflow.jar"/>
 			<pathelement location="lib/soot-infoflow-android.jar"/>
@@ -191,6 +199,12 @@
 
   <target name="compile" depends="init"
         description="compile the source " >
+    <copy todir="build/edu/utexas/cgrex/analyses/">
+        <fileset dir="src/edu/utexas/cgrex/analyses">
+          <exclude name="**/*.java"/>
+        </fileset>
+    </copy>
+
     <javac srcdir="src" destdir="build" debug="true">
 	  <classpath>
 		<pathelement location="lib/heros-nightly.jar"/>
