@@ -3,7 +3,10 @@ package edu.utexas.cgrex.benchmarks;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +57,7 @@ public class DeadCodeHarness extends SceneTransformer {
 		if (args.length > 0) {
 			// run from shell.
 			String benName = args[0];
-			outLoc = outLoc + benName + "/cgoutput-interval.txt";
+			outLoc = outLoc + benName + "/cgoutput-3-10.txt";
 			if (benName.equals("luindex")) {
 				targetLoc = prefix + "benchmarks/luindex/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
@@ -193,7 +196,7 @@ public class DeadCodeHarness extends SceneTransformer {
 		SootMethod main = Scene.v().getMainMethod();
 		QueryManager qm = new QueryManager(cicg, main);
 
-		Set<String> querySet = new HashSet<String>();
+		List<String> querySet = new ArrayList<String>();
 		int appSize = 0;
 		for (SootMethod meth : SootUtils.getChaReachableMethods()) {
 			if(!meth.isJavaLibraryMethod()) 
@@ -215,9 +218,11 @@ public class DeadCodeHarness extends SceneTransformer {
 
 		int cnt = 0;
 		QueryManager qmCha = new QueryManager(SootUtils.getCha(), main);
+		Collections.shuffle(querySet);
 
 		Set<String> outSet = new HashSet<String>();
 		boolean flag = false;
+		System.out.println("querySet: " + querySet.size());
 		for (String q : querySet) {
 			cnt++;
 			long startNormal = System.nanoTime();
@@ -228,30 +233,31 @@ public class DeadCodeHarness extends SceneTransformer {
 			
 			//cipt w/o opt.
 			if (!crossOver) {
-				long startNoOpt = System.nanoTime();
-				boolean res2 = qm.queryRegxNoLookahead(regx);
-				long endNoOpt = System.nanoTime();
-				totalTimeOnNoOpt += (endNoOpt - startNoOpt);
-
-				long startNoCut = System.nanoTime();
-				boolean res4 = qm.queryRegxNoMincut(regx);
-				long endNoCut = System.nanoTime();
-				totalNoCut += (endNoCut - startNoCut);
+//				long startNoOpt = System.nanoTime();
+//				boolean res2 = qm.queryRegxNoLookahead(regx);
+//				long endNoOpt = System.nanoTime();
+//				totalTimeOnNoOpt += (endNoOpt - startNoOpt);
+//
+//				long startNoCut = System.nanoTime();
+//				boolean res4 = qm.queryRegxNoMincut(regx);
+//				long endNoCut = System.nanoTime();
+//				totalNoCut += (endNoCut - startNoCut);
 
 				long startCipa = System.nanoTime();
 				boolean res5 = qm.queryWithoutRefine(regx);
 				long endCipa = System.nanoTime();
 				totalTimeOnCipa += (endCipa - startCipa);
 
-				long startCha = System.nanoTime();
-				String regxCha = qmCha.getValidExprBySig(q);
-				boolean res3 = qmCha.queryWithoutRefine(regxCha);
-				long endCha = System.nanoTime();
-				totalTimeOnCha += (endCha - startCha);
+//				long startCha = System.nanoTime();
+//				String regxCha = qmCha.getValidExprBySig(q);
+//				boolean res3 = qmCha.queryWithoutRefine(regxCha);
+//				long endCha = System.nanoTime();
+//				totalTimeOnCha += (endCha - startCha);
 
 				if (!res5)
 					falseCipa++;
 
+			} else {
 				double expTime = totalTimeNormal / 1e9;
 				double diff = (expTime + expCg) - (senCg + senUnit * cnt);
 				if (diff > 0) {
