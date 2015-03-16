@@ -11,7 +11,6 @@
   <!-- CHA or OTF?-->
   <property name="alg" location="${alg}"/>
 
-
         <!--java classname="edu.utexas.cgrex.benchmarks.BenchmarkHarness" -->
   <target name="analyze" depends="jar">
     <java classname="edu.utexas.cgrex.benchmarks.IfAndOnlyIfHarness"
