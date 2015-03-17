@@ -218,7 +218,7 @@ public class DeadCodeHarness extends SceneTransformer {
 
 		int cnt = 0;
 		QueryManager qmCha = new QueryManager(SootUtils.getCha(), main);
-		Collections.shuffle(querySet);
+		// Collections.shuffle(querySet);
 
 		Set<String> outSet = new HashSet<String>();
 		boolean flag = false;
