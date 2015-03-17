@@ -57,7 +57,7 @@ public class DeadCodeHarness extends SceneTransformer {
 		if (args.length > 0) {
 			// run from shell.
 			String benName = args[0];
-			outLoc = outLoc + benName + "/cgoutput-3-10.txt";
+			outLoc = outLoc + benName + "/cgoutput-3-17.txt";
 			if (benName.equals("luindex")) {
 				targetLoc = prefix + "benchmarks/luindex/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"

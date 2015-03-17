@@ -601,12 +601,6 @@ public class QueryManager {
 		while (!hasInfinityEdges(cutset)) {
 			boolean refuteAll = true;
 			for (CutEntity e : cutset) {
-				//Heuristic: Too many edges from libs.
-//				if (e.getStmt() != null
-//						&& e.getStmt().getInvokeExpr().getMethod()
-//								.isJavaLibraryMethod() && cutset.size() > 20)
-//					return true;
-				
 				if (isValidEdge(e.edge, e.getSrc())) {
 					refuteAll = false;
 					e.edge.setInfinityWeight();
