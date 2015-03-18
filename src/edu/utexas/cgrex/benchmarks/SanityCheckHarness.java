@@ -1,5 +1,6 @@
 package edu.utexas.cgrex.benchmarks;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class SanityCheckHarness extends SceneTransformer {
 		String targetLoc = "", cp = "", targetMain = "org.dacapo.harness.ChordHarness";
 		outLoc = prefix + "benchmarks/";
 		// run from shell.
-		String benName = "luindex";
+		String benName = "lusearch";
 		outLoc = outLoc + benName + "/cgoutput-pts.txt";
 		if (benName.equals("luindex")) {
 			targetLoc = prefix + "benchmarks/luindex/classes";
@@ -85,9 +86,8 @@ public class SanityCheckHarness extends SceneTransformer {
 							"-main-class", targetMain,
 //							 "-no-bodies-for-excluded",
 							"-p", "cg.spark", "enabled:true",
-
+							"-p", "cg.spark", "simulate-natives:false",
 					});
-
 		} catch (CompilationDeathException e) {
 			e.printStackTrace();
 			if (e.getStatus() != CompilationDeathException.COMPILATION_SUCCEEDED)
@@ -121,8 +121,8 @@ public class SanityCheckHarness extends SceneTransformer {
 		int empty = 0;
 		while (queue.hasNext()) {
 			SootMethod meth = (SootMethod) queue.next();
-			if (meth.isJavaLibraryMethod())
-				continue;
+//			if (meth.isJavaLibraryMethod())
+//				continue;
 			if (!meth.isConcrete()) {
 				continue;
 			}
@@ -169,6 +169,14 @@ public class SanityCheckHarness extends SceneTransformer {
 					InstanceInvokeExpr iie = (InstanceInvokeExpr) stmt
 							.getInvokeExpr();
 					Local receiver = (Local) iie.getBase();
+					Set<Edge> tgts = new HashSet<Edge>();
+					for (Iterator<Edge> it = Scene.v().getCallGraph()
+							.edgesOutOf(stmt); it.hasNext();) {
+						tgts.add(it.next());
+					}
+					if(tgts.size() < 2) 
+						continue;
+					
 					Set<Type> sparkTypes = spark.reachingObjects(receiver)
 							.possibleTypes();
 					Set<Type> ddTypes = pt.reachingObjects(receiver)
@@ -176,10 +184,9 @@ public class SanityCheckHarness extends SceneTransformer {
 					if (sparkTypes.size() > ddTypes.size()) {
 						System.out.println("spark is worse:  " + stmt);
 						System.out.println("current target: ");
-						for (Iterator<Edge> it = Scene.v().getCallGraph()
-								.edgesOutOf(stmt); it.hasNext();) {
-							System.out.println("edge: " + it.next());
-						}
+						for(Edge tgt : tgts)
+							System.out.println("tgt:" + tgt);
+							
 						System.out.println("spark: " + sparkTypes);
 						System.out.println("dd: " + ddTypes);
 						System.out.println("-------------------------------");
