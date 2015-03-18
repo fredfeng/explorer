@@ -10,22 +10,19 @@ import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.PackManager;
 import soot.PointsToAnalysis;
-import soot.PrimType;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootMethod;
 import soot.Transform;
 import soot.Type;
 import soot.Unit;
-import soot.jimple.CastExpr;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.Stmt;
-import soot.jimple.internal.JAssignStmt;
 import soot.jimple.spark.pag.PAG;
-import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.util.Chain;
 import soot.util.queue.QueueReader;
 import edu.utexas.cgrex.analyses.DemandCSPointsTo;
-import edu.utexas.cgrex.utils.SootUtils;
 
 /**
  * Sanity check for the precision of Manu's pointer analysis.
@@ -46,8 +43,8 @@ public class SanityCheckHarness extends SceneTransformer {
 		String targetLoc = "", cp = "", targetMain = "org.dacapo.harness.ChordHarness";
 		outLoc = prefix + "benchmarks/";
 		// run from shell.
-		String benName = "antlr";
-		outLoc = outLoc + benName + "/cgoutput.txt";
+		String benName = "luindex";
+		outLoc = outLoc + benName + "/cgoutput-pts.txt";
 		if (benName.equals("luindex")) {
 			targetLoc = prefix + "benchmarks/luindex/classes";
 			cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
@@ -105,13 +102,9 @@ public class SanityCheckHarness extends SceneTransformer {
 	@Override
 	protected void internalTransform(String phaseName,
 			Map<String, String> options) {
-		CallGraph cicg = Scene.v().getCallGraph();
-		SootMethod main = Scene.v().getMainMethod();
-//		QueryManager qm = new QueryManager(cicg, main);
 		QueueReader<MethodOrMethodContext> queue = Scene.v()
 				.getReachableMethods().listener();
 		PAG spark = (PAG) Scene.v().getPointsToAnalysis();
-//		PointsToAnalysis pt = qm.getDemandPointsTo();
 		
 		final int DEFAULT_MAX_PASSES = 10;
 		final int DEFAULT_MAX_TRAVERSAL = 75000;
@@ -123,12 +116,14 @@ public class SanityCheckHarness extends SceneTransformer {
 		int totalCast = 0;
 		int castSafeBySpark = 0;
 		int castSafeByManu = 0;
+		int totalVirt = 0;
+		int betterVirt = 0;
 		int empty = 0;
 		while (queue.hasNext()) {
 			SootMethod meth = (SootMethod) queue.next();
 			if (meth.isJavaLibraryMethod())
 				continue;
-			if(!meth.isConcrete()) {
+			if (!meth.isConcrete()) {
 				continue;
 			}
 			assert meth.isConcrete() : meth;
@@ -137,36 +132,65 @@ public class SanityCheckHarness extends SceneTransformer {
 			Iterator<Unit> uit = units.snapshotIterator();
 			while (uit.hasNext()) {
 				Stmt stmt = (Stmt) uit.next();
-				if (stmt instanceof JAssignStmt
-						&& ((JAssignStmt) stmt).getRightOp() instanceof CastExpr) {
-					CastExpr cast = (CastExpr) ((JAssignStmt) stmt)
-							.getRightOp();
-					Type castType = cast.getCastType();
-
-					if (cast.getType() instanceof PrimType) {
-						System.out.println("Ignore primitive: " + castType);
-						continue;
-					}
-					Local rhs = (Local) cast.getOp();
-					Set<Type> sparkTypes = spark.reachingObjects(rhs)
+				
+				//check downcast.
+//				if (stmt instanceof JAssignStmt
+//						&& ((JAssignStmt) stmt).getRightOp() instanceof CastExpr) {
+//					CastExpr cast = (CastExpr) ((JAssignStmt) stmt)
+//							.getRightOp();
+//					Type castType = cast.getCastType();
+//
+//					if (cast.getType() instanceof PrimType) {
+//						System.out.println("Ignore primitive: " + castType);
+//						continue;
+//					}
+//					Local rhs = (Local) cast.getOp();
+//					Set<Type> sparkTypes = spark.reachingObjects(rhs)
+//							.possibleTypes();
+//					Set<Type> ddTypes = pt.reachingObjects(rhs).possibleTypes();
+//					if (SootUtils.castSafe(castType, sparkTypes))
+//						castSafeBySpark++;
+//
+//					if (SootUtils.castSafe(castType, ddTypes)) {
+//						castSafeByManu++;
+//						if (ddTypes.size() == 0)
+//							empty++;
+//					} else {
+//						System.out.println("------------------" + stmt);
+//						System.out.println(ddTypes);
+//					}
+//					totalCast++;
+//				}
+				
+				//check virtual callsites.
+				if (stmt.containsInvokeExpr()
+						&& (stmt.getInvokeExpr() instanceof InstanceInvokeExpr)) {
+					totalVirt++;
+					InstanceInvokeExpr iie = (InstanceInvokeExpr) stmt
+							.getInvokeExpr();
+					Local receiver = (Local) iie.getBase();
+					Set<Type> sparkTypes = spark.reachingObjects(receiver)
 							.possibleTypes();
-					Set<Type> ddTypes = pt.reachingObjects(rhs).possibleTypes();
-					if (SootUtils.castSafe(castType, sparkTypes))
-						castSafeBySpark++;
-
-					if (SootUtils.castSafe(castType, ddTypes)) {
-						castSafeByManu++;
-						if(ddTypes.size() == 0)
-							empty++;
-					} else {
-						System.out.println("------------------" + stmt);
-						System.out.println(ddTypes);
+					Set<Type> ddTypes = pt.reachingObjects(receiver)
+							.possibleTypes();
+					if (sparkTypes.size() > ddTypes.size()) {
+						System.out.println("spark is worse:  " + stmt);
+						System.out.println("current target: ");
+						for (Iterator<Edge> it = Scene.v().getCallGraph()
+								.edgesOutOf(stmt); it.hasNext();) {
+							System.out.println("edge: " + it.next());
+						}
+						System.out.println("spark: " + sparkTypes);
+						System.out.println("dd: " + ddTypes);
+						System.out.println("-------------------------------");
+						betterVirt++;
 					}
-					totalCast++;
 				}
 			}
 
 		}
+		
+		System.out.println("Total virt: " + totalVirt + " betterVirt:" + betterVirt);
 
 		assert false : totalCast + " spark: " + castSafeBySpark + " Manu: "
 				+ castSafeByManu + " empty:" + empty;
