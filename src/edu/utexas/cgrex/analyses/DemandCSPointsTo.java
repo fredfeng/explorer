@@ -644,7 +644,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				result = getFlowsToHelper(new AllocAndContext(alloc,
 						EMPTY_CALLSTACK));
 			} catch (TerminateEarlyException e) {
-
+				System.err.println("TerminateEarlyException!");
 			}
 			if (result != null) {
 				if (smallest == null || result.size() < smallest.size()) {
@@ -748,6 +748,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 						|| (backward && assignEdge.isReturnEdge()) : assignEdge;
 
 				Integer assignEdgeCallSite = assignEdge.getCallSite();
+				//ignore native method by yufeng.
+				if (!csInfo.getCallSiteTargets(assignEdgeCallSite).contains(
+						((LocalVarNode) v).getMethod())) {
+					continue;
+				}
 				assert csInfo.getCallSiteTargets(assignEdgeCallSite).contains(
 						((LocalVarNode) v).getMethod()) : assignEdge;
 				if (topCallSite.equals(assignEdgeCallSite)
@@ -2115,7 +2120,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 	}
 
     private final Map<InvokeExpr, Integer> callSiteToInt = new HashMap<InvokeExpr, Integer>();
-
 	/**
 	 * Currently not implemented.
 	 * 
