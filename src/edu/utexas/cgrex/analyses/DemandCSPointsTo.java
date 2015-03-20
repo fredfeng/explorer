@@ -34,6 +34,7 @@ import soot.ArrayType;
 import soot.Context;
 import soot.G;
 import soot.Local;
+import soot.MethodOrMethodContext;
 import soot.PointsToAnalysis;
 import soot.PointsToSet;
 import soot.RefType;
@@ -41,7 +42,9 @@ import soot.Scene;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
+import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
+import soot.jimple.Stmt;
 import soot.jimple.spark.ondemand.AllocAndContext;
 import soot.jimple.spark.ondemand.AllocAndContextSet;
 import soot.jimple.spark.ondemand.CallSiteException;
@@ -76,10 +79,13 @@ import soot.jimple.spark.sets.HybridPointsToSet;
 import soot.jimple.spark.sets.P2SetVisitor;
 import soot.jimple.spark.sets.PointsToSetEqualsWrapper;
 import soot.jimple.spark.sets.PointsToSetInternal;
+import soot.jimple.toolkits.callgraph.CallGraph;
+import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.VirtualCalls;
 import soot.toolkits.scalar.Pair;
 import soot.util.HashMultiMap;
 import soot.util.NumberedString;
+import soot.util.queue.QueueReader;
 
 /**
  * Tries to find imprecision in points-to sets from a previously run analysis.
@@ -290,6 +296,11 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
     protected boolean useCache;
 
 	private final boolean lazy;
+	
+    private final Map<InvokeExpr, Integer> callSiteToInt = new HashMap<InvokeExpr, Integer>();
+
+	private Map<Type, Set<Type>> observeMap = new HashMap<Type, Set<Type>>();
+	
 
 	public DemandCSPointsTo(ContextSensitiveInfo csInfo, PAG pag) {
 		this(csInfo, pag, DEFAULT_MAX_TRAVERSAL, DEFAULT_MAX_PASSES, DEFAULT_LAZY);
@@ -2119,7 +2130,6 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 				|| SootUtil.isNewInstanceMethod(invokedMethod);
 	}
 
-    private final Map<InvokeExpr, Integer> callSiteToInt = new HashMap<InvokeExpr, Integer>();
 	/**
 	 * Currently not implemented.
 	 * 
@@ -2332,4 +2342,70 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
       this.heuristicType = heuristicType;
       clearCache();
     }
+    
+	public Map<Type, Set<Type>> resolveObservers() {
+		if(!observeMap.isEmpty())
+			return observeMap;
+		
+		QueueReader<MethodOrMethodContext> queue = Scene.v()
+				.getReachableMethods().listener();
+		CallGraph cicg = Scene.v().getCallGraph();
+
+		while (queue.hasNext()) {
+			SootMethod meth = (SootMethod) queue.next();
+			String sig = meth.getSignature();
+			if (sig.contains("addActionListener") || sig.contains("setAction(")
+					|| sig.contains("setActionCommand")
+					|| sig.contains("addChangeListener")
+					|| sig.contains("addItemListener")
+					|| sig.contains("addObserver")) {
+
+				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
+					Edge e = it.next();
+					Stmt st = e.srcStmt();
+					assert st.containsInvokeExpr()
+							&& (st.getInvokeExpr() instanceof InstanceInvokeExpr);
+					InstanceInvokeExpr iie = (InstanceInvokeExpr) st
+							.getInvokeExpr();
+					Local receiver = (Local) iie.getBase();
+					if (!(iie.getArg(0) instanceof Local))
+						continue;
+					Local arg = (Local) iie.getArg(0);
+					for (Type src : pag.reachingObjects(receiver)
+							.possibleTypes()) {
+						Set<Type> tgts;
+						if (observeMap.containsKey(src)) {
+							tgts = observeMap.get(src);
+						} else {
+							tgts = new HashSet<Type>();
+							observeMap.put(src, tgts);
+						}
+						for (Type tgt : pag.reachingObjects(arg)
+								.possibleTypes()) {
+							tgts.add(tgt);
+						}
+					}
+				}
+			}
+		}
+		
+//		for(Type t : observeMap.keySet()) {
+//			System.out.println("current src: " + t);
+//			for(Type tgt : observeMap.get(t))
+//				System.out.println("maps to: " + tgt);
+//			
+//			System.out.println("-----------------------------------------------");
+//		}
+		return observeMap;
+	}
+	
+	public SootMethod getDeclareMeth(Stmt st) {
+		if (callSiteToInt.containsKey(st.getInvokeExpr())) {
+			int callsite = callSiteToInt.get(st.getInvokeExpr());
+			return csInfo.getInvokingMethod(callsite);
+		} else {
+			return null;
+		}
+	}
+	
 }

@@ -46,6 +46,7 @@ import edu.utexas.cgrex.automaton.CGAutoState;
 import edu.utexas.cgrex.automaton.CGAutomaton;
 import edu.utexas.cgrex.automaton.InterAutoEdge;
 import edu.utexas.cgrex.automaton.InterAutoOpts;
+import edu.utexas.cgrex.automaton.InterAutoState;
 import edu.utexas.cgrex.automaton.InterAutomaton;
 import edu.utexas.cgrex.automaton.RegAutoState;
 import edu.utexas.cgrex.automaton.RegAutomaton;
@@ -119,6 +120,9 @@ public class QueryManager {
 	
 	/*points-to analysis for eager version*/
 	private DemandCSPointsTo ptsDemand;
+	
+	/*Original final state.*/
+	private InterAutoState orgInterFinal;
 	
 	private boolean debug = false;
 	
@@ -559,7 +563,6 @@ public class QueryManager {
 
 		interAuto = new InterAutomaton(myopts, regAuto, cgAuto);
 		interAuto.build();
-
 		// interAuto.validate();
 		// interAuto.dumpFile();
 
@@ -569,7 +572,8 @@ public class QueryManager {
 			// eager version much also be false in this case.
 			return false;
 		}
-
+		orgInterFinal = (InterAutoState) interAuto.getFinalStates().iterator()
+				.next();
 		if (debug)
 			GraphUtil.checkValidInterAuto(interAuto);
 
@@ -597,26 +601,46 @@ public class QueryManager {
 		// System.out.println("cutset:" + cutset);
 
 		boolean answer = true;
-		// contains infinity edge?
-		while (!hasInfinityEdges(cutset)) {
-			boolean refuteAll = true;
-			for (CutEntity e : cutset) {
-				if (isValidEdge(e.edge, e.getSrc())) {
-					refuteAll = false;
-					e.edge.setInfinityWeight();
-					break;
-				} else {
-					// TODO:e is a false positive.
-				}
-			}
-			// all edges are refute, stop.
-			if (refuteAll) {
-				answer = false;
+
+		// try the final edge first?
+		boolean shortCut = true;
+		for (AutoEdge lastEdge : orgInterFinal.getIncomingStatesInvKeySet()) {
+			if (lastEdge.isInvEdge())
+				continue;
+			AutoState inState = orgInterFinal.incomingStatesInvLookup(lastEdge)
+					.iterator().next();
+			if (isValidEdge(lastEdge, inState)) {
+				shortCut = false;
+				lastEdge.setInfinityWeight();
 				break;
 			}
-			// modify visited edges and continue.
-			cutset = GraphUtil.minCut(interAuto);
-			// System.out.println("cutset:" + cutset);
+		}
+
+		// contains infinity edge?
+		if (!shortCut) {
+			while (!hasInfinityEdges(cutset)) {
+				boolean refuteAll = true;
+
+				for (CutEntity e : cutset) {
+					if (isValidEdge(e.edge, e.getSrc())) {
+						refuteAll = false;
+						e.edge.setInfinityWeight();
+						break;
+					} else {
+						// TODO:e is a false positive.
+					}
+				}
+				// all edges are refute, stop.
+				if (refuteAll) {
+					answer = false;
+					break;
+				}
+				// modify visited edges and continue.
+				cutset = GraphUtil.minCut(interAuto);
+				// System.out.println("cutset:" + cutset);
+			}
+		} else {
+			answer = false;
 		}
 		StringUtil.reportDiff("Time on PT: ", ptTime);
 		StringUtil.reportDiff("Cut time:" + answer, cutTime);
@@ -691,13 +715,18 @@ public class QueryManager {
 	}
 	
 	private boolean isValidEdge(AutoEdge e, AutoState src) {
+		assert !e.isInvEdge();
 		long start = System.nanoTime();
 		Stmt st = e.getSrcStmt();
 		if (st == null)
 			return true;
 		SootMethod calleeMeth = uidToMethMap.get(((InterAutoEdge) e)
 				.getTgtCGAutoStateId());
+		String calleeSig = calleeMeth.getSignature();
 		SootClass calleeClz = calleeMeth.getDeclaringClass();
+		SootMethod caller = uidToMethMap.get(((InterAutoState) src)
+				.getSlaveState().getId());
+		
 		Set<AutoEdge> inEdges = src.getIncomingStatesInvKeySet();
 		assert (calleeMeth != null);
 		// main method is always reachable.
@@ -721,15 +750,35 @@ public class QueryManager {
 		for (AutoEdge in : inEdges) {
 			if (in.isInvEdge())
 				continue;
-			Stmt stmt = in.getSrcStmt();
+			Stmt stack = in.getSrcStmt();
 
-			if (stmt != null
-					&& stmt.containsInvokeExpr()
-					&& ((stmt.getInvokeExpr() instanceof VirtualInvokeExpr) || (stmt
+			if (stack != null
+					&& stack.containsInvokeExpr()
+					&& ((stack.getInvokeExpr() instanceof VirtualInvokeExpr) || (stack
 							.getInvokeExpr() instanceof InterfaceInvokeExpr))) {
-				CgContext ctxt = new CgContext(stmt.getInvokeExpr());
+				CgContext ctxt = new CgContext(stack.getInvokeExpr());
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
+				if ((calleeSig.contains("actionPerformed")
+						|| calleeSig.matches(".*void update.*Observable.*") || calleeSig
+							.contains("stateChanged")) && caller != null) {
+					Set<SootClass> subObs = SootUtils.subTypesOf(caller
+							.getDeclaringClass());
+					Set<Type> valids = new HashSet<Type>();
+					for (SootClass subO : subObs) {
+						Set<Type> mapTypes = ptsDemand.resolveObservers().get(
+								subO.getType());
+						if (mapTypes == null)
+							continue;
+						valids.addAll(mapTypes);
+
+					}
+					// System.out.println("actual: " + types);
+					// System.out.println("valids: " + valids);
+					types.retainAll(valids);
+					// System.out.println("retain: " + types);
+				}
+
 				// System.out.println("stmt: " + st + " ctxt: " + ctxt + " var:"
 				// + l + " types:" + types);
 				ptTypeSet.addAll(types);
@@ -738,6 +787,8 @@ public class QueryManager {
 				ptTypeSet.addAll(ptsDemand.reachingObjects(l).possibleTypes());
 			}
 		}
+		
+
 
 		long end = System.nanoTime();
 		ptTime = ptTime + (end - start);
