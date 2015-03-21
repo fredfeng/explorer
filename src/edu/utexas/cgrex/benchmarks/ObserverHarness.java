@@ -1,10 +1,14 @@
 package edu.utexas.cgrex.benchmarks;
 
 import java.util.Arrays;
+import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.swing.AbstractButton;
+import javax.swing.JComboBox;
 
 import soot.CompilationDeathException;
 import soot.MethodOrMethodContext;
@@ -123,6 +127,28 @@ public class ObserverHarness extends SceneTransformer {
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/sunflow/jar/sunflow-0.07.2.jar:"
 						+ prefix + "benchmarks/sunflow/jar/janino-2.5.12.jar";
+			} else if (benName.equals("eclipse")) {
+				targetLoc = prefix + "benchmarks/eclipse/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/eclipse/jar/eclipse.jar";
+			} else if (benName.equals("weka")) {
+				targetLoc = prefix + "benchmarks/weka/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/weka/jar/weka.jar";
+			} else if (benName.equals("jmeter")) {
+				targetLoc = prefix + "benchmarks/jmeter/classes";
+				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+						+ prefix + "benchmarks/jmeter/jar/ApacheJMeter.jar:"
+						+ prefix + "benchmarks/jmeter/jar/ApacheJMeter_core.jar:"
+												+ prefix + "benchmarks/jmeter/jar/xstream-1.4.8.jar:"
+						+ prefix + "benchmarks/jmeter/jar/jorphan.jar:"
+						+ prefix + "benchmarks/jmeter/jar/avalon-framework-4.1.4.jar:"
+						+ prefix + "benchmarks/jmeter/jar/commons-logging-1.2.jar:"
+												+ prefix + "benchmarks/jmeter/jar/jorphan.jar:"
+						+ prefix + "benchmarks/jmeter/jar/commons-io-2.4.jar:"
+						+ prefix + "benchmarks/jmeter/jar/rsyntaxtextarea-2.5.6.jar:"
+						+ prefix + "benchmarks/jmeter/jar/oro-2.0.8.jar:";
+				// + prefix + "benchmarks/jmeter/jar/jcharts-0.7.5.jar";
 			} else {
 				assert benName.equals("pmd") : "unknown benchmark" + benName;
 				targetLoc = prefix + "benchmarks/pmd/classes";
@@ -143,7 +169,8 @@ public class ObserverHarness extends SceneTransformer {
 
 			soot.Main.v().run(
 					new String[] { "-W", "-process-dir", targetLoc,
-							"-allow-phantom-refs", "-soot-classpath", cp,
+							"-allow-phantom-refs",
+							"-soot-classpath", cp,
 							"-main-class", targetMain,
 							// "-no-bodies-for-excluded",
 							"-p", "cg.spark", "enabled:true",
@@ -172,23 +199,28 @@ public class ObserverHarness extends SceneTransformer {
 		Set<String> list = new HashSet<String>(Arrays.asList(include));
 		Set<String> exlist = new HashSet<String>(Arrays.asList(exclude));
 
-		for(SootClass sc : Scene.v().getClasses()) {
-			if(sc.isJavaLibraryClass())
+		// get listeners from custom classes.
+		for (SootClass sc : Scene.v().getClasses()) {
+			if (sc.isJavaLibraryClass())
 				continue;
-			
-			if(sc.getName().contains("Listener")) {
+
+			if (sc.getName().contains("Listener")) {
 				list.add(sc.getName());
 			}
 		}
 		Set<Edge> edges = new HashSet<Edge>();
-		
+
+		Set<SootMethod> srcs = new HashSet<SootMethod>();
+		Set<SootMethod> tgts = new HashSet<SootMethod>();
+
 		while (queue.hasNext()) {
 			SootMethod meth = (SootMethod) queue.next();
 			String ms = meth.getSignature();
-			if(meth.isConstructor() || ms.contains("clinit"))
+			if (meth.isConstructor() || ms.contains("clinit"))
 				continue;
-			
+
 			if (ms.contains("actionPerformed") || ms.contains("stateChanged")) {
+				tgts.add(meth);
 				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
 					Edge e = it.next();
 					SootMethod ca = (SootMethod) e.getSrc();
@@ -197,19 +229,28 @@ public class ObserverHarness extends SceneTransformer {
 						continue;
 					if (ca.getName().equals(ce.getName()))
 						continue;
-
+					srcs.add(ca);
 					edges.add(e);
 				}
 			}
-			
+
+			if (ms.contains("dispatchEvent")) {
+				System.out.println(ms);
+				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
+					System.out.println("caller: " + it.next().getSrc());
+				}
+				System.out.println("-----------------------------------------");
+			}
+
 			SootClass clz = meth.getDeclaringClass();
-			/*anonymous class dominates the listener. */
+			/* anonymous class dominates the listener. */
 			if (clz.getName().contains("$")) {
 				for (String su : list) {
 					if (Scene.v().containsClass(su)) {
 						Set<SootClass> subs = SootUtils.subTypesOf(Scene.v()
 								.getSootClass(su));
 						if (subs.contains(clz)) {
+							tgts.add(meth);
 							for (Iterator<Edge> it = cicg.edgesInto(meth); it
 									.hasNext();) {
 								Edge e = it.next();
@@ -234,6 +275,8 @@ public class ObserverHarness extends SceneTransformer {
 										ce.getDeclaringClass())) {
 									continue;
 								}
+
+								srcs.add(ca);
 								edges.add(e);
 							}
 							break;
@@ -243,44 +286,86 @@ public class ObserverHarness extends SceneTransformer {
 			}
 		}
 
-		int falseCi = 0;
-		int falseExp = 0;
+		Set<String> queries = new HashSet<String>();
+		for (SootMethod src : srcs) {
+			String srcClz = src.getDeclaringClass().getName();
+			String srcStr = src.getSignature();
+			for (SootMethod tgt : tgts) {
+				String event = "";
+				if (srcStr.contains("fireStateChanged")) {
+					event = "java.awt.event.ChangeListener";
+				} else if (srcStr.contains("fireActionEvent")) {
+					event = "java.awt.event.ActionListener";
+				} else if (srcStr.contains("fireActionPerformed")) {
+					event = "java.awt.event.ActionListener";
+				} else if (srcStr.contains("fireItemStateChanged")) {
+					event = "java.awt.event.ItemListener";
+				} else if (srcStr.contains("processWindowEvent")) {
+					event = "java.awt.event.WindowListener";
+				} else if (srcStr.contains("fireRemoveUpdate")
+						|| srcStr.contains("fireInsertUpdate")) {
+					event = "javax.swing.event.DocumentListener";
+				} else if (srcStr.contains("fireAncestor")) {
+					event = "javax.swing.event.AncestorListener";
+				} else if (srcClz.equals("javax.imageio.ImageWriter")) {
+					event = "javax.imageio.event.IIOWriteProgressListener";
+				} else if (srcClz.equals("javax.imageio.ImageReader")) {
+					event = "javax.imageio.event.IIOReadProgressListener";
+				}
+
+				if (!event.equals("")) {
+					SootClass clzz = Scene.v().getSootClass(event);
+					if (SootUtils.subTypesOf(clzz).contains(
+							tgt.getDeclaringClass())) {
+						queries.add(srcStr + tgt.getSignature());
+					}
+				}
+			}
+		}
+
 		for (Edge e : edges) {
 			SootMethod src = (SootMethod) e.getSrc();
 			SootMethod tgt = (SootMethod) e.getTgt();
-			String qq = main.getSignature() + ".*" + src.getSignature()
-					+ tgt.getSignature();
-			
+			queries.add(src.getSignature() + tgt.getSignature());
+		}
+
+		int falseCi = 0;
+		int falseExp = 0;
+		for (String partial : queries) {
+			String qq = main.getSignature() + ".*" + partial;
+
 			long startNormal = System.nanoTime();
 			String regx = qm.getValidExprBySig(qq);
 			boolean res = qm.queryRegx(regx);
 			long endNormal = System.nanoTime();
 			totalTimeNormal += (endNormal - startNormal);
-			
+
 			long startCipa = System.nanoTime();
 			boolean res2 = qm.queryWithoutRefine(regx);
 			long endCipa = System.nanoTime();
 			totalTimeOnCipa += (endCipa - startCipa);
-			
+
 			if (!res) {
 				falseExp++;
 				System.out.println("refute: " + qq);
 			} else {
 				System.out.println("truth: " + qq);
 			}
-			if(!res2)
+			if (!res2)
 				falseCi++;
 		}
-		//dump info.
-		System.out.println("----------ObserverExp report-------------------------");
+		// dump info.
+		System.out
+				.println("----------ObserverExp report-------------------------");
 		System.out.println("Total queries: " + edges.size());
 		System.out.println("Total refutations(Explorer): " + falseExp);
 		System.out.println("Total refutations(cipa): " + falseCi);
-		System.out.println("Total time on Explorer: " + totalTimeNormal/1e6);
-		System.out.println("Total time on no Ci: " + totalTimeOnCipa/1e6);
-		System.out.println("Total time on no cut: " + totalNoCut/1e6);
-		System.out.println("Total time on CHA: " + (totalTimeOnCha/1e6));
-		System.out.println("Total time w/o look ahead: " + (totalTimeOnNoOpt/1e6));
+		System.out.println("Total time on Explorer: " + totalTimeNormal / 1e6);
+		System.out.println("Total time on no Ci: " + totalTimeOnCipa / 1e6);
+		System.out.println("Total time on no cut: " + totalNoCut / 1e6);
+		System.out.println("Total time on CHA: " + (totalTimeOnCha / 1e6));
+		System.out.println("Total time w/o look ahead: "
+				+ (totalTimeOnNoOpt / 1e6));
 	}
 	
 	String[] include = { 
