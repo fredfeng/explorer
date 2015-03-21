@@ -759,9 +759,7 @@ public class QueryManager {
 				CgContext ctxt = new CgContext(stack.getInvokeExpr());
 				Set<Type> types = ptsDemand.reachingObjects(ctxt, l)
 						.possibleTypes();
-				if ((calleeSig.contains("actionPerformed")
-						|| calleeSig.matches(".*void update.*Observable.*") || calleeSig
-							.contains("stateChanged")) && caller != null) {
+				if ((SootUtils.isObserver(calleeSig)) && caller != null) {
 					Set<SootClass> subObs = SootUtils.subTypesOf(caller
 							.getDeclaringClass());
 					Set<Type> valids = new HashSet<Type>();

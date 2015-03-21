@@ -1,14 +1,10 @@
 package edu.utexas.cgrex.benchmarks;
 
 import java.util.Arrays;
-import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.AbstractButton;
-import javax.swing.JComboBox;
 
 import soot.CompilationDeathException;
 import soot.MethodOrMethodContext;
@@ -197,7 +193,6 @@ public class ObserverHarness extends SceneTransformer {
 		QueueReader<MethodOrMethodContext> queue = Scene.v()
 				.getReachableMethods().listener();
 		Set<String> list = new HashSet<String>(Arrays.asList(include));
-		Set<String> exlist = new HashSet<String>(Arrays.asList(exclude));
 
 		// get listeners from custom classes.
 		for (SootClass sc : Scene.v().getClasses()) {
@@ -219,7 +214,7 @@ public class ObserverHarness extends SceneTransformer {
 			if (meth.isConstructor() || ms.contains("clinit"))
 				continue;
 
-			if (ms.contains("actionPerformed") || ms.contains("stateChanged")) {
+			if (SootUtils.isObserver(ms)) {
 				tgts.add(meth);
 				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
 					Edge e = it.next();
@@ -232,14 +227,6 @@ public class ObserverHarness extends SceneTransformer {
 					srcs.add(ca);
 					edges.add(e);
 				}
-			}
-
-			if (ms.contains("dispatchEvent")) {
-				System.out.println(ms);
-				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
-					System.out.println("caller: " + it.next().getSrc());
-				}
-				System.out.println("-----------------------------------------");
 			}
 
 			SootClass clz = meth.getDeclaringClass();
@@ -255,26 +242,9 @@ public class ObserverHarness extends SceneTransformer {
 									.hasNext();) {
 								Edge e = it.next();
 								SootMethod ca = (SootMethod) e.getSrc();
-								String caName = ca.getDeclaringClass()
-										.getName();
 								SootMethod ce = (SootMethod) e.getTgt();
-								if (caName.equals("java.awt.Window")
-										&& !ca.getName().contains(
-												"processWindowEvent")) {
+								if (SootUtils.isTrivial(ca, ce))
 									continue;
-								}
-								if (ca.isConstructor())
-									continue;
-								if (ca.getName().matches("get.*Size")
-										|| ce.getName().matches("get.*Size")) {
-									continue;
-								}
-								if (exlist.contains(caName))
-									continue;
-								if (ca.getDeclaringClass().equals(
-										ce.getDeclaringClass())) {
-									continue;
-								}
 
 								srcs.add(ca);
 								edges.add(e);
@@ -307,6 +277,13 @@ public class ObserverHarness extends SceneTransformer {
 					event = "javax.swing.event.DocumentListener";
 				} else if (srcStr.contains("fireAncestor")) {
 					event = "javax.swing.event.AncestorListener";
+				} else if (srcStr.contains("baseValueChanged")) {
+					event = "org.apache.batik.dom.anim.AnimationTargetListener";
+				} else if (srcStr
+						.contains("dispatchContentSelectionChangedEvent")) {
+					event = "org.apache.batik.bridge.svg12.ContentSelectionChangedListener";
+				} else if (srcStr.contains("firePropertiesChangedEvent")) {
+					event = "org.apache.batik.css.engine.CSSEngineListener";
 				} else if (srcClz.equals("javax.imageio.ImageWriter")) {
 					event = "javax.imageio.event.IIOWriteProgressListener";
 				} else if (srcClz.equals("javax.imageio.ImageReader")) {
@@ -322,11 +299,13 @@ public class ObserverHarness extends SceneTransformer {
 				}
 			}
 		}
+		
 
 		for (Edge e : edges) {
 			SootMethod src = (SootMethod) e.getSrc();
 			SootMethod tgt = (SootMethod) e.getTgt();
-			queries.add(src.getSignature() + tgt.getSignature());
+			String query = src.getSignature() + tgt.getSignature();
+			queries.add(query);
 		}
 
 		int falseCi = 0;
@@ -344,6 +323,11 @@ public class ObserverHarness extends SceneTransformer {
 			boolean res2 = qm.queryWithoutRefine(regx);
 			long endCipa = System.nanoTime();
 			totalTimeOnCipa += (endCipa - startCipa);
+			
+			long startNoOpt = System.nanoTime();
+			boolean res3 = qm.queryRegxNoLookahead(regx);
+			long endNoOpt = System.nanoTime();
+			totalTimeOnNoOpt += (endNoOpt - startNoOpt);
 
 			if (!res) {
 				falseExp++;
@@ -357,7 +341,7 @@ public class ObserverHarness extends SceneTransformer {
 		// dump info.
 		System.out
 				.println("----------ObserverExp report-------------------------");
-		System.out.println("Total queries: " + edges.size());
+		System.out.println("Total queries: " + queries.size());
 		System.out.println("Total refutations(Explorer): " + falseExp);
 		System.out.println("Total refutations(cipa): " + falseCi);
 		System.out.println("Total time on Explorer: " + totalTimeNormal / 1e6);
@@ -378,12 +362,6 @@ public class ObserverHarness extends SceneTransformer {
 			"java.util.Observer",
 			"javax.faces.event.PhaseListener"
 			};
-	
-	String[] exclude = {
-			"java.awt.Container",
-			"java.awt.Component",
-			"java.awt.AWTEventMulticaster",
-	};
 	
 	String[] queries = {
 			"<org.dacapo.harness.ChordHarness: void main(java.lang.String[])>.*<javax.swing.AbstractButton: void fireActionPerformed(java.awt.event.ActionEvent)>.*<javax.swing.JViewport$1: void actionPerformed(java.awt.event.ActionEvent)>",

@@ -2358,17 +2358,22 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					|| sig.contains("setActionCommand")
 					|| sig.contains("addChangeListener")
 					|| sig.contains("addItemListener")
+					|| sig.matches(".*add.*Listener.*")
 					|| sig.contains("addObserver")) {
 
 				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
 					Edge e = it.next();
 					Stmt st = e.srcStmt();
-					assert st.containsInvokeExpr()
-							&& (st.getInvokeExpr() instanceof InstanceInvokeExpr);
+					assert st.containsInvokeExpr();
+					if(!(st.getInvokeExpr() instanceof InstanceInvokeExpr))
+						continue;
+					
 					InstanceInvokeExpr iie = (InstanceInvokeExpr) st
 							.getInvokeExpr();
 					Local receiver = (Local) iie.getBase();
-					if (!(iie.getArg(0) instanceof Local))
+					
+					if (iie.getArgCount() == 0
+							|| !(iie.getArg(0) instanceof Local))
 						continue;
 					Local arg = (Local) iie.getArg(0);
 					for (Type src : pag.reachingObjects(receiver)
@@ -2396,6 +2401,7 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 //			
 //			System.out.println("-----------------------------------------------");
 //		}
+		
 		return observeMap;
 	}
 	

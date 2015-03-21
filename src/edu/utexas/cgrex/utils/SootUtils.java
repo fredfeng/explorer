@@ -1,6 +1,7 @@
 package edu.utexas.cgrex.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -342,5 +343,55 @@ public class SootUtils {
 		else
 			return false;
 	}
+	
+	/* checking whether a method is observer.*/
+	public static boolean isObserver(String ms) {
+		if (ms.contains("actionPerformed")
+				|| ms.contains("animatedAttributeChanged")
+				|| ms.contains("itemStateChanged")
+				|| ms.contains("propertiesChanged")
+				|| ms.contains("otherAnimationChanged")
+				|| ms.contains("baseValueChanged")
+				|| ms.contains("contentSelectionChanged")
+				|| ms.matches(".*void update.*Observable.*")
+				|| ms.contains("stateChanged")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean isTrivial(SootMethod ca, SootMethod ce) {
+		String caName = ca.getDeclaringClass().getName();
+		if (caName.equals("java.awt.Window")
+				&& !ca.getName().contains("processWindowEvent")) {
+			return true;
+		}
+		if (ca.isConstructor()) {
+			return true;
+		}
+		if (ca.getName().matches("get.*Size")
+				|| ce.getName().matches("get.*Size")) {
+			return true;
+		}
+		if (ca.getName().contains("toString")
+				|| ce.getName().contains("toString")) {
+			return true;
+		}
+		Set<String> exlist = new HashSet<String>(Arrays.asList(exclude));
+		if (exlist.contains(caName))
+			return true;
+		
+		if (ca.getDeclaringClass().equals(ce.getDeclaringClass())) {
+			return true;
+		}
+		return false;
+	}
+	
+	static String[] exclude = {
+			"java.awt.Container",
+			"java.awt.Component",
+			"java.awt.AWTEventMulticaster",
+	};
 	
 }
