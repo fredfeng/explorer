@@ -73,6 +73,7 @@
 			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
 	      </classpath>
 	      <arg value="${target.name}"/>
+	      <arg value="${target.type}"/>
 		</java>
 	  </target>
 

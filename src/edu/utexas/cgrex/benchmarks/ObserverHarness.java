@@ -39,7 +39,20 @@ public class ObserverHarness extends SceneTransformer {
 	
 	private double totalNoCut = 0.0;
     
-	protected int maxQueries = 100;
+	protected int maxQueries = 300;
+	
+	protected static boolean compareKobj = false;
+	
+	protected static String benName = "";
+	
+	protected static long timeout = 7200 * 1000;	
+	
+	protected static enum RunType {
+		NORMAL, CHA, NOCUT, NOOPT;
+	}
+	
+	protected static RunType currType = RunType.NORMAL;
+	
 	/**
 	 * @param args
 	 */
@@ -47,9 +60,11 @@ public class ObserverHarness extends SceneTransformer {
 		String prefix = "/home/yufeng/research/benchmarks/pjbench-read-only/dacapo/";
 		String targetLoc = "", cp = "", targetMain = "org.dacapo.harness.ChordHarness";
 		outLoc = prefix + "benchmarks/"; 
+		
 		if (args.length > 0) {
 			// run from shell.
 			String benName = args[0];
+			currType = RunType.valueOf(args[1]);
 			outLoc = outLoc + benName + "/cgoutput-3-18.txt";
 			if (benName.equals("luindex")) {
 				targetLoc = prefix + "benchmarks/luindex/classes";
@@ -131,21 +146,31 @@ public class ObserverHarness extends SceneTransformer {
 				targetLoc = prefix + "benchmarks/weka/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/weka/jar/weka.jar";
-			} else if (benName.equals("jmeter")) {
-				targetLoc = prefix + "benchmarks/jmeter/classes";
+			} else if (benName.equals("findbugs")) {
+				targetLoc = prefix + "benchmarks/findbugs/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix + "benchmarks/jmeter/jar/ApacheJMeter.jar:"
-						+ prefix + "benchmarks/jmeter/jar/ApacheJMeter_core.jar:"
-												+ prefix + "benchmarks/jmeter/jar/xstream-1.4.8.jar:"
-						+ prefix + "benchmarks/jmeter/jar/jorphan.jar:"
-						+ prefix + "benchmarks/jmeter/jar/avalon-framework-4.1.4.jar:"
-						+ prefix + "benchmarks/jmeter/jar/commons-logging-1.2.jar:"
-												+ prefix + "benchmarks/jmeter/jar/jorphan.jar:"
-						+ prefix + "benchmarks/jmeter/jar/commons-io-2.4.jar:"
-						+ prefix + "benchmarks/jmeter/jar/rsyntaxtextarea-2.5.6.jar:"
-						+ prefix + "benchmarks/jmeter/jar/oro-2.0.8.jar:";
-				// + prefix + "benchmarks/jmeter/jar/jcharts-0.7.5.jar";
-			} else {
+						+ prefix + "benchmarks/findbugs/jar/bcel-6.0-SNAPSHOT.jar:"
+					+ prefix
+					+ "benchmarks/findbugs/jar/asm-debug-all-5.0.2.jar:"
+						+ prefix + "benchmarks/findbugs/jar/findbugs.jar";
+		} else if (benName.equals("jmeter")) {
+			targetLoc = prefix + "benchmarks/jmeter/classes";
+			cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
+					+ prefix + "benchmarks/jmeter/jar/ApacheJMeter.jar:"
+					+ prefix + "benchmarks/jmeter/jar/ApacheJMeter_core.jar:"
+					+ prefix + "benchmarks/jmeter/jar/xstream-1.4.8.jar:"
+					+ prefix + "benchmarks/jmeter/jar/jorphan.jar:" + prefix
+					+ "benchmarks/jmeter/jar/avalon-framework-4.1.4.jar:"
+					+ prefix + "benchmarks/jmeter/jar/commons-logging-1.2.jar:"
+					+ prefix + "benchmarks/jmeter/jar/commons-io-2.4.jar:"
+					+ prefix + "benchmarks/jmeter/jar/logkit-2.0.jar:" + prefix
+					+ "benchmarks/jmeter/jar/commons-collections-3.2.1.jar:"
+					+ prefix + "benchmarks/jmeter/jar/commons-lang3-3.3.2.jar:"
+					+ prefix
+					+ "benchmarks/jmeter/jar/rsyntaxtextarea-2.5.6.jar:"
+					+ prefix + "benchmarks/jmeter/jar/oro-2.0.8.jar:";
+			// + prefix + "benchmarks/jmeter/jar/jcharts-0.7.5.jar";
+		} else {
 				assert benName.equals("pmd") : "unknown benchmark" + benName;
 				targetLoc = prefix + "benchmarks/pmd/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
@@ -156,7 +181,6 @@ public class ObserverHarness extends SceneTransformer {
 						+ "benchmarks/pmd/jar/ant.jar";
 			}
 		}
-
 
 		try {
 
@@ -190,6 +214,9 @@ public class ObserverHarness extends SceneTransformer {
 		CallGraph cicg = Scene.v().getCallGraph();
 		SootMethod main = Scene.v().getMainMethod();
 		QueryManager qm = new QueryManager(cicg, main);
+		if(currType == RunType.CHA)
+			qm = new QueryManager(SootUtils.getCha(), main);
+
 		QueueReader<MethodOrMethodContext> queue = Scene.v()
 				.getReachableMethods().listener();
 		Set<String> list = new HashSet<String>(Arrays.asList(include));
@@ -257,6 +284,8 @@ public class ObserverHarness extends SceneTransformer {
 		}
 
 		Set<String> queries = new HashSet<String>();
+		Set<String> pairs = new HashSet<String>();
+
 		for (SootMethod src : srcs) {
 			String srcClz = src.getDeclaringClass().getName();
 			String srcStr = src.getSignature();
@@ -295,53 +324,101 @@ public class ObserverHarness extends SceneTransformer {
 					if (SootUtils.subTypesOf(clzz).contains(
 							tgt.getDeclaringClass())) {
 						queries.add(srcStr + tgt.getSignature());
+						StringBuffer sb = new StringBuffer("");
+						sb.append(src.getName()).append("@")
+								.append(src.getDeclaringClass().getName())
+								.append(",").append(tgt.getName()).append("@")
+								.append(tgt.getDeclaringClass().getName());
+						pairs.add(sb.toString());
 					}
 				}
 			}
 		}
 		
-
+		System.out.println("isil:" + queries.size());
 		for (Edge e : edges) {
 			SootMethod src = (SootMethod) e.getSrc();
 			SootMethod tgt = (SootMethod) e.getTgt();
 			String query = src.getSignature() + tgt.getSignature();
 			queries.add(query);
+			
+			StringBuffer sb = new StringBuffer("");
+			sb.append(src.getName()).append("@")
+					.append(src.getDeclaringClass().getName())
+					.append(",").append(tgt.getName()).append("@")
+					.append(tgt.getDeclaringClass().getName());
+			pairs.add(sb.toString());
+		}
+		System.out.println("yu:" + queries.size());
+		System.out.println("totals: " + pairs.size());
+		
+		if (compareKobj) {
+			Set<String> kobj = SootUtils.getKobjResult(benName);
+			kobj.retainAll(pairs);
+			System.out.println("Valid query by 1obj: " + kobj.size());
 		}
 
 		int falseCi = 0;
 		int falseExp = 0;
+		int cnt = 0;
+		long start = System.currentTimeMillis();
+		long end = start + timeout; // 60 seconds * 1000 ms/sec
+
 		for (String partial : queries) {
 			String qq = main.getSignature() + ".*" + partial;
-
-			long startNormal = System.nanoTime();
 			String regx = qm.getValidExprBySig(qq);
-			boolean res = qm.queryRegx(regx);
-			long endNormal = System.nanoTime();
-			totalTimeNormal += (endNormal - startNormal);
-
-			long startCipa = System.nanoTime();
-			boolean res2 = qm.queryWithoutRefine(regx);
-			long endCipa = System.nanoTime();
-			totalTimeOnCipa += (endCipa - startCipa);
 			
-			long startNoOpt = System.nanoTime();
-			boolean res3 = qm.queryRegxNoLookahead(regx);
-			long endNoOpt = System.nanoTime();
-			totalTimeOnNoOpt += (endNoOpt - startNoOpt);
-
-			if (!res) {
-				falseExp++;
-				System.out.println("refute: " + qq);
-			} else {
-				System.out.println("truth: " + qq);
+			System.out.println("Query counter: " + cnt);
+			if (System.currentTimeMillis() > end) {
+				System.out.println("Timeout at query " + cnt);
+				break;
 			}
-			if (!res2)
-				falseCi++;
+			
+			if(maxQueries == cnt) {
+				break;
+			}
+			
+			if (currType == RunType.NORMAL) {
+				long startNormal = System.nanoTime();
+				boolean res = qm.queryRegx(regx);
+				long endNormal = System.nanoTime();
+				totalTimeNormal += (endNormal - startNormal);
+
+				long startCipa = System.nanoTime();
+				boolean res2 = qm.queryWithoutRefine(regx);
+				long endCipa = System.nanoTime();
+				totalTimeOnCipa += (endCipa - startCipa);
+				if (!res) {
+					falseExp++;
+					System.out.println("refute: " + qq);
+				} else {
+					System.out.println("truth: " + qq);
+				}
+				if (!res2)
+					falseCi++;
+			} else if (currType == RunType.CHA) {
+				long startCha = System.nanoTime();
+				boolean res3 = qm.queryWithoutRefine(regx);
+				long endCha = System.nanoTime();
+				totalTimeOnCha += (endCha - startCha);
+				if (!res3)
+					falseCi++;
+			} else if (currType == RunType.NOCUT) {
+
+			} else if (currType == RunType.NOOPT) {
+				long startNoOpt = System.nanoTime();
+				boolean res3 = qm.queryRegxNoLookahead(regx);
+				long endNoOpt = System.nanoTime();
+				totalTimeOnNoOpt += (endNoOpt - startNoOpt);
+				if (!res3)
+					falseCi++;
+			}
+			cnt++;
 		}
 		// dump info.
 		System.out
 				.println("----------ObserverExp report-------------------------");
-		System.out.println("Total queries: " + queries.size());
+		System.out.println("Total queries: " + cnt);
 		System.out.println("Total refutations(Explorer): " + falseExp);
 		System.out.println("Total refutations(cipa): " + falseCi);
 		System.out.println("Total time on Explorer: " + totalTimeNormal / 1e6);

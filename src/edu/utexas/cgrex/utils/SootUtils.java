@@ -1,5 +1,9 @@
 package edu.utexas.cgrex.utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -352,6 +356,7 @@ public class SootUtils {
 				|| ms.contains("propertiesChanged")
 				|| ms.contains("otherAnimationChanged")
 				|| ms.contains("baseValueChanged")
+				// || ms.contains("handleEvent")
 				|| ms.contains("contentSelectionChanged")
 				|| ms.matches(".*void update.*Observable.*")
 				|| ms.contains("stateChanged")) {
@@ -387,6 +392,41 @@ public class SootUtils {
 		}
 		return false;
 	}
+	
+	public static Set<String> getKobjResult(String proj) {
+		Set<String> kobj = new HashSet<String>();
+		String base = "/home/yufeng/research/CallsiteResolver-observe/kobj/";
+		File file = new File(base + proj + "kobj/CICM.txt");
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				String[] tuple = line.split(",");
+				assert tuple.length == 4;
+				String caller = tuple[1];
+				String caller1 = caller.substring(caller.indexOf("!") + 1,
+						caller.indexOf(":"));
+				String caller2 = caller.split("@")[1];
+
+				String callee = tuple[3];
+				String part1 = callee.split(":")[0];
+				String part2 = removeLastChar(callee.split("@")[1]);
+
+				StringBuffer sb = new StringBuffer("");
+				sb.append(caller1).append("@").append(caller2).append(",")
+						.append(part1).append("@").append(part2);
+				kobj.add(sb.toString());
+			}
+			return kobj;
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return null;
+		}
+	}
+	
+	private static String removeLastChar(String str) {
+        return str.substring(0,str.length()-1);
+    }
 	
 	static String[] exclude = {
 			"java.awt.Container",
