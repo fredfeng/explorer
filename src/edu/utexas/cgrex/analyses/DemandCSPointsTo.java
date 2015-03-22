@@ -39,6 +39,7 @@ import soot.PointsToAnalysis;
 import soot.PointsToSet;
 import soot.RefType;
 import soot.Scene;
+import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
@@ -86,6 +87,7 @@ import soot.toolkits.scalar.Pair;
 import soot.util.HashMultiMap;
 import soot.util.NumberedString;
 import soot.util.queue.QueueReader;
+import edu.utexas.cgrex.utils.SootUtils;
 
 /**
  * Tries to find imprecision in points-to sets from a previously run analysis.
@@ -2365,30 +2367,32 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 					Edge e = it.next();
 					Stmt st = e.srcStmt();
 					assert st.containsInvokeExpr();
-					if(!(st.getInvokeExpr() instanceof InstanceInvokeExpr))
+					if (!(st.getInvokeExpr() instanceof InstanceInvokeExpr))
 						continue;
-					
+
 					InstanceInvokeExpr iie = (InstanceInvokeExpr) st
 							.getInvokeExpr();
 					Local receiver = (Local) iie.getBase();
-					
-					if (iie.getArgCount() == 0
-							|| !(iie.getArg(0) instanceof Local))
+
+					Local arg = null;
+					for (int i = 0; i < iie.getArgCount(); i++) {
+						if (!(iie.getArg(i) instanceof Local))
+							continue;
+						Local temp = (Local) iie.getArg(i);
+						Type t = temp.getType();
+						if (t instanceof RefType) {
+							RefType ref = (RefType) t;
+							if (!SootUtils.ignoreTopNodes(ref)) {
+								arg = (Local) iie.getArg(i);
+							}
+						}
+					}
+
+					if (arg == null)
 						continue;
-					Local arg = (Local) iie.getArg(0);
 					for (Type src : pag.reachingObjects(receiver)
 							.possibleTypes()) {
-						Set<Type> tgts;
-						if (observeMap.containsKey(src)) {
-							tgts = observeMap.get(src);
-						} else {
-							tgts = new HashSet<Type>();
-							observeMap.put(src, tgts);
-						}
-						for (Type tgt : pag.reachingObjects(arg)
-								.possibleTypes()) {
-							tgts.add(tgt);
-						}
+						addObserveMap(src, arg);
 					}
 				}
 			}
@@ -2401,8 +2405,21 @@ public final class DemandCSPointsTo implements PointsToAnalysis {
 //			
 //			System.out.println("-----------------------------------------------");
 //		}
-		
 		return observeMap;
+	}
+	
+	private void addObserveMap(Type src, Local arg) {
+		Set<Type> tgts;
+		if (observeMap.containsKey(src)) {
+			tgts = observeMap.get(src);
+		} else {
+			tgts = new HashSet<Type>();
+			observeMap.put(src, tgts);
+		}
+		for (Type tgt : pag.reachingObjects(arg)
+				.possibleTypes()) {
+			tgts.add(tgt);
+		}
 	}
 	
 	public SootMethod getDeclareMeth(Stmt st) {

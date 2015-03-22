@@ -308,6 +308,8 @@ public class ObserverHarness extends SceneTransformer {
 					event = "javax.swing.event.AncestorListener";
 				} else if (srcStr.contains("baseValueChanged")) {
 					event = "org.apache.batik.dom.anim.AnimationTargetListener";
+				} else if (srcStr.contains("fireEventListeners")) {
+					event = "org.w3c.dom.events.EventListener";
 				} else if (srcStr
 						.contains("dispatchContentSelectionChangedEvent")) {
 					event = "org.apache.batik.bridge.svg12.ContentSelectionChangedListener";

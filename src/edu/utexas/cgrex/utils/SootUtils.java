@@ -19,6 +19,7 @@ import soot.AnySubType;
 import soot.ArrayType;
 import soot.FastHierarchy;
 import soot.G;
+import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.RefType;
 import soot.Scene;
@@ -356,10 +357,19 @@ public class SootUtils {
 				|| ms.contains("propertiesChanged")
 				|| ms.contains("otherAnimationChanged")
 				|| ms.contains("baseValueChanged")
-				// || ms.contains("handleEvent")
+				|| ms.contains("handleEvent")
 				|| ms.contains("contentSelectionChanged")
 				|| ms.matches(".*void update.*Observable.*")
 				|| ms.contains("stateChanged")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean ignoreTopNodes(RefType ref) {
+		if (ref.getClassName().equals("java.lang.String")
+				|| ref.getClassName().equals("java.lang.Object")) {
 			return true;
 		} else {
 			return false;
