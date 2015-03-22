@@ -220,6 +220,16 @@ public class ObserverHarness extends SceneTransformer {
 		QueueReader<MethodOrMethodContext> queue = Scene.v()
 				.getReachableMethods().listener();
 		Set<String> list = new HashSet<String>(Arrays.asList(include));
+		Set<Edge> edges = new HashSet<Edge>();
+		Set<SootMethod> srcs = new HashSet<SootMethod>();
+		Set<SootMethod> tgts = new HashSet<SootMethod>();
+		Set<String> queries = new HashSet<String>();
+		Set<String> pairs = new HashSet<String>();
+		int falseCi = 0;
+		int falseExp = 0;
+		int cnt = 0;
+		long start = System.currentTimeMillis();
+		long end = start + timeout; // 60 seconds * 1000 ms/sec
 
 		// get listeners from custom classes.
 		for (SootClass sc : Scene.v().getClasses()) {
@@ -230,10 +240,6 @@ public class ObserverHarness extends SceneTransformer {
 				list.add(sc.getName());
 			}
 		}
-		Set<Edge> edges = new HashSet<Edge>();
-
-		Set<SootMethod> srcs = new HashSet<SootMethod>();
-		Set<SootMethod> tgts = new HashSet<SootMethod>();
 
 		while (queue.hasNext()) {
 			SootMethod meth = (SootMethod) queue.next();
@@ -282,9 +288,6 @@ public class ObserverHarness extends SceneTransformer {
 				}
 			}
 		}
-
-		Set<String> queries = new HashSet<String>();
-		Set<String> pairs = new HashSet<String>();
 
 		for (SootMethod src : srcs) {
 			String srcClz = src.getDeclaringClass().getName();
@@ -337,7 +340,6 @@ public class ObserverHarness extends SceneTransformer {
 			}
 		}
 		
-		System.out.println("isil:" + queries.size());
 		for (Edge e : edges) {
 			SootMethod src = (SootMethod) e.getSrc();
 			SootMethod tgt = (SootMethod) e.getTgt();
@@ -351,20 +353,12 @@ public class ObserverHarness extends SceneTransformer {
 					.append(tgt.getDeclaringClass().getName());
 			pairs.add(sb.toString());
 		}
-		System.out.println("yu:" + queries.size());
-		System.out.println("totals: " + pairs.size());
 		
 		if (compareKobj) {
 			Set<String> kobj = SootUtils.getKobjResult(benName);
 			kobj.retainAll(pairs);
 			System.out.println("Valid query by 1obj: " + kobj.size());
 		}
-
-		int falseCi = 0;
-		int falseExp = 0;
-		int cnt = 0;
-		long start = System.currentTimeMillis();
-		long end = start + timeout; // 60 seconds * 1000 ms/sec
 
 		for (String partial : queries) {
 			String qq = main.getSignature() + ".*" + partial;
