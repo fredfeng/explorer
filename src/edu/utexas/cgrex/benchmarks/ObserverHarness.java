@@ -63,7 +63,7 @@ public class ObserverHarness extends SceneTransformer {
 		
 		if (args.length > 0) {
 			// run from shell.
-			String benName = args[0];
+			benName = args[0];
 			currType = RunType.valueOf(args[1]);
 			outLoc = outLoc + benName + "/cgoutput-3-18.txt";
 			if (benName.equals("luindex")) {
@@ -358,7 +358,7 @@ public class ObserverHarness extends SceneTransformer {
 		}
 		
 		if(currType == RunType.CHA)
-			qm = new QueryManager(SootUtils.getCha(), main);
+			qm = new QueryManager(SootUtils.getCha(), main, "dummy");
 		
 		for (String partial : queries) {
 			String qq = main.getSignature() + ".*" + partial;

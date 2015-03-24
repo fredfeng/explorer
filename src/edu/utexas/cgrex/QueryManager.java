@@ -156,6 +156,11 @@ public class QueryManager {
 		this.initQM(cg, false);
 	}
 	
+	public QueryManager(CallGraph cg, SootMethod meth, String dummy) {
+		this.setMainMethod(meth);
+		this.initQM(cg, false);
+	}
+	
 	public QueryManager(SootMethod main, Set<SootMethod> setM,
 			Set<Trio<SootMethod, Stmt, SootMethod>> edgeSet, boolean flag) {
 		mainMethod = main;
