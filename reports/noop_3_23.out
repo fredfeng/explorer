@@ -1,0 +1,2012 @@
+nohup: ignoring input
+analyzing-----batik
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Mon Mar 23 22:41:25 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathEvaluator is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathException is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathNSResolver is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathExpression is a phantom class!
+     [java] Warning: org.apache.xpath.XPath is a phantom class!
+     [java] Warning: org.apache.xml.utils.PrefixResolver is a phantom class!
+     [java] Warning: org.apache.xpath.XPathContext is a phantom class!
+     [java] Warning: org.apache.xpath.objects.XObject is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathResult is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.4 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 36.6 seconds.
+     [java] [Spark] Solution found in 36.6 seconds.
+     [java] init reachables: 14354
+     [java] [CGrex] Time To build Demand CG: in 833.407936 ms.
+     [java] Query counter: 0
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59481.655176 ms.
+     [java] Query counter: 1
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57297.539864 ms.
+     [java] Query counter: 2
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 67220.791136 ms.
+     [java] Query counter: 3
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56438.512119 ms.
+     [java] Query counter: 4
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54816.438251 ms.
+     [java] Query counter: 5
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 53680.148364 ms.
+     [java] Query counter: 6
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55422.000522 ms.
+     [java] Query counter: 7
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55190.39628 ms.
+     [java] Query counter: 8
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55564.971637 ms.
+     [java] Query counter: 9
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55677.772851 ms.
+     [java] Query counter: 10
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55127.779868 ms.
+     [java] Query counter: 11
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54986.198177 ms.
+     [java] Query counter: 12
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62169.910923 ms.
+     [java] Query counter: 13
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60935.306509 ms.
+     [java] Query counter: 14
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62042.649071 ms.
+     [java] Query counter: 15
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62200.819113 ms.
+     [java] Query counter: 16
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61160.050103 ms.
+     [java] Query counter: 17
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61597.85829 ms.
+     [java] Query counter: 18
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 63657.330866 ms.
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60726.169299 ms.
+     [java] Query counter: 21
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61516.0416 ms.
+     [java] Query counter: 22
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60668.454419 ms.
+     [java] Query counter: 23
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60814.149133 ms.
+     [java] Query counter: 24
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61350.428574 ms.
+     [java] Query counter: 25
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61429.642346 ms.
+     [java] Query counter: 26
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60492.019971 ms.
+     [java] Query counter: 27
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61381.879081 ms.
+     [java] Query counter: 28
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62094.35816 ms.
+     [java] Query counter: 29
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60332.019318 ms.
+     [java] Query counter: 30
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61686.86982 ms.
+     [java] Query counter: 31
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59950.609013 ms.
+     [java] Query counter: 32
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59773.714661 ms.
+     [java] Query counter: 33
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60035.21649 ms.
+     [java] Query counter: 34
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59500.886532 ms.
+     [java] Query counter: 35
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59704.885447 ms.
+     [java] Query counter: 36
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59459.765311 ms.
+     [java] Query counter: 37
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59929.374749 ms.
+     [java] Query counter: 38
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60163.882364 ms.
+     [java] Query counter: 39
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60301.927153 ms.
+     [java] Query counter: 40
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60912.048036 ms.
+     [java] Query counter: 41
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59653.02641 ms.
+     [java] Query counter: 42
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60017.928747 ms.
+     [java] Query counter: 43
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61484.250129 ms.
+     [java] Query counter: 44
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60105.91354 ms.
+     [java] Query counter: 45
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59162.334961 ms.
+     [java] Query counter: 46
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61892.683421 ms.
+     [java] Query counter: 47
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60580.604841 ms.
+     [java] Query counter: 48
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60414.544825 ms.
+     [java] Query counter: 49
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 63779.188892 ms.
+     [java] Query counter: 50
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60844.22733 ms.
+     [java] Query counter: 51
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60286.776133 ms.
+     [java] Query counter: 52
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62112.256245 ms.
+     [java] Query counter: 53
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60067.501113 ms.
+     [java] Query counter: 54
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62584.260333 ms.
+     [java] Query counter: 55
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60383.375081 ms.
+     [java] Query counter: 56
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60865.780559 ms.
+     [java] Query counter: 57
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60796.058425 ms.
+     [java] Query counter: 58
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60877.105324 ms.
+     [java] Query counter: 59
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61260.118694 ms.
+     [java] Query counter: 60
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 63161.804656 ms.
+     [java] Query counter: 61
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59530.135153 ms.
+     [java] Query counter: 62
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60959.232387 ms.
+     [java] Query counter: 63
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 63546.040878 ms.
+     [java] Query counter: 64
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61477.257619 ms.
+     [java] Query counter: 65
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58422.748172 ms.
+     [java] Query counter: 66
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62682.562007 ms.
+     [java] Query counter: 67
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59650.936829 ms.
+     [java] Query counter: 68
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59326.90889 ms.
+     [java] Query counter: 69
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62201.930847 ms.
+     [java] Query counter: 70
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59338.740772 ms.
+     [java] Query counter: 71
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60072.546518 ms.
+     [java] Query counter: 72
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 63097.72416 ms.
+     [java] Query counter: 73
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61524.404327 ms.
+     [java] Query counter: 74
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62544.402541 ms.
+     [java] Query counter: 75
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 63960.396992 ms.
+     [java] Query counter: 76
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58020.754943 ms.
+     [java] Query counter: 77
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 62044.768543 ms.
+     [java] Query counter: 78
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59794.236614 ms.
+     [java] Query counter: 79
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59691.063649 ms.
+     [java] Query counter: 80
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59289.165894 ms.
+     [java] Query counter: 81
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59747.22903 ms.
+     [java] Query counter: 82
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57977.264289 ms.
+     [java] Query counter: 83
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59695.783033 ms.
+     [java] Query counter: 84
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60883.613763 ms.
+     [java] Query counter: 85
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61351.071321 ms.
+     [java] Query counter: 86
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61757.558908 ms.
+     [java] Query counter: 87
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61586.401317 ms.
+     [java] Query counter: 88
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61229.974008 ms.
+     [java] Query counter: 89
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61073.876366 ms.
+     [java] Query counter: 90
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60810.187527 ms.
+     [java] Query counter: 91
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57616.967425 ms.
+     [java] Query counter: 92
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60102.993477 ms.
+     [java] Query counter: 93
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60076.989541 ms.
+     [java] Query counter: 94
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59637.886913 ms.
+     [java] Query counter: 95
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61163.409329 ms.
+     [java] Query counter: 96
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61468.494075 ms.
+     [java] Query counter: 97
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60073.012498 ms.
+     [java] Query counter: 98
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61686.811501 ms.
+     [java] Query counter: 99
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61510.057811 ms.
+     [java] Query counter: 100
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60831.649892 ms.
+     [java] Query counter: 101
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60539.032654 ms.
+     [java] Query counter: 102
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59162.787881 ms.
+     [java] Query counter: 103
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 61466.457643 ms.
+     [java] Query counter: 104
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60761.809447 ms.
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 105
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 1
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 0.0
+     [java] Total time w/o look ahead: 6290668.374049
+     [java] Transforming org.dacapo.harness.Batik... 
+     [java] Transforming org.dacapo.harness.MantisHarness... 
+     [java] Transforming org.dacapo.harness.BatikHarness... 
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/Batik.class
+     [java] Writing to sootOutput/org/dacapo/harness/MantisHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/BatikHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Soot finished on Tue Mar 24 00:27:03 CDT 2015
+     [java] Soot has run for 105 min. 37 sec.
+
+BUILD SUCCESSFUL
+Total time: 105 minutes 38 seconds
+analyzing-----sunflow
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Tue Mar 24 00:27:03 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.2 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 26.8 seconds.
+     [java] [Spark] Solution found in 26.8 seconds.
+     [java] init reachables: 11336
+     [java] [CGrex] Time To build Demand CG: in 923.481401 ms.
+     [java] Query counter: 0
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 35260.049132 ms.
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38056.034221 ms.
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38803.121613 ms.
+     [java] Query counter: 17
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38220.33654 ms.
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] Query counter: 21
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38416.085873 ms.
+     [java] Query counter: 22
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37664.692628 ms.
+     [java] Query counter: 23
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36637.794723 ms.
+     [java] Query counter: 24
+     [java] Query counter: 25
+     [java] Query counter: 26
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36770.909416 ms.
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37865.841461 ms.
+     [java] Query counter: 29
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38113.272785 ms.
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37493.884384 ms.
+     [java] Query counter: 32
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37322.349581 ms.
+     [java] Query counter: 33
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37363.784181 ms.
+     [java] Query counter: 36
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36064.681412 ms.
+     [java] Query counter: 37
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37703.615104 ms.
+     [java] Query counter: 38
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37604.004603 ms.
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38306.96292 ms.
+     [java] Query counter: 42
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36972.746676 ms.
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45373.6457 ms.
+     [java] Query counter: 51
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36539.247555 ms.
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38227.352097 ms.
+     [java] Query counter: 54
+     [java] Query counter: 55
+     [java] Query counter: 56
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36844.304294 ms.
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37940.810631 ms.
+     [java] Query counter: 59
+     [java] Query counter: 60
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38458.949216 ms.
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] Query counter: 74
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36490.760105 ms.
+     [java] Query counter: 75
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37479.383378 ms.
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] Query counter: 78
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37193.394985 ms.
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 79
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 52
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 0.0
+     [java] Total time w/o look ahead: 1029085.705896
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Transforming org.dacapo.harness.Sunflow... 
+     [java] Transforming org.dacapo.harness.SunflowHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/Sunflow.class
+     [java] Writing to sootOutput/org/dacapo/harness/SunflowHarness.class
+     [java] Soot finished on Tue Mar 24 00:44:48 CDT 2015
+     [java] Soot has run for 17 min. 44 sec.
+
+BUILD SUCCESSFUL
+Total time: 17 minutes 45 seconds
+analyzing-----fop
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Tue Mar 24 00:44:49 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: org.apache.batik.parser.AWTTransformProducer is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.2 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 37.2 seconds.
+     [java] [Spark] Solution found in 37.2 seconds.
+     [java] init reachables: 13278
+     [java] [CGrex] Time To build Demand CG: in 891.994506 ms.
+     [java] Query counter: 0
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 53447.731658 ms.
+     [java] Query counter: 1
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 51799.520108 ms.
+     [java] Query counter: 2
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 51255.832744 ms.
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52471.323903 ms.
+     [java] Query counter: 7
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52227.775544 ms.
+     [java] Query counter: 8
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52337.782061 ms.
+     [java] Query counter: 9
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 51628.901485 ms.
+     [java] Query counter: 10
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 51850.686601 ms.
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 51504.672697 ms.
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55627.786816 ms.
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52684.155437 ms.
+     [java] Query counter: 17
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52676.148343 ms.
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56608.837829 ms.
+     [java] Query counter: 21
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58133.95272 ms.
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56093.020281 ms.
+     [java] Query counter: 25
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57325.181018 ms.
+     [java] Query counter: 26
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56404.109071 ms.
+     [java] Query counter: 27
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58995.197924 ms.
+     [java] Query counter: 28
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57450.57769 ms.
+     [java] Query counter: 31
+     [java] Query counter: 32
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57114.495009 ms.
+     [java] Query counter: 33
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56659.693389 ms.
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57447.407524 ms.
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59355.497233 ms.
+     [java] Query counter: 38
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57498.909813 ms.
+     [java] Query counter: 41
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56892.704931 ms.
+     [java] Query counter: 42
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57845.493552 ms.
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55819.802715 ms.
+     [java] Query counter: 45
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55586.136826 ms.
+     [java] Query counter: 46
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58594.868804 ms.
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55665.845637 ms.
+     [java] Query counter: 49
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56845.854142 ms.
+     [java] Query counter: 50
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56753.712328 ms.
+     [java] Query counter: 51
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56068.537977 ms.
+     [java] Query counter: 52
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56954.692285 ms.
+     [java] Query counter: 53
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55870.183214 ms.
+     [java] Query counter: 54
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55377.933257 ms.
+     [java] Query counter: 55
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60466.998774 ms.
+     [java] Query counter: 56
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55610.109011 ms.
+     [java] Query counter: 57
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54664.926246 ms.
+     [java] Query counter: 58
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56064.526293 ms.
+     [java] Query counter: 59
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55996.722211 ms.
+     [java] Query counter: 60
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56902.709347 ms.
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56693.023605 ms.
+     [java] Query counter: 64
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56070.691044 ms.
+     [java] Query counter: 65
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55831.43052 ms.
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57090.409683 ms.
+     [java] Query counter: 68
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56424.022777 ms.
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57708.566502 ms.
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56780.802364 ms.
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56580.39406 ms.
+     [java] Query counter: 76
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57446.905574 ms.
+     [java] Query counter: 77
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58599.816222 ms.
+     [java] Query counter: 78
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56870.190199 ms.
+     [java] Query counter: 79
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56638.968826 ms.
+     [java] Query counter: 80
+     [java] Query counter: 81
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55119.863428 ms.
+     [java] Query counter: 82
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56473.07692 ms.
+     [java] Query counter: 83
+     [java] Query counter: 84
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56326.387665 ms.
+     [java] Query counter: 85
+     [java] Query counter: 86
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56788.546645 ms.
+     [java] Query counter: 87
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57085.601878 ms.
+     [java] Query counter: 88
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57061.693321 ms.
+     [java] Query counter: 89
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56385.286636 ms.
+     [java] Query counter: 90
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57631.940767 ms.
+     [java] Query counter: 91
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59655.11634 ms.
+     [java] Query counter: 92
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59708.287697 ms.
+     [java] Query counter: 93
+     [java] Query counter: 94
+     [java] Query counter: 95
+     [java] Query counter: 96
+     [java] Query counter: 97
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58787.640524 ms.
+     [java] Query counter: 98
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59831.911169 ms.
+     [java] Query counter: 99
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59097.351769 ms.
+     [java] Query counter: 100
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58395.09787 ms.
+     [java] Query counter: 101
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] Query counter: 104
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58304.685255 ms.
+     [java] Query counter: 105
+     [java] Query counter: 106
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56405.619808 ms.
+     [java] Query counter: 107
+     [java] Query counter: 108
+     [java] Query counter: 109
+     [java] Query counter: 110
+     [java] Query counter: 111
+     [java] Query counter: 112
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55797.981854 ms.
+     [java] Query counter: 113
+     [java] Query counter: 114
+     [java] Query counter: 115
+     [java] Query counter: 116
+     [java] Query counter: 117
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56887.725737 ms.
+     [java] Query counter: 118
+     [java] Query counter: 119
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55485.869118 ms.
+     [java] Query counter: 120
+     [java] Query counter: 121
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57422.585793 ms.
+     [java] Query counter: 122
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57119.976151 ms.
+     [java] Query counter: 123
+     [java] Query counter: 124
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56453.911424 ms.
+     [java] Query counter: 125
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56654.858975 ms.
+     [java] Query counter: 126
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56163.132618 ms.
+     [java] Query counter: 127
+     [java] Query counter: 128
+     [java] Query counter: 129
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58207.90996 ms.
+     [java] Query counter: 130
+     [java] Query counter: 131
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56798.398039 ms.
+     [java] Query counter: 132
+     [java] Query counter: 133
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55447.952565 ms.
+     [java] Query counter: 134
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57611.360776 ms.
+     [java] Query counter: 135
+     [java] Query counter: 136
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56922.325251 ms.
+     [java] Query counter: 137
+     [java] Query counter: 138
+     [java] Query counter: 139
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56578.766269 ms.
+     [java] Query counter: 140
+     [java] Query counter: 141
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56117.546374 ms.
+     [java] Query counter: 142
+     [java] Query counter: 143
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56470.847587 ms.
+     [java] Query counter: 144
+     [java] Query counter: 145
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56909.164637 ms.
+     [java] Query counter: 146
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56499.711732 ms.
+     [java] Query counter: 147
+     [java] Query counter: 148
+     [java] Query counter: 149
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55761.920495 ms.
+     [java] Query counter: 150
+     [java] Query counter: 151
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58588.016187 ms.
+     [java] Query counter: 152
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55884.702728 ms.
+     [java] Query counter: 153
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56611.098451 ms.
+     [java] Query counter: 154
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56253.212438 ms.
+     [java] Query counter: 155
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55414.729276 ms.
+     [java] Query counter: 156
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55271.129033 ms.
+     [java] Query counter: 157
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57128.222242 ms.
+     [java] Query counter: 158
+     [java] Query counter: 159
+     [java] Query counter: 160
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56265.162631 ms.
+     [java] Query counter: 161
+     [java] Query counter: 162
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55782.912898 ms.
+     [java] Query counter: 163
+     [java] Query counter: 164
+     [java] Query counter: 165
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56464.42149 ms.
+     [java] Query counter: 166
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56200.055887 ms.
+     [java] Query counter: 167
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56231.041882 ms.
+     [java] Query counter: 168
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55688.040708 ms.
+     [java] Query counter: 169
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56240.824551 ms.
+     [java] Query counter: 170
+     [java] Query counter: 171
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56065.956084 ms.
+     [java] Query counter: 172
+     [java] Query counter: 173
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55697.188869 ms.
+     [java] Query counter: 174
+     [java] Query counter: 175
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55518.916128 ms.
+     [java] Query counter: 176
+     [java] Query counter: 177
+     [java] Query counter: 178
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56709.298718 ms.
+     [java] Query counter: 179
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55918.558081 ms.
+     [java] Query counter: 180
+     [java] Query counter: 181
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54654.559634 ms.
+     [java] Query counter: 182
+     [java] Query counter: 183
+     [java] Query counter: 184
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 59127.133207 ms.
+     [java] Query counter: 185
+     [java] Query counter: 186
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56136.108301 ms.
+     [java] Query counter: 187
+     [java] Query counter: 188
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57585.912009 ms.
+     [java] Query counter: 189
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56745.718783 ms.
+     [java] Query counter: 190
+     [java] Query counter: 191
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55677.507595 ms.
+     [java] Query counter: 192
+     [java] Query counter: 193
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57227.442053 ms.
+     [java] Query counter: 194
+     [java] Query counter: 195
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57478.903289 ms.
+     [java] Query counter: 196
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55472.341211 ms.
+     [java] Query counter: 197
+     [java] Query counter: 198
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54604.566545 ms.
+     [java] Query counter: 199
+     [java] Query counter: 200
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55229.795006 ms.
+     [java] Query counter: 201
+     [java] Query counter: 202
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54641.863956 ms.
+     [java] Query counter: 203
+     [java] Query counter: 204
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54700.571562 ms.
+     [java] Query counter: 205
+     [java] Query counter: 206
+     [java] Query counter: 207
+     [java] Query counter: 208
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56170.019945 ms.
+     [java] Query counter: 209
+     [java] Query counter: 210
+     [java] Query counter: 211
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60006.363311 ms.
+     [java] Query counter: 212
+     [java] Query counter: 213
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55798.507131 ms.
+     [java] Query counter: 214
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 57099.457062 ms.
+     [java] Query counter: 215
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55606.467486 ms.
+     [java] Query counter: 216
+     [java] Query counter: 217
+     [java] Query counter: 218
+     [java] Query counter: 219
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56893.13718 ms.
+     [java] Query counter: 220
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56661.195814 ms.
+     [java] Query counter: 221
+     [java] Timeout at query 221
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 221
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 93
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 0.0
+     [java] Total time w/o look ahead: 7238864.397744
+     [java] Transforming org.dacapo.harness.Fop... 
+     [java] Transforming org.dacapo.harness.FopHarness... 
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/Fop.class
+     [java] Writing to sootOutput/org/dacapo/harness/FopHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Soot finished on Tue Mar 24 02:46:19 CDT 2015
+     [java] Soot has run for 121 min. 29 sec.
+
+BUILD SUCCESSFUL
+Total time: 121 minutes 30 seconds
+analyzing-----weka
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Tue Mar 24 02:46:20 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: java.awt.Dialog$ModalityType is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.2 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 20.8 seconds.
+     [java] [Spark] Solution found in 20.8 seconds.
+     [java] init reachables: 10312
+     [java] [CGrex] Time To build Demand CG: in 1275.171934 ms.
+     [java] Query counter: 0
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14655.659774 ms.
+     [java] Query counter: 1
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13338.267737 ms.
+     [java] Query counter: 2
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13286.040215 ms.
+     [java] Query counter: 3
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39809.596738 ms.
+     [java] Query counter: 4
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 43189.215332 ms.
+     [java] Query counter: 5
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12543.263218 ms.
+     [java] Query counter: 6
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38148.736304 ms.
+     [java] Query counter: 7
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14686.304593 ms.
+     [java] Query counter: 8
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14868.47245 ms.
+     [java] Query counter: 9
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33771.883841 ms.
+     [java] Query counter: 10
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39940.31385 ms.
+     [java] Query counter: 11
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 15063.418959 ms.
+     [java] Query counter: 12
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12535.342727 ms.
+     [java] Query counter: 13
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13183.426119 ms.
+     [java] Query counter: 14
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33407.88476 ms.
+     [java] Query counter: 15
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 15366.207602 ms.
+     [java] Query counter: 16
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 40554.506618 ms.
+     [java] Query counter: 17
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39278.906208 ms.
+     [java] Query counter: 18
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 15590.344345 ms.
+     [java] Query counter: 19
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 43322.629436 ms.
+     [java] Query counter: 20
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13825.767788 ms.
+     [java] Query counter: 21
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45521.131703 ms.
+     [java] Query counter: 22
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 41903.479976 ms.
+     [java] Query counter: 23
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13012.341513 ms.
+     [java] Query counter: 24
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13187.294697 ms.
+     [java] Query counter: 25
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13163.301353 ms.
+     [java] Query counter: 26
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13641.222743 ms.
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13675.703175 ms.
+     [java] Query counter: 29
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 41528.320256 ms.
+     [java] Query counter: 30
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 36771.356679 ms.
+     [java] Query counter: 31
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13488.773189 ms.
+     [java] Query counter: 32
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39449.866497 ms.
+     [java] Query counter: 33
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 34517.073506 ms.
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13364.266435 ms.
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 35583.343386 ms.
+     [java] Query counter: 38
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 41260.492275 ms.
+     [java] Query counter: 39
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39499.776474 ms.
+     [java] Query counter: 40
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14388.129872 ms.
+     [java] Query counter: 41
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13165.5288 ms.
+     [java] Query counter: 42
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38840.845474 ms.
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] Query counter: 46
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 40074.999762 ms.
+     [java] Query counter: 47
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 34972.630459 ms.
+     [java] Query counter: 48
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13740.478591 ms.
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33352.882933 ms.
+     [java] Query counter: 51
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14080.238136 ms.
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13464.228097 ms.
+     [java] Query counter: 54
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13970.9139 ms.
+     [java] Query counter: 55
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 40470.354086 ms.
+     [java] Query counter: 56
+     [java] Query counter: 57
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 15644.802527 ms.
+     [java] Query counter: 58
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 34587.018295 ms.
+     [java] Query counter: 59
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37881.202282 ms.
+     [java] Query counter: 60
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12216.699065 ms.
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13038.554484 ms.
+     [java] Query counter: 63
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13347.688628 ms.
+     [java] Query counter: 64
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 41318.288031 ms.
+     [java] Query counter: 65
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39074.760904 ms.
+     [java] Query counter: 66
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39701.174571 ms.
+     [java] Query counter: 67
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14429.845373 ms.
+     [java] Query counter: 68
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38728.681281 ms.
+     [java] Query counter: 69
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37615.192267 ms.
+     [java] Query counter: 70
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38502.915421 ms.
+     [java] Query counter: 71
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 17284.681871 ms.
+     [java] Query counter: 72
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 11963.384659 ms.
+     [java] Query counter: 73
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38253.557802 ms.
+     [java] Query counter: 74
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 40845.341366 ms.
+     [java] Query counter: 75
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 15201.063976 ms.
+     [java] Query counter: 76
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39303.115291 ms.
+     [java] Query counter: 77
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14480.4069 ms.
+     [java] Query counter: 78
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14361.95406 ms.
+     [java] Query counter: 79
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12312.792571 ms.
+     [java] Query counter: 80
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 15005.149118 ms.
+     [java] Query counter: 81
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12669.109249 ms.
+     [java] Query counter: 82
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14444.526432 ms.
+     [java] Query counter: 83
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14281.280182 ms.
+     [java] Query counter: 84
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39030.661862 ms.
+     [java] Query counter: 85
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 34268.440141 ms.
+     [java] Query counter: 86
+     [java] Query counter: 87
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37611.783314 ms.
+     [java] Query counter: 88
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39336.703641 ms.
+     [java] Query counter: 89
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14164.850364 ms.
+     [java] Query counter: 90
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13117.345089 ms.
+     [java] Query counter: 91
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12869.542349 ms.
+     [java] Query counter: 92
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12400.119946 ms.
+     [java] Query counter: 93
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12494.196713 ms.
+     [java] Query counter: 94
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12569.719934 ms.
+     [java] Query counter: 95
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12351.123632 ms.
+     [java] Query counter: 96
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12902.234496 ms.
+     [java] Query counter: 97
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38680.896992 ms.
+     [java] Query counter: 98
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13186.422589 ms.
+     [java] Query counter: 99
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14143.202918 ms.
+     [java] Query counter: 100
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14863.167796 ms.
+     [java] Query counter: 101
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33489.149354 ms.
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38791.03013 ms.
+     [java] Query counter: 104
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38804.131098 ms.
+     [java] Query counter: 105
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12888.769445 ms.
+     [java] Query counter: 106
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33523.551145 ms.
+     [java] Query counter: 107
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12813.923474 ms.
+     [java] Query counter: 108
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12973.884318 ms.
+     [java] Query counter: 109
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14304.153623 ms.
+     [java] Query counter: 110
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14545.160597 ms.
+     [java] Query counter: 111
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14821.889852 ms.
+     [java] Query counter: 112
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12896.514006 ms.
+     [java] Query counter: 113
+     [java] Query counter: 114
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12862.469454 ms.
+     [java] Query counter: 115
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12839.834102 ms.
+     [java] Query counter: 116
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12658.177832 ms.
+     [java] Query counter: 117
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33724.317806 ms.
+     [java] Query counter: 118
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12413.756108 ms.
+     [java] Query counter: 119
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12874.667372 ms.
+     [java] Query counter: 120
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39271.741541 ms.
+     [java] Query counter: 121
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38509.694914 ms.
+     [java] Query counter: 122
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12730.652272 ms.
+     [java] Query counter: 123
+     [java] Query counter: 124
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39224.593855 ms.
+     [java] Query counter: 125
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 20146.21594 ms.
+     [java] Query counter: 126
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38093.665265 ms.
+     [java] Query counter: 127
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39154.425085 ms.
+     [java] Query counter: 128
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 33731.206533 ms.
+     [java] Query counter: 129
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12643.976513 ms.
+     [java] Query counter: 130
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 13073.954376 ms.
+     [java] Query counter: 131
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12181.430474 ms.
+     [java] Query counter: 132
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37694.436074 ms.
+     [java] Query counter: 133
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37749.293958 ms.
+     [java] Query counter: 134
+     [java] Query counter: 135
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38259.079805 ms.
+     [java] Query counter: 136
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12844.821958 ms.
+     [java] Query counter: 137
+     [java] Query counter: 138
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12928.585961 ms.
+     [java] Query counter: 139
+     [java] Query counter: 140
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 37912.911832 ms.
+     [java] Query counter: 141
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12632.121306 ms.
+     [java] Query counter: 142
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38528.397152 ms.
+     [java] Query counter: 143
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38450.156197 ms.
+     [java] Query counter: 144
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14615.794578 ms.
+     [java] Query counter: 145
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14572.091745 ms.
+     [java] Query counter: 146
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39366.812499 ms.
+     [java] Query counter: 147
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 40563.235381 ms.
+     [java] Query counter: 148
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 39373.314024 ms.
+     [java] Query counter: 149
+     [java] Query counter: 150
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14222.614692 ms.
+     [java] Query counter: 151
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12790.900435 ms.
+     [java] Query counter: 152
+     [java] Query counter: 153
+     [java] Query counter: 154
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12469.718601 ms.
+     [java] Query counter: 155
+     [java] Query counter: 156
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12372.802995 ms.
+     [java] Query counter: 157
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12808.185663 ms.
+     [java] Query counter: 158
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14515.010884 ms.
+     [java] Query counter: 159
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 14889.424556 ms.
+     [java] Query counter: 160
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12842.504484 ms.
+     [java] Query counter: 161
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38197.078346 ms.
+     [java] Query counter: 162
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12798.693186 ms.
+     [java] Query counter: 163
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 38416.215847 ms.
+     [java] Query counter: 164
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 12227.604852 ms.
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 165
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 21
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 0.0
+     [java] Total time w/o look ahead: 3486791.087633
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Transforming org.dacapo.harness.WekaHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/WekaHarness.class
+     [java] Soot finished on Tue Mar 24 03:44:57 CDT 2015
+     [java] Soot has run for 58 min. 37 sec.
+
+BUILD SUCCESSFUL
+Total time: 58 minutes 37 seconds
+analyzing-----jmeter
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Tue Mar 24 03:44:58 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: javax.swing.DropMode is a phantom class!
+     [java] Warning: org.apache.avalon.excalibur.logger.LogKitLoggerManager is a phantom class!
+     [java] Warning: org.xmlpull.v1.XmlPullParserException is a phantom class!
+     [java] Warning: org.xmlpull.v1.XmlPullParser is a phantom class!
+     [java] Warning: org.xmlpull.v1.XmlPullParserFactory is a phantom class!
+     [java] Warning: javax.swing.JTree$DropLocation is a phantom class!
+     [java] Warning: javax.swing.TransferHandler$DropLocation is a phantom class!
+     [java] Warning: javax.swing.TransferHandler$TransferSupport is a phantom class!
+     [java] Warning: java.text.Normalizer is a phantom class!
+     [java] Warning: java.text.Normalizer$Form is a phantom class!
+     [java] Warning: javax.net.ssl.X509TrustManager is a phantom class!
+     [java] Warning: javax.net.ssl.HostnameVerifier is a phantom class!
+     [java] Warning: javax.net.ssl.TrustManagerFactory is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.protocol.Protocol is a phantom class!
+     [java] Warning: javax.net.ssl.HttpsURLConnection is a phantom class!
+     [java] Warning: javax.net.ssl.SSLSocketFactory is a phantom class!
+     [java] Warning: javax.net.ssl.SSLContext is a phantom class!
+     [java] Warning: javax.net.ssl.X509KeyManager is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.protocol.ProtocolSocketFactory is a phantom class!
+     [java] Warning: javax.net.ssl.KeyManagerFactory is a phantom class!
+     [java] Warning: javax.net.ssl.KeyManager is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.ConnectTimeoutException is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.params.HttpConnectionParams is a phantom class!
+     [java] Warning: javax.net.ssl.SSLSocket is a phantom class!
+     [java] Warning: javax.net.ssl.SSLSession is a phantom class!
+     [java] Warning: javax.net.ssl.HandshakeCompletedListener is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.3 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 44.3 seconds.
+     [java] [Spark] Solution found in 44.3 seconds.
+     [java] init reachables: 19709
+     [java] [CGrex] Time To build Demand CG: in 5334.111202 ms.
+     [java] Query counter: 0
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44896.011707 ms.
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 111061.881615 ms.
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46566.056272 ms.
+     [java] Query counter: 6
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 60998.093894 ms.
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 48584.538789 ms.
+     [java] Query counter: 11
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 115898.267792 ms.
+     [java] Query counter: 12
+     [java] Query counter: 13
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45188.997149 ms.
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 111163.986219 ms.
+     [java] Query counter: 16
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 58457.949856 ms.
+     [java] Query counter: 17
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46177.493522 ms.
+     [java] Query counter: 20
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 43899.217422 ms.
+     [java] Query counter: 21
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 106297.662575 ms.
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 75378.595004 ms.
+     [java] Query counter: 25
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45899.370444 ms.
+     [java] Query counter: 26
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55521.909387 ms.
+     [java] Query counter: 27
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56237.562473 ms.
+     [java] Query counter: 28
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45627.967357 ms.
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44963.737848 ms.
+     [java] Query counter: 32
+     [java] Query counter: 33
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 68879.787788 ms.
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45462.658067 ms.
+     [java] Query counter: 38
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44951.074437 ms.
+     [java] Query counter: 39
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45822.105033 ms.
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] Query counter: 42
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45700.230246 ms.
+     [java] Query counter: 43
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45381.829353 ms.
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 130187.851615 ms.
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44721.072562 ms.
+     [java] Query counter: 51
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 106386.192548 ms.
+     [java] Query counter: 52
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46002.551862 ms.
+     [java] Query counter: 53
+     [java] Query counter: 54
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44791.536201 ms.
+     [java] Query counter: 55
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46960.706945 ms.
+     [java] Query counter: 56
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 53904.258566 ms.
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] Query counter: 59
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 107521.574569 ms.
+     [java] Query counter: 60
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 73199.951545 ms.
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44675.852216 ms.
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45219.480565 ms.
+     [java] Query counter: 72
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44683.781298 ms.
+     [java] Query counter: 73
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56907.631552 ms.
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45092.94101 ms.
+     [java] Query counter: 78
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 107369.879651 ms.
+     [java] Query counter: 79
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 71818.668212 ms.
+     [java] Query counter: 80
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 108241.855199 ms.
+     [java] Query counter: 81
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44431.142887 ms.
+     [java] Query counter: 82
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 130119.705031 ms.
+     [java] Query counter: 83
+     [java] Query counter: 84
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 108880.06436 ms.
+     [java] Query counter: 85
+     [java] Query counter: 86
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44963.052915 ms.
+     [java] Query counter: 87
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 55742.713234 ms.
+     [java] Query counter: 88
+     [java] Query counter: 89
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 53745.837653 ms.
+     [java] Query counter: 90
+     [java] Query counter: 91
+     [java] Query counter: 92
+     [java] Query counter: 93
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 107587.548671 ms.
+     [java] Query counter: 94
+     [java] Query counter: 95
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 109555.004798 ms.
+     [java] Query counter: 96
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 70786.465098 ms.
+     [java] Query counter: 97
+     [java] Query counter: 98
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52162.626967 ms.
+     [java] Query counter: 99
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46391.156936 ms.
+     [java] Query counter: 100
+     [java] Query counter: 101
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] Query counter: 104
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54557.247888 ms.
+     [java] Query counter: 105
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 52165.356085 ms.
+     [java] Query counter: 106
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44217.580043 ms.
+     [java] Query counter: 107
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 71692.890416 ms.
+     [java] Query counter: 108
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46151.164616 ms.
+     [java] Query counter: 109
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44652.418301 ms.
+     [java] Query counter: 110
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 72902.305874 ms.
+     [java] Query counter: 111
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45025.656407 ms.
+     [java] Query counter: 112
+     [java] Query counter: 113
+     [java] Query counter: 114
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 108704.128719 ms.
+     [java] Query counter: 115
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 107795.781925 ms.
+     [java] Query counter: 116
+     [java] Query counter: 117
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 73224.563684 ms.
+     [java] Query counter: 118
+     [java] Query counter: 119
+     [java] Query counter: 120
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 155021.787901 ms.
+     [java] Query counter: 121
+     [java] Query counter: 122
+     [java] Query counter: 123
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 42660.151966 ms.
+     [java] Query counter: 124
+     [java] Query counter: 125
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44151.256666 ms.
+     [java] Query counter: 126
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 107592.113218 ms.
+     [java] Query counter: 127
+     [java] Query counter: 128
+     [java] Query counter: 129
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 69931.620076 ms.
+     [java] Query counter: 130
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 127442.344172 ms.
+     [java] Query counter: 131
+     [java] Query counter: 132
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 70324.850947 ms.
+     [java] Query counter: 133
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44741.385411 ms.
+     [java] Query counter: 134
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56757.512672 ms.
+     [java] Query counter: 135
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 89812.649711 ms.
+     [java] Query counter: 136
+     [java] Query counter: 137
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 74312.197663 ms.
+     [java] Query counter: 138
+     [java] Query counter: 139
+     [java] Query counter: 140
+     [java] Query counter: 141
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 54805.901925 ms.
+     [java] Query counter: 142
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45618.576358 ms.
+     [java] Query counter: 143
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45792.855643 ms.
+     [java] Query counter: 144
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45124.416102 ms.
+     [java] Query counter: 145
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 43287.480484 ms.
+     [java] Query counter: 146
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46127.201093 ms.
+     [java] Query counter: 147
+     [java] Query counter: 148
+     [java] Query counter: 149
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 56434.792163 ms.
+     [java] Query counter: 150
+     [java] Query counter: 151
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 108453.833273 ms.
+     [java] Query counter: 152
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45048.862988 ms.
+     [java] Query counter: 153
+     [java] Query counter: 154
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 75078.000983 ms.
+     [java] Query counter: 155
+     [java] Query counter: 156
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 109283.767721 ms.
+     [java] Query counter: 157
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44373.395389 ms.
+     [java] Query counter: 158
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44343.65704 ms.
+     [java] Query counter: 159
+     [java] Query counter: 160
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 70153.971398 ms.
+     [java] Query counter: 161
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44516.172902 ms.
+     [java] Query counter: 162
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44444.625257 ms.
+     [java] Query counter: 163
+     [java] Query counter: 164
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 107831.995957 ms.
+     [java] Query counter: 165
+     [java] Query counter: 166
+     [java] Query counter: 167
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 75889.280545 ms.
+     [java] Query counter: 168
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 46118.125707 ms.
+     [java] Query counter: 169
+     [java] Query counter: 170
+     [java] Query counter: 171
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 159795.640009 ms.
+     [java] Query counter: 172
+     [java] Query counter: 173
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45008.025324 ms.
+     [java] Query counter: 174
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 108170.495846 ms.
+     [java] Query counter: 175
+     [java] Query counter: 176
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 75230.043013 ms.
+     [java] Query counter: 177
+     [java] Query counter: 178
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45122.442738 ms.
+     [java] Query counter: 179
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44988.862691 ms.
+     [java] Query counter: 180
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44423.313609 ms.
+     [java] Query counter: 181
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 71650.806994 ms.
+     [java] Query counter: 182
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 130604.949487 ms.
+     [java] Query counter: 183
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44646.503303 ms.
+     [java] Query counter: 184
+     [java] Query counter: 185
+     [java] Query counter: 186
+     [java] Query counter: 187
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 108369.645471 ms.
+     [java] Query counter: 188
+     [java] Query counter: 189
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 44775.278689 ms.
+     [java] Query counter: 190
+     [java] [CGrex] Time on PT:  in 0.0 ms.
+     [java] [CGrex] Cut time:true in 45643.858205 ms.
+     [java] Query counter: 191
+     [java] Timeout at query 191
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 191
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 85
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 0.0
+     [java] Total time w/o look ahead: 7224483.805431
+     [java] Transforming org.dacapo.harness.JmeterHarness... 
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Transforming org.dacapo.harness.Jmeter... 
+     [java] Writing to sootOutput/org/dacapo/harness/JmeterHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/Jmeter.class
+     [java] Soot finished on Tue Mar 24 05:46:24 CDT 2015
+     [java] Soot has run for 121 min. 25 sec.
+
+BUILD SUCCESSFUL
+Total time: 121 minutes 26 seconds

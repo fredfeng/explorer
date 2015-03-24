@@ -1,0 +1,1160 @@
+nohup: ignoring input
+analyzing-----batik
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Mon Mar 23 21:22:53 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathEvaluator is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathException is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathNSResolver is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathExpression is a phantom class!
+     [java] Warning: org.apache.xpath.XPath is a phantom class!
+     [java] Warning: org.apache.xml.utils.PrefixResolver is a phantom class!
+     [java] Warning: org.apache.xpath.XPathContext is a phantom class!
+     [java] Warning: org.apache.xpath.objects.XObject is a phantom class!
+     [java] Warning: org.w3c.dom.xpath.XPathResult is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.2 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 32.5 seconds.
+     [java] [Spark] Solution found in 32.5 seconds.
+     [java] init reachables: 14354
+     [java] [CGrex] Time To build Demand CG: in 893.706315 ms.
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] CHA Number**** of reachable methods: 32731
+     [java] init reachables: 32731
+     [java] [CGrex] Time To build Demand CG: in 27738.942083 ms.
+     [java] Query counter: 0
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] Query counter: 17
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] Query counter: 21
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] Query counter: 25
+     [java] Query counter: 26
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] Query counter: 32
+     [java] Query counter: 33
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] Query counter: 38
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] Query counter: 42
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] Query counter: 51
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] Query counter: 54
+     [java] Query counter: 55
+     [java] Query counter: 56
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] Query counter: 59
+     [java] Query counter: 60
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] Query counter: 78
+     [java] Query counter: 79
+     [java] Query counter: 80
+     [java] Query counter: 81
+     [java] Query counter: 82
+     [java] Query counter: 83
+     [java] Query counter: 84
+     [java] Query counter: 85
+     [java] Query counter: 86
+     [java] Query counter: 87
+     [java] Query counter: 88
+     [java] Query counter: 89
+     [java] Query counter: 90
+     [java] Query counter: 91
+     [java] Query counter: 92
+     [java] Query counter: 93
+     [java] Query counter: 94
+     [java] Query counter: 95
+     [java] Query counter: 96
+     [java] Query counter: 97
+     [java] Query counter: 98
+     [java] Query counter: 99
+     [java] Query counter: 100
+     [java] Query counter: 101
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] Query counter: 104
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 105
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 1
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 94138.963628
+     [java] Total time w/o look ahead: 0.0
+     [java] Transforming org.dacapo.harness.Batik... 
+     [java] Transforming org.dacapo.harness.MantisHarness... 
+     [java] Transforming org.dacapo.harness.BatikHarness... 
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/Batik.class
+     [java] Writing to sootOutput/org/dacapo/harness/MantisHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/BatikHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Soot finished on Mon Mar 23 21:26:03 CDT 2015
+     [java] Soot has run for 3 min. 9 sec.
+
+BUILD SUCCESSFUL
+Total time: 3 minutes 10 seconds
+analyzing-----sunflow
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Mon Mar 23 21:26:04 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.3 seconds.
+     [java] [Spark] Type masks in 0.2 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 24.6 seconds.
+     [java] [Spark] Solution found in 24.6 seconds.
+     [java] init reachables: 11336
+     [java] [CGrex] Time To build Demand CG: in 863.985217 ms.
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] CHA Number**** of reachable methods: 28392
+     [java] init reachables: 28392
+     [java] [CGrex] Time To build Demand CG: in 20012.367844 ms.
+     [java] Query counter: 0
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] Query counter: 17
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] Query counter: 21
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] Query counter: 25
+     [java] Query counter: 26
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] Query counter: 32
+     [java] Query counter: 33
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] Query counter: 38
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] Query counter: 42
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] Query counter: 51
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] Query counter: 54
+     [java] Query counter: 55
+     [java] Query counter: 56
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] Query counter: 59
+     [java] Query counter: 60
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] Query counter: 78
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 79
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 52
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 72421.640493
+     [java] Total time w/o look ahead: 0.0
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Transforming org.dacapo.harness.Sunflow... 
+     [java] Transforming org.dacapo.harness.SunflowHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/Sunflow.class
+     [java] Writing to sootOutput/org/dacapo/harness/SunflowHarness.class
+     [java] Soot finished on Mon Mar 23 21:28:34 CDT 2015
+     [java] Soot has run for 2 min. 30 sec.
+
+BUILD SUCCESSFUL
+Total time: 2 minutes 31 seconds
+analyzing-----fop
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Mon Mar 23 21:28:35 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: org.apache.batik.parser.AWTTransformProducer is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.4 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 33.2 seconds.
+     [java] [Spark] Solution found in 33.2 seconds.
+     [java] init reachables: 13278
+     [java] [CGrex] Time To build Demand CG: in 962.936488 ms.
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] CHA Number**** of reachable methods: 30778
+     [java] init reachables: 30778
+     [java] [CGrex] Time To build Demand CG: in 25533.35721 ms.
+     [java] Query counter: 0
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] Query counter: 17
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] Query counter: 21
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] Query counter: 25
+     [java] Query counter: 26
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] Query counter: 32
+     [java] Query counter: 33
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] Query counter: 38
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] Query counter: 42
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] Query counter: 51
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] Query counter: 54
+     [java] Query counter: 55
+     [java] Query counter: 56
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] Query counter: 59
+     [java] Query counter: 60
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] Query counter: 78
+     [java] Query counter: 79
+     [java] Query counter: 80
+     [java] Query counter: 81
+     [java] Query counter: 82
+     [java] Query counter: 83
+     [java] Query counter: 84
+     [java] Query counter: 85
+     [java] Query counter: 86
+     [java] Query counter: 87
+     [java] Query counter: 88
+     [java] Query counter: 89
+     [java] Query counter: 90
+     [java] Query counter: 91
+     [java] Query counter: 92
+     [java] Query counter: 93
+     [java] Query counter: 94
+     [java] Query counter: 95
+     [java] Query counter: 96
+     [java] Query counter: 97
+     [java] Query counter: 98
+     [java] Query counter: 99
+     [java] Query counter: 100
+     [java] Query counter: 101
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] Query counter: 104
+     [java] Query counter: 105
+     [java] Query counter: 106
+     [java] Query counter: 107
+     [java] Query counter: 108
+     [java] Query counter: 109
+     [java] Query counter: 110
+     [java] Query counter: 111
+     [java] Query counter: 112
+     [java] Query counter: 113
+     [java] Query counter: 114
+     [java] Query counter: 115
+     [java] Query counter: 116
+     [java] Query counter: 117
+     [java] Query counter: 118
+     [java] Query counter: 119
+     [java] Query counter: 120
+     [java] Query counter: 121
+     [java] Query counter: 122
+     [java] Query counter: 123
+     [java] Query counter: 124
+     [java] Query counter: 125
+     [java] Query counter: 126
+     [java] Query counter: 127
+     [java] Query counter: 128
+     [java] Query counter: 129
+     [java] Query counter: 130
+     [java] Query counter: 131
+     [java] Query counter: 132
+     [java] Query counter: 133
+     [java] Query counter: 134
+     [java] Query counter: 135
+     [java] Query counter: 136
+     [java] Query counter: 137
+     [java] Query counter: 138
+     [java] Query counter: 139
+     [java] Query counter: 140
+     [java] Query counter: 141
+     [java] Query counter: 142
+     [java] Query counter: 143
+     [java] Query counter: 144
+     [java] Query counter: 145
+     [java] Query counter: 146
+     [java] Query counter: 147
+     [java] Query counter: 148
+     [java] Query counter: 149
+     [java] Query counter: 150
+     [java] Query counter: 151
+     [java] Query counter: 152
+     [java] Query counter: 153
+     [java] Query counter: 154
+     [java] Query counter: 155
+     [java] Query counter: 156
+     [java] Query counter: 157
+     [java] Query counter: 158
+     [java] Query counter: 159
+     [java] Query counter: 160
+     [java] Query counter: 161
+     [java] Query counter: 162
+     [java] Query counter: 163
+     [java] Query counter: 164
+     [java] Query counter: 165
+     [java] Query counter: 166
+     [java] Query counter: 167
+     [java] Query counter: 168
+     [java] Query counter: 169
+     [java] Query counter: 170
+     [java] Query counter: 171
+     [java] Query counter: 172
+     [java] Query counter: 173
+     [java] Query counter: 174
+     [java] Query counter: 175
+     [java] Query counter: 176
+     [java] Query counter: 177
+     [java] Query counter: 178
+     [java] Query counter: 179
+     [java] Query counter: 180
+     [java] Query counter: 181
+     [java] Query counter: 182
+     [java] Query counter: 183
+     [java] Query counter: 184
+     [java] Query counter: 185
+     [java] Query counter: 186
+     [java] Query counter: 187
+     [java] Query counter: 188
+     [java] Query counter: 189
+     [java] Query counter: 190
+     [java] Query counter: 191
+     [java] Query counter: 192
+     [java] Query counter: 193
+     [java] Query counter: 194
+     [java] Query counter: 195
+     [java] Query counter: 196
+     [java] Query counter: 197
+     [java] Query counter: 198
+     [java] Query counter: 199
+     [java] Query counter: 200
+     [java] Query counter: 201
+     [java] Query counter: 202
+     [java] Query counter: 203
+     [java] Query counter: 204
+     [java] Query counter: 205
+     [java] Query counter: 206
+     [java] Query counter: 207
+     [java] Query counter: 208
+     [java] Query counter: 209
+     [java] Query counter: 210
+     [java] Query counter: 211
+     [java] Query counter: 212
+     [java] Query counter: 213
+     [java] Query counter: 214
+     [java] Query counter: 215
+     [java] Query counter: 216
+     [java] Query counter: 217
+     [java] Query counter: 218
+     [java] Query counter: 219
+     [java] Query counter: 220
+     [java] Query counter: 221
+     [java] Query counter: 222
+     [java] Query counter: 223
+     [java] Query counter: 224
+     [java] Query counter: 225
+     [java] Query counter: 226
+     [java] Query counter: 227
+     [java] Query counter: 228
+     [java] Query counter: 229
+     [java] Query counter: 230
+     [java] Query counter: 231
+     [java] Query counter: 232
+     [java] Query counter: 233
+     [java] Query counter: 234
+     [java] Query counter: 235
+     [java] Query counter: 236
+     [java] Query counter: 237
+     [java] Query counter: 238
+     [java] Query counter: 239
+     [java] Query counter: 240
+     [java] Query counter: 241
+     [java] Query counter: 242
+     [java] Query counter: 243
+     [java] Query counter: 244
+     [java] Query counter: 245
+     [java] Query counter: 246
+     [java] Query counter: 247
+     [java] Query counter: 248
+     [java] Query counter: 249
+     [java] Query counter: 250
+     [java] Query counter: 251
+     [java] Query counter: 252
+     [java] Query counter: 253
+     [java] Query counter: 254
+     [java] Query counter: 255
+     [java] Query counter: 256
+     [java] Query counter: 257
+     [java] Query counter: 258
+     [java] Query counter: 259
+     [java] Query counter: 260
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 261
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 97
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 260159.417125
+     [java] Total time w/o look ahead: 0.0
+     [java] Transforming org.dacapo.harness.Fop... 
+     [java] Transforming org.dacapo.harness.FopHarness... 
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/Fop.class
+     [java] Writing to sootOutput/org/dacapo/harness/FopHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Soot finished on Mon Mar 23 21:34:37 CDT 2015
+     [java] Soot has run for 6 min. 2 sec.
+
+BUILD SUCCESSFUL
+Total time: 6 minutes 2 seconds
+analyzing-----weka
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Mon Mar 23 21:34:38 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: java.awt.Dialog$ModalityType is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.2 seconds.
+     [java] [Spark] Type masks in 0.3 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 20.5 seconds.
+     [java] [Spark] Solution found in 20.5 seconds.
+     [java] init reachables: 10312
+     [java] [CGrex] Time To build Demand CG: in 1367.625939 ms.
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] CHA Number**** of reachable methods: 31827
+     [java] init reachables: 31827
+     [java] [CGrex] Time To build Demand CG: in 29452.172585 ms.
+     [java] Query counter: 0
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] Query counter: 17
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] Query counter: 21
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] Query counter: 25
+     [java] Query counter: 26
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] Query counter: 32
+     [java] Query counter: 33
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] Query counter: 38
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] Query counter: 42
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] Query counter: 51
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] Query counter: 54
+     [java] Query counter: 55
+     [java] Query counter: 56
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] Query counter: 59
+     [java] Query counter: 60
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] Query counter: 78
+     [java] Query counter: 79
+     [java] Query counter: 80
+     [java] Query counter: 81
+     [java] Query counter: 82
+     [java] Query counter: 83
+     [java] Query counter: 84
+     [java] Query counter: 85
+     [java] Query counter: 86
+     [java] Query counter: 87
+     [java] Query counter: 88
+     [java] Query counter: 89
+     [java] Query counter: 90
+     [java] Query counter: 91
+     [java] Query counter: 92
+     [java] Query counter: 93
+     [java] Query counter: 94
+     [java] Query counter: 95
+     [java] Query counter: 96
+     [java] Query counter: 97
+     [java] Query counter: 98
+     [java] Query counter: 99
+     [java] Query counter: 100
+     [java] Query counter: 101
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] Query counter: 104
+     [java] Query counter: 105
+     [java] Query counter: 106
+     [java] Query counter: 107
+     [java] Query counter: 108
+     [java] Query counter: 109
+     [java] Query counter: 110
+     [java] Query counter: 111
+     [java] Query counter: 112
+     [java] Query counter: 113
+     [java] Query counter: 114
+     [java] Query counter: 115
+     [java] Query counter: 116
+     [java] Query counter: 117
+     [java] Query counter: 118
+     [java] Query counter: 119
+     [java] Query counter: 120
+     [java] Query counter: 121
+     [java] Query counter: 122
+     [java] Query counter: 123
+     [java] Query counter: 124
+     [java] Query counter: 125
+     [java] Query counter: 126
+     [java] Query counter: 127
+     [java] Query counter: 128
+     [java] Query counter: 129
+     [java] Query counter: 130
+     [java] Query counter: 131
+     [java] Query counter: 132
+     [java] Query counter: 133
+     [java] Query counter: 134
+     [java] Query counter: 135
+     [java] Query counter: 136
+     [java] Query counter: 137
+     [java] Query counter: 138
+     [java] Query counter: 139
+     [java] Query counter: 140
+     [java] Query counter: 141
+     [java] Query counter: 142
+     [java] Query counter: 143
+     [java] Query counter: 144
+     [java] Query counter: 145
+     [java] Query counter: 146
+     [java] Query counter: 147
+     [java] Query counter: 148
+     [java] Query counter: 149
+     [java] Query counter: 150
+     [java] Query counter: 151
+     [java] Query counter: 152
+     [java] Query counter: 153
+     [java] Query counter: 154
+     [java] Query counter: 155
+     [java] Query counter: 156
+     [java] Query counter: 157
+     [java] Query counter: 158
+     [java] Query counter: 159
+     [java] Query counter: 160
+     [java] Query counter: 161
+     [java] Query counter: 162
+     [java] Query counter: 163
+     [java] Query counter: 164
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 165
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 21
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 199912.461218
+     [java] Total time w/o look ahead: 0.0
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Transforming org.dacapo.harness.WekaHarness... 
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/WekaHarness.class
+     [java] Soot finished on Mon Mar 23 21:39:43 CDT 2015
+     [java] Soot has run for 5 min. 4 sec.
+
+BUILD SUCCESSFUL
+Total time: 5 minutes 5 seconds
+analyzing-----jmeter
+Buildfile: /home/yufeng/research/CallsiteResolver/build.xml
+
+observe:
+     [java] Soot started on Mon Mar 23 21:39:44 CDT 2015
+     [java] Warning: javax.crypto.Cipher is a phantom class!
+     [java] Warning: javax.crypto.NoSuchPaddingException is a phantom class!
+     [java] Warning: javax.crypto.IllegalBlockSizeException is a phantom class!
+     [java] Warning: javax.crypto.BadPaddingException is a phantom class!
+     [java] Warning: javax.crypto.SecretKey is a phantom class!
+     [java] Warning: javax.swing.DropMode is a phantom class!
+     [java] Warning: org.apache.avalon.excalibur.logger.LogKitLoggerManager is a phantom class!
+     [java] Warning: org.xmlpull.v1.XmlPullParserException is a phantom class!
+     [java] Warning: org.xmlpull.v1.XmlPullParser is a phantom class!
+     [java] Warning: org.xmlpull.v1.XmlPullParserFactory is a phantom class!
+     [java] Warning: javax.swing.JTree$DropLocation is a phantom class!
+     [java] Warning: javax.swing.TransferHandler$DropLocation is a phantom class!
+     [java] Warning: javax.swing.TransferHandler$TransferSupport is a phantom class!
+     [java] Warning: java.text.Normalizer is a phantom class!
+     [java] Warning: java.text.Normalizer$Form is a phantom class!
+     [java] Warning: javax.net.ssl.X509TrustManager is a phantom class!
+     [java] Warning: javax.net.ssl.HostnameVerifier is a phantom class!
+     [java] Warning: javax.net.ssl.TrustManagerFactory is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.protocol.Protocol is a phantom class!
+     [java] Warning: javax.net.ssl.HttpsURLConnection is a phantom class!
+     [java] Warning: javax.net.ssl.SSLSocketFactory is a phantom class!
+     [java] Warning: javax.net.ssl.SSLContext is a phantom class!
+     [java] Warning: javax.net.ssl.X509KeyManager is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.protocol.ProtocolSocketFactory is a phantom class!
+     [java] Warning: javax.net.ssl.KeyManagerFactory is a phantom class!
+     [java] Warning: javax.net.ssl.KeyManager is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.ConnectTimeoutException is a phantom class!
+     [java] Warning: org.apache.commons.httpclient.params.HttpConnectionParams is a phantom class!
+     [java] Warning: javax.net.ssl.SSLSocket is a phantom class!
+     [java] Warning: javax.net.ssl.SSLSession is a phantom class!
+     [java] Warning: javax.net.ssl.HandshakeCompletedListener is a phantom class!
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] [Spark] Pointer Assignment Graph in 1.3 seconds.
+     [java] [Spark] Type masks in 0.2 seconds.
+     [java] [Spark] Pointer Graph simplified in 0.0 seconds.
+     [java] [Spark] Propagation in 39.2 seconds.
+     [java] [Spark] Solution found in 39.2 seconds.
+     [java] init reachables: 19709
+     [java] [CGrex] Time To build Demand CG: in 4549.570235 ms.
+     [java] [Call Graph] For information on where the call graph may be incomplete, use the verbose option to the cg phase.
+     [java] CHA Number**** of reachable methods: 32679
+     [java] init reachables: 32679
+     [java] [CGrex] Time To build Demand CG: in 30769.673784 ms.
+     [java] Query counter: 0
+     [java] Query counter: 1
+     [java] Query counter: 2
+     [java] Query counter: 3
+     [java] Query counter: 4
+     [java] Query counter: 5
+     [java] Query counter: 6
+     [java] Query counter: 7
+     [java] Query counter: 8
+     [java] Query counter: 9
+     [java] Query counter: 10
+     [java] Query counter: 11
+     [java] Query counter: 12
+     [java] Query counter: 13
+     [java] Query counter: 14
+     [java] Query counter: 15
+     [java] Query counter: 16
+     [java] Query counter: 17
+     [java] Query counter: 18
+     [java] Query counter: 19
+     [java] Query counter: 20
+     [java] Query counter: 21
+     [java] Query counter: 22
+     [java] Query counter: 23
+     [java] Query counter: 24
+     [java] Query counter: 25
+     [java] Query counter: 26
+     [java] Query counter: 27
+     [java] Query counter: 28
+     [java] Query counter: 29
+     [java] Query counter: 30
+     [java] Query counter: 31
+     [java] Query counter: 32
+     [java] Query counter: 33
+     [java] Query counter: 34
+     [java] Query counter: 35
+     [java] Query counter: 36
+     [java] Query counter: 37
+     [java] Query counter: 38
+     [java] Query counter: 39
+     [java] Query counter: 40
+     [java] Query counter: 41
+     [java] Query counter: 42
+     [java] Query counter: 43
+     [java] Query counter: 44
+     [java] Query counter: 45
+     [java] Query counter: 46
+     [java] Query counter: 47
+     [java] Query counter: 48
+     [java] Query counter: 49
+     [java] Query counter: 50
+     [java] Query counter: 51
+     [java] Query counter: 52
+     [java] Query counter: 53
+     [java] Query counter: 54
+     [java] Query counter: 55
+     [java] Query counter: 56
+     [java] Query counter: 57
+     [java] Query counter: 58
+     [java] Query counter: 59
+     [java] Query counter: 60
+     [java] Query counter: 61
+     [java] Query counter: 62
+     [java] Query counter: 63
+     [java] Query counter: 64
+     [java] Query counter: 65
+     [java] Query counter: 66
+     [java] Query counter: 67
+     [java] Query counter: 68
+     [java] Query counter: 69
+     [java] Query counter: 70
+     [java] Query counter: 71
+     [java] Query counter: 72
+     [java] Query counter: 73
+     [java] Query counter: 74
+     [java] Query counter: 75
+     [java] Query counter: 76
+     [java] Query counter: 77
+     [java] Query counter: 78
+     [java] Query counter: 79
+     [java] Query counter: 80
+     [java] Query counter: 81
+     [java] Query counter: 82
+     [java] Query counter: 83
+     [java] Query counter: 84
+     [java] Query counter: 85
+     [java] Query counter: 86
+     [java] Query counter: 87
+     [java] Query counter: 88
+     [java] Query counter: 89
+     [java] Query counter: 90
+     [java] Query counter: 91
+     [java] Query counter: 92
+     [java] Query counter: 93
+     [java] Query counter: 94
+     [java] Query counter: 95
+     [java] Query counter: 96
+     [java] Query counter: 97
+     [java] Query counter: 98
+     [java] Query counter: 99
+     [java] Query counter: 100
+     [java] Query counter: 101
+     [java] Query counter: 102
+     [java] Query counter: 103
+     [java] Query counter: 104
+     [java] Query counter: 105
+     [java] Query counter: 106
+     [java] Query counter: 107
+     [java] Query counter: 108
+     [java] Query counter: 109
+     [java] Query counter: 110
+     [java] Query counter: 111
+     [java] Query counter: 112
+     [java] Query counter: 113
+     [java] Query counter: 114
+     [java] Query counter: 115
+     [java] Query counter: 116
+     [java] Query counter: 117
+     [java] Query counter: 118
+     [java] Query counter: 119
+     [java] Query counter: 120
+     [java] Query counter: 121
+     [java] Query counter: 122
+     [java] Query counter: 123
+     [java] Query counter: 124
+     [java] Query counter: 125
+     [java] Query counter: 126
+     [java] Query counter: 127
+     [java] Query counter: 128
+     [java] Query counter: 129
+     [java] Query counter: 130
+     [java] Query counter: 131
+     [java] Query counter: 132
+     [java] Query counter: 133
+     [java] Query counter: 134
+     [java] Query counter: 135
+     [java] Query counter: 136
+     [java] Query counter: 137
+     [java] Query counter: 138
+     [java] Query counter: 139
+     [java] Query counter: 140
+     [java] Query counter: 141
+     [java] Query counter: 142
+     [java] Query counter: 143
+     [java] Query counter: 144
+     [java] Query counter: 145
+     [java] Query counter: 146
+     [java] Query counter: 147
+     [java] Query counter: 148
+     [java] Query counter: 149
+     [java] Query counter: 150
+     [java] Query counter: 151
+     [java] Query counter: 152
+     [java] Query counter: 153
+     [java] Query counter: 154
+     [java] Query counter: 155
+     [java] Query counter: 156
+     [java] Query counter: 157
+     [java] Query counter: 158
+     [java] Query counter: 159
+     [java] Query counter: 160
+     [java] Query counter: 161
+     [java] Query counter: 162
+     [java] Query counter: 163
+     [java] Query counter: 164
+     [java] Query counter: 165
+     [java] Query counter: 166
+     [java] Query counter: 167
+     [java] Query counter: 168
+     [java] Query counter: 169
+     [java] Query counter: 170
+     [java] Query counter: 171
+     [java] Query counter: 172
+     [java] Query counter: 173
+     [java] Query counter: 174
+     [java] Query counter: 175
+     [java] Query counter: 176
+     [java] Query counter: 177
+     [java] Query counter: 178
+     [java] Query counter: 179
+     [java] Query counter: 180
+     [java] Query counter: 181
+     [java] Query counter: 182
+     [java] Query counter: 183
+     [java] Query counter: 184
+     [java] Query counter: 185
+     [java] Query counter: 186
+     [java] Query counter: 187
+     [java] Query counter: 188
+     [java] Query counter: 189
+     [java] Query counter: 190
+     [java] Query counter: 191
+     [java] Query counter: 192
+     [java] Query counter: 193
+     [java] Query counter: 194
+     [java] Query counter: 195
+     [java] Query counter: 196
+     [java] Query counter: 197
+     [java] Query counter: 198
+     [java] Query counter: 199
+     [java] Query counter: 200
+     [java] Query counter: 201
+     [java] Query counter: 202
+     [java] Query counter: 203
+     [java] Query counter: 204
+     [java] Query counter: 205
+     [java] Query counter: 206
+     [java] Query counter: 207
+     [java] Query counter: 208
+     [java] Query counter: 209
+     [java] Query counter: 210
+     [java] Query counter: 211
+     [java] Query counter: 212
+     [java] Query counter: 213
+     [java] Query counter: 214
+     [java] Query counter: 215
+     [java] Query counter: 216
+     [java] Query counter: 217
+     [java] Query counter: 218
+     [java] Query counter: 219
+     [java] Query counter: 220
+     [java] Query counter: 221
+     [java] Query counter: 222
+     [java] Query counter: 223
+     [java] Query counter: 224
+     [java] Query counter: 225
+     [java] Query counter: 226
+     [java] Query counter: 227
+     [java] Query counter: 228
+     [java] Query counter: 229
+     [java] Query counter: 230
+     [java] Query counter: 231
+     [java] Query counter: 232
+     [java] Query counter: 233
+     [java] Query counter: 234
+     [java] Query counter: 235
+     [java] Query counter: 236
+     [java] Query counter: 237
+     [java] Query counter: 238
+     [java] Query counter: 239
+     [java] Query counter: 240
+     [java] Query counter: 241
+     [java] Query counter: 242
+     [java] Query counter: 243
+     [java] Query counter: 244
+     [java] Query counter: 245
+     [java] Query counter: 246
+     [java] Query counter: 247
+     [java] Query counter: 248
+     [java] Query counter: 249
+     [java] Query counter: 250
+     [java] Query counter: 251
+     [java] Query counter: 252
+     [java] Query counter: 253
+     [java] Query counter: 254
+     [java] Query counter: 255
+     [java] Query counter: 256
+     [java] Query counter: 257
+     [java] Query counter: 258
+     [java] Query counter: 259
+     [java] Query counter: 260
+     [java] Query counter: 261
+     [java] Query counter: 262
+     [java] Query counter: 263
+     [java] Query counter: 264
+     [java] Query counter: 265
+     [java] Query counter: 266
+     [java] Query counter: 267
+     [java] Query counter: 268
+     [java] Query counter: 269
+     [java] Query counter: 270
+     [java] Query counter: 271
+     [java] Query counter: 272
+     [java] Query counter: 273
+     [java] Query counter: 274
+     [java] Query counter: 275
+     [java] Query counter: 276
+     [java] Query counter: 277
+     [java] Query counter: 278
+     [java] Query counter: 279
+     [java] Query counter: 280
+     [java] Query counter: 281
+     [java] Query counter: 282
+     [java] Query counter: 283
+     [java] Query counter: 284
+     [java] Query counter: 285
+     [java] Query counter: 286
+     [java] Query counter: 287
+     [java] Query counter: 288
+     [java] Query counter: 289
+     [java] Query counter: 290
+     [java] Query counter: 291
+     [java] Query counter: 292
+     [java] Query counter: 293
+     [java] Query counter: 294
+     [java] Query counter: 295
+     [java] Query counter: 296
+     [java] Query counter: 297
+     [java] Query counter: 298
+     [java] Query counter: 299
+     [java] Query counter: 300
+     [java] ----------ObserverExp report-------------------------
+     [java] Total queries: 300
+     [java] Total refutations(Explorer): 0
+     [java] Total refutations(cipa): 116
+     [java] Total time on Explorer: 0.0
+     [java] Total time on no Ci: 0.0
+     [java] Total time on no cut: 0.0
+     [java] Total time on CHA: 364947.689922
+     [java] Total time w/o look ahead: 0.0
+     [java] Transforming org.dacapo.harness.JmeterHarness... 
+     [java] Transforming org.dacapo.harness.ChordHarness... 
+     [java] Transforming org.dacapo.harness.Jmeter... 
+     [java] Writing to sootOutput/org/dacapo/harness/JmeterHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/ChordHarness.class
+     [java] Writing to sootOutput/org/dacapo/harness/Jmeter.class
+     [java] Soot finished on Mon Mar 23 21:47:38 CDT 2015
+     [java] Soot has run for 7 min. 54 sec.
+
+BUILD SUCCESSFUL
+Total time: 7 minutes 55 seconds
