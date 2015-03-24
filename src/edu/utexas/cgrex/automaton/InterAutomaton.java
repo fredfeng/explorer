@@ -227,6 +227,9 @@ public class InterAutomaton extends Automaton {
 									masterNextState.getId() + "@"
 											+ slaveNextState.getId(),
 									masterNextState, slaveNextState);
+							statePairs.put(new Pair<AutoState, AutoState>(
+									masterNextState, slaveNextState),
+									newInterSt);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
 							addToSTEMap(interSt.getSlaveState().getId() + "$"
