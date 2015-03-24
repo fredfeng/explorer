@@ -214,9 +214,6 @@ public class ObserverHarness extends SceneTransformer {
 		CallGraph cicg = Scene.v().getCallGraph();
 		SootMethod main = Scene.v().getMainMethod();
 		QueryManager qm = new QueryManager(cicg, main);
-		if(currType == RunType.CHA)
-			qm = new QueryManager(SootUtils.getCha(), main);
-
 		QueueReader<MethodOrMethodContext> queue = Scene.v()
 				.getReachableMethods().listener();
 		Set<String> list = new HashSet<String>(Arrays.asList(include));
@@ -359,7 +356,10 @@ public class ObserverHarness extends SceneTransformer {
 			kobj.retainAll(pairs);
 			System.out.println("Valid query by 1obj: " + kobj.size());
 		}
-
+		
+		if(currType == RunType.CHA)
+			qm = new QueryManager(SootUtils.getCha(), main);
+		
 		for (String partial : queries) {
 			String qq = main.getSignature() + ".*" + partial;
 			String regx = qm.getValidExprBySig(qq);
