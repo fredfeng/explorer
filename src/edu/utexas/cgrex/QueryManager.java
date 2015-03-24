@@ -439,6 +439,7 @@ public class QueryManager {
 		// dump automaton of the call graph.
 		// cgAuto.validate();
 		// cgAuto.dump();
+		cgAuto.buildCGStatesSCC();
 	}
 	
 	private void buildCGAutomaton() {
@@ -469,7 +470,6 @@ public class QueryManager {
 
 		Set<CGAutoState> reachableState = new HashSet<CGAutoState>();
 		Set<SootMethod> visited = new HashSet<SootMethod>();
-
 
 		while (worklist.size() > 0) {
 			SootMethod worker = worklist.remove(0);
@@ -517,7 +517,7 @@ public class QueryManager {
 			}
 
 		}
-
+		
 		// only add reachable methods.
 		for (CGAutoState rs : reachableState)
 			cgAuto.addStates(rs);
@@ -525,6 +525,7 @@ public class QueryManager {
 		// dump automaton of the call graph.
 		// cgAuto.validate();
 		// cgAuto.dump();
+		cgAuto.buildCGStatesSCC();
 	}
 	
 	public boolean isReachable(String m) {

@@ -17,13 +17,12 @@ public class CGAutomaton extends Automaton {
 
 	public Map<AutoState, Map<AutoState, Boolean>> AnnotTwoSteps = new HashMap<AutoState, Map<AutoState, Boolean>>();
 
+	
 	// this building method fills the SCC-related fields of the states in
 	// the automaton so that we can do some SCC analysis
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void buildCGStatesSCC() {
 
-		Set roots = initStates;
-		// Set roots = states;
 		Map nodeToPreds = new HashMap<Object, Set<Object>>();
 		Map nodeToSuccs = new HashMap<Object, Set<Object>>();
 
@@ -139,7 +138,7 @@ public class CGAutomaton extends Automaton {
 	public Map<AutoState, Map<AutoState, Boolean>> annotateOneStep(
 			Map<AutoState, Set<AutoEdge>> regExprAnnots) {
 
-		buildCGStatesSCC();
+//		buildCGStatesSCC();
 
 		for (AutoState stateInReg : regExprAnnots.keySet()) {
 			// I am in some RegState(Master State) of the RegAutomaton
@@ -189,7 +188,9 @@ public class CGAutomaton extends Automaton {
 			assert (out != null);
 
 			for (AutoEdge e : keyEdges) {
-				if (out.contains(e)) {
+//				if (out.contains(e)) {
+				if (containsEdge(out, e)) {
+
 					outEdgsOfSCCAnnot = true;
 					break;
 				}
@@ -220,7 +221,8 @@ public class CGAutomaton extends Automaton {
 			assert (in != null);
 
 			for (AutoEdge e : keyEdges) {
-				if (in.contains(e)) {
+//				if (in.contains(e)) {
+				if (containsEdge(in, e)) {
 					edgsInSCCAnnot = true;
 					break;
 				}
@@ -245,7 +247,7 @@ public class CGAutomaton extends Automaton {
 			Map<AutoState, AnnotTwoStepsWrapper> regExprAnnots) {
 		if(debug)
 			System.out.println("In CGAutomaton annotateTwoSteps method...");
-		buildCGStatesSCC();
+//		buildCGStatesSCC();
 
 		for (AutoState stateInReg : regExprAnnots.keySet()) {
 			// I am in some RegState(Master State) of the RegAutomaton

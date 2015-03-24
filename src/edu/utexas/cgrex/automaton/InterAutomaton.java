@@ -8,8 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.cgrex.utils.CutEntity;
-import edu.utexas.cgrex.utils.StringUtil;
+import chord.util.tuple.object.Pair;
 
 public class InterAutomaton extends Automaton {
 
@@ -20,6 +19,9 @@ public class InterAutomaton extends Automaton {
 	protected Automaton slaveAutomaton;
 
 	protected Map<String, Set<SrcTgtEdgeWrapper>> STEMap = new HashMap<String, Set<SrcTgtEdgeWrapper>>();
+
+	/*<master, slave> pairs to the actual state.*/
+	Map<Pair<AutoState, AutoState>, InterAutoState> statePairs = new HashMap<Pair<AutoState, AutoState>, InterAutoState>();
 
 	// master: reg; slave: callgraph
 	public InterAutomaton(InterAutoOpts options, Automaton masterAutomaton,
@@ -48,15 +50,16 @@ public class InterAutomaton extends Automaton {
 	// otherwise, return null
 	public InterAutoState containMasterandSlaveState(AutoState master,
 			AutoState slave) {
-		for (AutoState stat : states) {
-			InterAutoState s = (InterAutoState) stat;
-			if (s.hasMasterandSlaveState(master, slave)) {
-				return s;
-			}
-		}
-		return null;
+//		for (AutoState stat : states) {
+//			InterAutoState s = (InterAutoState) stat;
+//			if (s.hasMasterandSlaveState(master, slave)) {
+//				return s;
+//			}
+//		}
+//		return null;
+		return statePairs.get(new Pair<AutoState, AutoState>(master, slave));
 	}
-
+	
 	// refine an edge in InterAutomaton
 	// by refining all edges in InterAutomaton that share the same
 	// src slave state and tgt slave state
@@ -110,7 +113,7 @@ public class InterAutomaton extends Automaton {
 								.annotateOneStep(regExprOpts);
 
 						debugAnnot = annots;
-
+						
 						intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
 								annots);
 					} else if (options.twoStep()) {
@@ -121,7 +124,6 @@ public class InterAutomaton extends Automaton {
 								.annotateTwoSteps(regExprOpts);
 						// System.out.println("master:" + regExprOpts);
 						debugAnnot = annots;
-
 						intersectAnnot(masterInitSt, slaveInitSt, interInitSt,
 								annots);
 					}
@@ -302,7 +304,7 @@ public class InterAutomaton extends Automaton {
 			}
 		}
 	}
-
+	
 	// this is the currently in-use method for intersection automaton
 	// generation which annotates the states on the fly
 	protected void intersectAnnot(AutoState masterSt, AutoState slaveSt,
@@ -325,9 +327,7 @@ public class InterAutomaton extends Automaton {
 			RegAutoState masterNextState = (RegAutoState) masterNxtSt;
 			for (AutoEdge masterNextEdge : masterSt
 					.outgoingStatesLookup(masterNextState)) {
-
 				if (masterNextEdge.isDotEdge()) {
-
 					for (AutoState slaveNxtSt : slaveSt
 							.getOutgoingStatesKeySet()) {
 						CGAutoState slaveNextState = (CGAutoState) slaveNxtSt;
@@ -352,7 +352,6 @@ public class InterAutomaton extends Automaton {
 							// an edge from the current one to the new one
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
-							
 							//add by yufeng.
 							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
 									slaveSt, slaveNextState);
@@ -372,6 +371,9 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							statePairs.put(new Pair<AutoState, AutoState>(
+									masterNextState, slaveNextState),
+									newInterSt);
 							// add by yufeng
 							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
 									slaveSt, slaveNextState);
@@ -394,7 +396,6 @@ public class InterAutomaton extends Automaton {
 									newInterSt, annots);
 						}
 					}
-
 				} else {
 
 					assert slaveSt instanceof CGAutoState;
@@ -448,6 +449,10 @@ public class InterAutomaton extends Automaton {
 									masterNextState, slaveNextState);
 							InterAutoEdge newInterEdge = new InterAutoEdge(
 									interSt.getId() + "$" + newInterSt.getId());
+							statePairs.put(new Pair<AutoState, AutoState>(
+									masterNextState, slaveNextState),
+									newInterSt);
+
 							// add by yufeng
 							AutoEdge cgEdge = slaveAutomaton.getEdgeBySrc(
 									slaveSt, slaveNextState);
