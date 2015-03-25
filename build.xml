@@ -11,123 +11,26 @@
   <!-- CHA or OTF?-->
   <property name="alg" location="${alg}"/>
 
-        <!--java classname="edu.utexas.cgrex.benchmarks.BenchmarkHarness" -->
-     <target name="deadcode" depends="jar">
-	    <java classname="edu.utexas.cgrex.benchmarks.DeadCodeHarness"
-	          maxmemory="16g"
-	          fork="true"
-	          failonerror="true">
-	          <jvmarg value="-ea" />
-	      <classpath>
-			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
-			<pathelement location="lib/heros-nightly.jar"/>
-			<pathelement location="lib/automaton.jar"/>
-			<pathelement location="lib/chord.jar"/>
-			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
-			<pathelement location="lib/cloning-1.9.0.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/classes"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/dexlib2-2.0.3-dev.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/AXMLPrinter.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/util-2.0.3-dev.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/asm-debug-all-5.0.3.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/polyglot.jar"/>
-			<pathelement location="/home/yufeng/research/others/jasmin/lib/jasminclasses-2.2.1.jar"/>
-			<pathelement location="/home/yufeng/research/others/jasmin/libs/java_cup.jar"/>
-			<pathelement location="lib/objenesis-1.2.jar"/>
-			<pathelement location="lib/soot-infoflow.jar"/>
-			<pathelement location="lib/soot-infoflow-android.jar"/>
-			<pathelement location="lib/axml-2.0.jar"/>
-			<pathelement location="lib/slf4j-api-1.7.5.jar"/>
-			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
-	      </classpath>
-	      <arg value="${target.name}"/>
-		</java>
-	  </target>
-
-     <target name="observe" depends="jar">
+     <!--target name="observe" depends="jar"-->
+     <target name="observe">
 	    <java classname="edu.utexas.cgrex.benchmarks.ObserverHarness"
-	          maxmemory="16g"
+	          maxmemory="40g"
 	          fork="true"
 	          failonerror="true">
 	          <jvmarg value="-ea" />
 	      <classpath>
+		    <pathelement location="lib/soot-trunk.jar"/>
 			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
-			<pathelement location="lib/heros-nightly.jar"/>
 			<pathelement location="lib/automaton.jar"/>
 			<pathelement location="lib/chord.jar"/>
 			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
 			<pathelement location="lib/cloning-1.9.0.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/classes"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/dexlib2-2.0.3-dev.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/AXMLPrinter.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/util-2.0.3-dev.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/asm-debug-all-5.0.3.jar"/>
-			<pathelement location="/home/yufeng/research/others/soot/libs/polyglot.jar"/>
-			<pathelement location="/home/yufeng/research/others/jasmin/lib/jasminclasses-2.2.1.jar"/>
-			<pathelement location="/home/yufeng/research/others/jasmin/libs/java_cup.jar"/>
-			<pathelement location="lib/objenesis-1.2.jar"/>
-			<pathelement location="lib/soot-infoflow.jar"/>
-			<pathelement location="lib/soot-infoflow-android.jar"/>
-			<pathelement location="lib/axml-2.0.jar"/>
-			<pathelement location="lib/slf4j-api-1.7.5.jar"/>
-			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
 	      </classpath>
 	      <arg value="${target.name}"/>
 	      <arg value="${target.type}"/>
 		</java>
 	  </target>
 
-
-
-     <target name="perf" depends="jar">
-	    <java classname="edu.utexas.cgrex.benchmarks.PerfDetectHarness"
-	          maxmemory="16g"
-	          fork="true"
-	          failonerror="true">
-	          <jvmarg value="-ea" />
-	      <classpath>
-			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
-			<pathelement location="lib/heros-nightly.jar"/>
-			<pathelement location="lib/automaton.jar"/>
-			<pathelement location="lib/chord.jar"/>
-			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
-			<pathelement location="lib/cloning-1.9.0.jar"/>
-			<pathelement location="lib/soot-trunk.jar"/>
-			<pathelement location="lib/objenesis-1.2.jar"/>
-			<pathelement location="lib/soot-infoflow.jar"/>
-			<pathelement location="lib/soot-infoflow-android.jar"/>
-			<pathelement location="lib/axml-2.0.jar"/>
-			<pathelement location="lib/slf4j-api-1.7.5.jar"/>
-			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
-	      </classpath>
-	      <arg value="${target.name}"/>
-		</java>
-	  </target>
-
-	<target name="malware" depends="jar">
-	    <java classname="edu.utexas.cgrex.benchmarks.MalwareHarness"
-	          maxmemory="8g"
-	          fork="true"
-	          failonerror="true">
-	          <jvmarg value="-ea" />
-	      <classpath>
-			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
-			<pathelement location="lib/heros-nightly.jar"/>
-			<pathelement location="lib/automaton.jar"/>
-			<pathelement location="lib/chord.jar"/>
-			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
-			<pathelement location="lib/cloning-1.9.0.jar"/>
-			<pathelement location="lib/soot-trunk.jar"/>
-			<pathelement location="lib/objenesis-1.2.jar"/>
-			<pathelement location="lib/soot-infoflow.jar"/>
-			<pathelement location="lib/soot-infoflow-android.jar"/>
-			<pathelement location="lib/axml-2.0.jar"/>
-			<pathelement location="lib/slf4j-api-1.7.5.jar"/>
-			<pathelement location="lib/slf4j-simple-1.7.5.jar"/>
-	      </classpath>
-	      <arg value="${target.loc}"/>
-		</java>
-	  </target>
 
  <target name="init">
     <mkdir dir="build"/>
@@ -148,23 +51,7 @@
 		<pathelement location="lib/chord.jar"/>
 		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
 		<pathelement location="lib/cloning-1.9.0.jar"/>
-		<!--pathelement location="lib/soot-trunk.jar"/-->
-		<pathelement location="/home/yufeng/research/others/soot/classes"/>
-        <pathelement location="/home/yufeng/research/others/soot/libs/dexlib2-2.0.3-dev.jar"/>
-        <pathelement location="/home/yufeng/research/others/soot/libs/AXMLPrinter.jar"/>
-        <pathelement location="/home/yufeng/research/others/soot/libs/util-2.0.3-dev.jar"/>
-        <pathelement location="/home/yufeng/research/others/soot/libs/asm-debug-all-5.0.3.jar"/>
-        <pathelement location="/home/yufeng/research/others/soot/libs/polyglot.jar"/>
-        <pathelement location="/home/yufeng/research/others/jasmin/lib/jasminclasses-2.2.1.jar"/>
-        <pathelement location="/home/yufeng/research/others/jasmin/libs/java_cup.jar"/>
-        <pathelement location="/home/yufeng/research/others/soot-infoflow-android/lib/AXMLPrinter2.jar"/>
-
-		<pathelement location="lib/objenesis-1.2.jar"/>
-        <pathelement location="lib/soot-infoflow.jar"/>
-        <pathelement location="lib/soot-infoflow-android.jar"/>
-        <pathelement location="lib/axml-2.0.jar"/>
-        <pathelement location="lib/slf4j-api-1.7.5.jar"/>
-        <pathelement location="lib/slf4j-simple-1.7.5.jar"/>
+		<pathelement location="lib/soot-trunk.jar"/>
 	  </classpath>
 	</javac>
   </target>
