@@ -1,4 +1,4 @@
-CGregx
+EXPLORER
 ================
 
 Demand-Driven Call Graph construction. 
