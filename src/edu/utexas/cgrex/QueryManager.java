@@ -405,7 +405,6 @@ public class QueryManager {
 			CGAutoState tgtState = methToStateMap.get(tgtMeth);
 			reachableState.add(tgtState);
 
-			// how about SCC? FIXME!!
 			if (tgtMeth.equals(worker)) {// recursive call, add self-loop
 				AutoEdge outEdge = invkToEdgeMap
 						.get(new Pair<Stmt, SootMethod>(srcStmt, worker));

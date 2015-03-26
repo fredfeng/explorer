@@ -19,7 +19,6 @@ import soot.AnySubType;
 import soot.ArrayType;
 import soot.FastHierarchy;
 import soot.G;
-import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.RefType;
 import soot.Scene;
@@ -438,10 +437,155 @@ public class SootUtils {
         return str.substring(0,str.length()-1);
     }
 	
-	static String[] exclude = {
-			"java.awt.Container",
-			"java.awt.Component",
-			"java.awt.AWTEventMulticaster",
-	};
+	public static Set<String> genObsQueries(String benName, boolean compareKobj) {
+		CallGraph cicg = Scene.v().getCallGraph();
+		SootMethod main = Scene.v().getMainMethod();
+		QueueReader<MethodOrMethodContext> queue = Scene.v()
+				.getReachableMethods().listener();
+		Set<String> list = new HashSet<String>(Arrays.asList(include));
+		Set<Edge> edges = new HashSet<Edge>();
+		Set<SootMethod> srcs = new HashSet<SootMethod>();
+		Set<SootMethod> tgts = new HashSet<SootMethod>();
+		Set<String> pairs = new HashSet<String>();
+		Set<String> queries = new HashSet<String>();
+		// get listeners from custom classes.
+		for (SootClass sc : Scene.v().getClasses()) {
+			if (sc.isJavaLibraryClass())
+				continue;
+
+			if (sc.getName().contains("Listener")) {
+				list.add(sc.getName());
+			}
+		}
+
+		while (queue.hasNext()) {
+			SootMethod meth = (SootMethod) queue.next();
+			String ms = meth.getSignature();
+			if (meth.isConstructor() || ms.contains("clinit"))
+				continue;
+
+			if (SootUtils.isObserver(ms)) {
+				tgts.add(meth);
+				for (Iterator<Edge> it = cicg.edgesInto(meth); it.hasNext();) {
+					Edge e = it.next();
+					SootMethod ca = (SootMethod) e.getSrc();
+					SootMethod ce = (SootMethod) e.getTgt();
+					if (ca.getDeclaringClass().equals(ce.getDeclaringClass()))
+						continue;
+					if (ca.getName().equals(ce.getName()))
+						continue;
+					srcs.add(ca);
+					edges.add(e);
+				}
+			}
+
+			SootClass clz = meth.getDeclaringClass();
+			/* anonymous class dominates the listener. */
+			if (clz.getName().contains("$")) {
+				for (String su : list) {
+					if (Scene.v().containsClass(su)) {
+						Set<SootClass> subs = SootUtils.subTypesOf(Scene.v()
+								.getSootClass(su));
+						if (subs.contains(clz)) {
+							tgts.add(meth);
+							for (Iterator<Edge> it = cicg.edgesInto(meth); it
+									.hasNext();) {
+								Edge e = it.next();
+								SootMethod ca = (SootMethod) e.getSrc();
+								SootMethod ce = (SootMethod) e.getTgt();
+								if (SootUtils.isTrivial(ca, ce))
+									continue;
+
+								srcs.add(ca);
+								edges.add(e);
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		for (SootMethod src : srcs) {
+			String srcClz = src.getDeclaringClass().getName();
+			String srcStr = src.getSignature();
+			for (SootMethod tgt : tgts) {
+				String event = "";
+				if (srcStr.contains("fireStateChanged")) {
+					event = "java.awt.event.ChangeListener";
+				} else if (srcStr.contains("fireActionEvent")) {
+					event = "java.awt.event.ActionListener";
+				} else if (srcStr.contains("fireActionPerformed")) {
+					event = "java.awt.event.ActionListener";
+				} else if (srcStr.contains("fireItemStateChanged")) {
+					event = "java.awt.event.ItemListener";
+				} else if (srcStr.contains("processWindowEvent")) {
+					event = "java.awt.event.WindowListener";
+				} else if (srcStr.contains("fireRemoveUpdate")
+						|| srcStr.contains("fireInsertUpdate")) {
+					event = "javax.swing.event.DocumentListener";
+				} else if (srcStr.contains("fireAncestor")) {
+					event = "javax.swing.event.AncestorListener";
+				} else if (srcStr.contains("baseValueChanged")) {
+					event = "org.apache.batik.dom.anim.AnimationTargetListener";
+				} else if (srcStr.contains("fireEventListeners")) {
+					event = "org.w3c.dom.events.EventListener";
+				} else if (srcStr
+						.contains("dispatchContentSelectionChangedEvent")) {
+					event = "org.apache.batik.bridge.svg12.ContentSelectionChangedListener";
+				} else if (srcStr.contains("firePropertiesChangedEvent")) {
+					event = "org.apache.batik.css.engine.CSSEngineListener";
+				} else if (srcClz.equals("javax.imageio.ImageWriter")) {
+					event = "javax.imageio.event.IIOWriteProgressListener";
+				} else if (srcClz.equals("javax.imageio.ImageReader")) {
+					event = "javax.imageio.event.IIOReadProgressListener";
+				}
+
+				if (!event.equals("")) {
+					SootClass clzz = Scene.v().getSootClass(event);
+					if (SootUtils.subTypesOf(clzz).contains(
+							tgt.getDeclaringClass())) {
+						queries.add(srcStr + tgt.getSignature());
+						StringBuffer sb = new StringBuffer("");
+						sb.append(src.getName()).append("@")
+								.append(src.getDeclaringClass().getName())
+								.append(",").append(tgt.getName()).append("@")
+								.append(tgt.getDeclaringClass().getName());
+						pairs.add(sb.toString());
+					}
+				}
+			}
+		}
+
+		for (Edge e : edges) {
+			SootMethod src = (SootMethod) e.getSrc();
+			SootMethod tgt = (SootMethod) e.getTgt();
+			String query = src.getSignature() + tgt.getSignature();
+			queries.add(query);
+
+			StringBuffer sb = new StringBuffer("");
+			sb.append(src.getName()).append("@")
+					.append(src.getDeclaringClass().getName()).append(",")
+					.append(tgt.getName()).append("@")
+					.append(tgt.getDeclaringClass().getName());
+			pairs.add(sb.toString());
+		}
+
+		if (compareKobj) {
+			Set<String> kobj = SootUtils.getKobjResult(benName);
+			kobj.retainAll(pairs);
+			System.out.println("Valid query by 1obj: " + kobj.size());
+		}
+		return queries;
+	}
 	
+	static String[] include = { "java.util.EventListener",
+			"javax.servlet.http.HttpSessionBindingListener",
+			"javax.servlet.http.HttpSessionAttributeListener",
+			"java.awt.image.ImageObserver", "javax.swing.AbstractAction",
+			"java.util.Observable", "java.util.Observer",
+			"javax.faces.event.PhaseListener" };
+
+	static String[] exclude = { "java.awt.Container", "java.awt.Component",
+			"java.awt.AWTEventMulticaster", };
 }
