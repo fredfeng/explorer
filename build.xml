@@ -24,7 +24,6 @@
 			<pathelement location="lib/automaton.jar"/>
 			<pathelement location="lib/chord.jar"/>
 			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
-			<pathelement location="lib/cloning-1.9.0.jar"/>
 	      </classpath>
 	      <arg value="${target.name}"/>
 	      <arg value="${target.type}"/>
@@ -46,11 +45,9 @@
 
     <javac srcdir="src" destdir="build" debug="true">
 	  <classpath>
-		<pathelement location="lib/heros-nightly.jar"/>
 		<pathelement location="lib/automaton.jar"/>
 		<pathelement location="lib/chord.jar"/>
 		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
-		<pathelement location="lib/cloning-1.9.0.jar"/>
 		<pathelement location="lib/soot-trunk.jar"/>
 	  </classpath>
 	</javac>
