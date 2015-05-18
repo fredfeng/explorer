@@ -24,6 +24,7 @@
 			<pathelement location="lib/automaton.jar"/>
 			<pathelement location="lib/chord.jar"/>
 			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
+		    <pathelement location="lib/stamp.main.jar"/>
 	      </classpath>
 	      <arg value="${target.name}"/>
 	      <arg value="${target.type}"/>
@@ -49,6 +50,7 @@
 		<pathelement location="lib/chord.jar"/>
 		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
 		<pathelement location="lib/soot.jar"/>
+		<pathelement location="lib/stamp.main.jar"/>
 	  </classpath>
 	</javac>
   </target>

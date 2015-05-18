@@ -98,7 +98,7 @@
 	  <sysproperty key="stamp.widgets.file" value="${stamp.out.dir}/widgets.txt"/>
 	  <sysproperty key="stamp.harnesslist.file" value="${stamp.out.dir}/harness.txt"/>
       <sysproperty key="chord.class.path" value="${apk}:${driver.dir}"/>
-      <sysproperty key="chord.java.analysis.path" value="${stamp.dir}/bin/stamp.main.jar:${stamp.dir}/scanner/stamp.scanner.jar"/>
+      <sysproperty key="chord.java.analysis.path" value="${stamp.dir}/bin/stamp.main.jar:${stamp.dir}/scanner/stamp.scanner.jar:${stamp.dir}/bin/explorer.jar"/>
       <sysproperty key="chord.dlog.analysis.path" value="${stamp.dir}/bin/stamp.main.jar"/>
       <sysproperty key="chord.run.analyses" value="${stamp.analyses}"/>
       <sysproperty key="chord.verbose" value="${chord.verbose}"/>
@@ -123,6 +123,7 @@
       <syspropertyset refid="stamp.analyses.main.sysprops"/>
       <classpath>
 		<pathelement location="${stamp.dir}/bin/stamp.main.jar"/>
+		<pathelement location="${stamp.dir}/bin/explorer.jar"/>
 		<pathelement location="${stamp.dir}/lib/soot.jar"/>
 		<!--pathelement location="/local/mysoot/soot-github/lib/soot-develop.jar"/-->
 
