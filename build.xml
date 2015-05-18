@@ -19,8 +19,8 @@
 	          failonerror="true">
 	          <jvmarg value="-ea" />
 	      <classpath>
-		    <pathelement location="lib/soot-trunk.jar"/>
-			<pathelement location="${this.dir}/edu.utexas.cfl.jar"/>
+		    <pathelement location="lib/soot.jar"/>
+			<pathelement location="${this.dir}/explorer.jar"/>
 			<pathelement location="lib/automaton.jar"/>
 			<pathelement location="lib/chord.jar"/>
 			<pathelement location="lib/commons-lang3-3.3.2.jar"/>
@@ -48,19 +48,19 @@
 		<pathelement location="lib/automaton.jar"/>
 		<pathelement location="lib/chord.jar"/>
 		<pathelement location="lib/commons-lang3-3.3.2.jar"/>
-		<pathelement location="lib/soot-trunk.jar"/>
+		<pathelement location="lib/soot.jar"/>
 	  </classpath>
 	</javac>
   </target>
 
   <target name="jar" depends="compile"
         description="generate the distribution" >
-    <jar jarfile="edu.utexas.cfl.jar" basedir="build"/>
+    <jar jarfile="explorer.jar" basedir="build"/>
   </target>
 
   <target name="clean"
 		  description="clean up" >
     <delete dir="build"/>
-    <delete file="edu.utexas.cfl.jar"/>
+    <delete file="explorer.jar"/>
   </target>
 </project>
