@@ -64,38 +64,7 @@ public class ObserverHarness extends SceneTransformer {
 			benName = args[0];
 			currType = RunType.valueOf(args[1]);
 			outLoc = outLoc + benName + "/cgoutput-3-18.txt";
-			if (benName.equals("luindex")) {
-				targetLoc = prefix + "benchmarks/luindex/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix
-						+ "benchmarks/luindex/jar/lucene-core-2.4.jar:"
-						+ prefix
-						+ "benchmarks/luindex/jar/lucene-demos-2.4.jar";
-			} else if (benName.equals("lusearch")) {
-				targetLoc = prefix + "benchmarks/lusearch/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix
-						+ "benchmarks/lusearch/jar/lucene-core-2.4.jar";
-			} else if (benName.equals("antlr")) {
-				targetLoc = prefix + "benchmarks/antlr/classes";
-				cp = "lib/rt.jar:" + prefix
-						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
-						+ "benchmarks/antlr/jar/antlr.jar:";
-				targetMain = "dacapo.antlr.Main";
-			} else if (benName.equals("avrora")) {
-				targetLoc = prefix + "benchmarks/avrora/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix
-						+ "benchmarks/avrora/jar/avrora-cvs-20091224.jar";
-			} else if (benName.equals("chart")) {
-				targetMain = "dacapo.chart.Main";
-				targetLoc = prefix + "benchmarks/chart/classes";
-				cp = "lib/rt.jar:" + prefix
-						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
-						+ "benchmarks/chart/jar/chart.jar:" + prefix
-						+ "benchmarks/chart/jar/lowagie.jar";
-
-			} else if (benName.equals("fop")) {
+			if (benName.equals("fop")) {
 				targetLoc = prefix + "benchmarks/fop/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/fop/jar/fop.jar:" + prefix
@@ -108,23 +77,6 @@ public class ObserverHarness extends SceneTransformer {
 						+ "benchmarks/fop/jar/commons-logging-1.0.4.jar:"
 						+ prefix + "benchmarks/fop/jar/xml-apis-ext.jar";
 
-			} else if (benName.equals("bloat")) {
-				targetLoc = prefix + "benchmarks/bloat/classes";
-				targetMain = "dacapo.bloat.Main";
-				cp = "lib/rt.jar:" + prefix
-						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
-						+ "benchmarks/bloat/jar/bloat.jar";
-			} else if (benName.equals("hsqldb")) {
-				targetMain = "dacapo.hsqldb.Main";
-				targetLoc = prefix + "benchmarks/hsqldb/classes";
-				cp = "lib/rt.jar:" + prefix
-						+ "shared/dacapo-2006-10-MR2/classes:" + prefix
-						+ "benchmarks/hsqldb/jar/hsqldb.jar";
-			} else if (benName.equals("xalan")) {
-				targetLoc = prefix + "benchmarks/xalan/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix + "benchmarks/xalan/jar/xalan.jar:" + prefix
-						+ "benchmarks/xalan/jar/serializer.jar";
 			} else if (benName.equals("batik")) {
 				targetLoc = prefix + "benchmarks/batik/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
@@ -136,22 +88,11 @@ public class ObserverHarness extends SceneTransformer {
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/sunflow/jar/sunflow-0.07.2.jar:"
 						+ prefix + "benchmarks/sunflow/jar/janino-2.5.12.jar";
-			} else if (benName.equals("eclipse")) {
-				targetLoc = prefix + "benchmarks/eclipse/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix + "benchmarks/eclipse/jar/eclipse.jar";
 			} else if (benName.equals("weka")) {
 				targetLoc = prefix + "benchmarks/weka/classes";
 				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 						+ prefix + "benchmarks/weka/jar/weka.jar";
-			} else if (benName.equals("findbugs")) {
-				targetLoc = prefix + "benchmarks/findbugs/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix + "benchmarks/findbugs/jar/bcel-6.0-SNAPSHOT.jar:"
-					+ prefix
-					+ "benchmarks/findbugs/jar/asm-debug-all-5.0.2.jar:"
-						+ prefix + "benchmarks/findbugs/jar/findbugs.jar";
-		} else if (benName.equals("jmeter")) {
+			} else if (benName.equals("jmeter")) {
 			targetLoc = prefix + "benchmarks/jmeter/classes";
 			cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
 					+ prefix + "benchmarks/jmeter/jar/ApacheJMeter.jar:"
@@ -170,13 +111,6 @@ public class ObserverHarness extends SceneTransformer {
 			// + prefix + "benchmarks/jmeter/jar/jcharts-0.7.5.jar";
 		} else {
 				assert benName.equals("pmd") : "unknown benchmark" + benName;
-				targetLoc = prefix + "benchmarks/pmd/classes";
-				cp = "lib/rt.jar:" + prefix + "shared/dacapo-9.12/classes:"
-						+ prefix + "benchmarks/pmd/jar/asm-3.1.jar:" + prefix
-						+ "benchmarks/pmd/jar/jaxen-1.1.1.jar:" + prefix
-						+ "benchmarks/pmd/jar/pmd-4.2.5.jar:" + prefix
-						+ "benchmarks/pmd/jar/junit-3.8.1.jar:" + prefix
-						+ "benchmarks/pmd/jar/ant.jar";
 			}
 		}
 

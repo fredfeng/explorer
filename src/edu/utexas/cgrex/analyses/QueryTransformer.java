@@ -1,12 +1,10 @@
 package edu.utexas.cgrex.analyses;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import soot.Scene;
 import soot.SceneTransformer;
-import soot.SootMethod;
 import edu.utexas.cgrex.QueryManager;
 
 /**

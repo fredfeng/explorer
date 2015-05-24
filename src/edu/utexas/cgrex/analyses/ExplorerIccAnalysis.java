@@ -1,34 +1,15 @@
 package edu.utexas.cgrex.analyses;
 
 import soot.*;
-import soot.jimple.*;
-import soot.util.*;
 
 import shord.program.Program;
 import shord.project.analyses.JavaAnalysis;
-import shord.project.analyses.ProgramDom;
 import shord.project.analyses.ProgramRel;
 import shord.project.ClassicProject;
-
-import stamp.app.Component;
-import stamp.app.App;
-import stamp.app.IntentFilter;
-import stamp.app.Data;
-
 import chord.project.Chord;
-
-import java.util.jar.*;
-import java.io.*;
-import java.util.*;
-
 import chord.util.tuple.object.Pair;
 import edu.utexas.cgrex.QueryManager;
-import edu.utexas.cgrex.utils.StringUtil;
-
-import soot.jimple.toolkits.callgraph.Edge;
 import edu.utexas.cgrex.utils.SootUtils;
-import soot.toolkits.graph.ExceptionalUnitGraph;
-import soot.toolkits.graph.UnitGraph;
 
 
 /**
